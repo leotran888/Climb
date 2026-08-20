@@ -1,4 +1,4 @@
-# ScoreUp
+# Climb
 
 A tiny command-line score tracker. Keep track of player scores, look up
 averages, and find out who's in the lead.
@@ -6,7 +6,7 @@ averages, and find out who's in the lead.
 ## Usage
 
 ```python
-from scoreup import add_score, get_average, get_top_scorer
+from climb import add_score, get_average, get_top_scorer
 
 scores = {}
 add_score(scores, "Alice", 10)

@@ -1,4 +1,4 @@
-from scoreup import add_score, get_average, get_top_scorer
+from climb import add_score, get_average, get_top_scorer
 
 
 def test_add_score_creates_entry():
