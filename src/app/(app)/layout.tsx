@@ -1,12 +1,10 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import LogoutButton from '@/components/LogoutButton'
+import Sidebar from '@/components/Sidebar'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
@@ -16,28 +14,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single()
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="text-xl font-bold text-blue-700">CLIMB</Link>
-            <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-              <Link href="/dashboard" className="text-slate-600 hover:text-slate-900 transition-colors">Dashboard</Link>
-              <Link href="/writing" className="text-slate-600 hover:text-slate-900 transition-colors">Writing</Link>
-              <Link href="/history" className="text-slate-600 hover:text-slate-900 transition-colors">History</Link>
-              {profile?.role === 'teacher' && (
-                <Link href="/teacher" className="text-slate-600 hover:text-slate-900 transition-colors">Teacher</Link>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-500 hidden md:block">{profile?.full_name}</span>
-            <LogoutButton />
-          </div>
+    <div className="flex h-screen bg-[#d8dce0]">
+      <Sidebar name={profile?.full_name ?? ''} />
+      <main className="flex-1 overflow-y-auto flex flex-col">
+        <div className="max-w-5xl w-full mx-auto px-8 py-4 flex-1 flex flex-col">
+          {children}
         </div>
-      </nav>
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {children}
       </main>
     </div>
   )

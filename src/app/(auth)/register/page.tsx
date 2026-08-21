@@ -19,16 +19,29 @@ export default function RegisterPage() {
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: fullName },
-      },
+      options: { data: { full_name: fullName } },
     })
 
     if (error) {
       setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    // Create profile directly (fallback in case DB trigger fails)
+    if (data.user) {
+      await supabase.from('profiles').upsert(
+        { user_id: data.user.id, full_name: fullName, role: 'student' },
+        { onConflict: 'user_id' }
+      )
+    }
+
+    // If no session yet, email confirmation is required
+    if (!data.session) {
+      setError('Please check your email and click the confirmation link to continue.')
       setLoading(false)
       return
     }
@@ -51,7 +64,7 @@ export default function RegisterPage() {
               required
               value={fullName}
               onChange={e => setFullName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
               placeholder="Nguyen Van A"
             />
           </div>
@@ -62,7 +75,7 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
               placeholder="you@example.com"
             />
           </div>
@@ -74,7 +87,7 @@ export default function RegisterPage() {
               minLength={6}
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-slate-900 placeholder:text-slate-400"
               placeholder="At least 6 characters"
             />
           </div>
@@ -88,7 +101,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-700 text-white py-3 rounded-xl font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-emerald-700 text-white py-3 rounded-xl font-semibold hover:bg-emerald-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
@@ -96,7 +109,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Already have an account?{' '}
-          <Link href="/login" className="text-blue-700 font-medium hover:underline">
+          <Link href="/login" className="text-emerald-700 font-medium hover:underline">
             Log in
           </Link>
         </p>

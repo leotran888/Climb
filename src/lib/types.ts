@@ -8,6 +8,9 @@ export interface Profile {
   full_name: string
   role: UserRole
   target_band: number | null
+  target_writing: number | null
+  target_speaking: number | null
+  exam_date: string | null
   created_at: string
 }
 
@@ -17,20 +20,61 @@ export interface WritingPrompt {
   title: string
   prompt_text: string
   image_description: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chart_data: any | null
   time_limit: number
   created_at: string
+}
+
+export interface Correction {
+  original: string
+  correction: string
+  explanation: string
+  category?: string
+  type?: string
+}
+
+export interface VocabularyImprovement {
+  original: string
+  suggested?: string    // legacy
+  suggestion?: string   // new
+  explanation: string
+}
+
+export interface SentenceImprovement {
+  original: string
+  improved: string
+  explanation: string
+}
+
+export interface CriterionDetail {
+  band?: number
+  evidence?: string[]
+  strengths: string[]
+  weaknesses: string[]
+  justification?: string
+  why_not_higher?: string
+}
+
+export interface CriteriaDetail {
+  task_response: CriterionDetail
+  coherence_cohesion: CriterionDetail
+  lexical_resource: CriterionDetail
+  grammatical_range: CriterionDetail
 }
 
 export interface WritingSubmission {
   id: string
   user_id: string
-  prompt_id: string
+  prompt_id: string | null
+  question: string | null
+  task_type: string | null
   response_text: string
   word_count: number
   submitted_at: string
   time_taken: number | null
-  writing_prompts?: WritingPrompt
-  writing_results?: WritingResult
+  writing_prompts?: WritingPrompt | null
+  writing_results?: WritingResult | null
 }
 
 export interface WritingResult {
@@ -53,6 +97,13 @@ export interface WritingResult {
   ai_model: string
   teacher_score: number | null
   teacher_feedback: string | null
+  corrections: Correction[]
+  vocabulary_improvements: VocabularyImprovement[]
+  sentence_improvements: SentenceImprovement[]
+  criteria_detail: CriteriaDetail | null
+  upgraded_essay: string | null
+  target_band: number | null
+  priority_improvements: string[] | null
   created_at: string
 }
 

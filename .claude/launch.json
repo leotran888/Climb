@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "climb-dev",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "D:\\climb\\start-dev.cmd"],
+      "port": 3000
+    }
+  ]
+}
