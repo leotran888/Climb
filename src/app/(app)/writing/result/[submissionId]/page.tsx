@@ -286,6 +286,25 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
         </div>
       )}
 
+      {/* ── Original Submission ── */}
+      <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+        <SectionTitle n={sectionN} title="Your Submission" />
+        {submission.question && (
+          <div className="mb-5">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Question</p>
+            <p className="text-slate-700 leading-7 whitespace-pre-wrap bg-slate-50 rounded-xl p-4 border-2 border-emerald-600">
+              {submission.question}
+            </p>
+          </div>
+        )}
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+          Essay · {submission.word_count} words
+        </p>
+        <div className="text-slate-700 leading-7 whitespace-pre-wrap bg-slate-50 rounded-xl p-4 border-2 border-emerald-600 font-mono text-[13px]">
+          {submission.response_text}
+        </div>
+      </section>
+
       {/* Actions */}
       <div className="flex items-center gap-4 pt-2">
         <Link
