@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/app/api/grade/writing/process/route.ts": { "maxDuration": 60 },
+    "src/app/api/grade/writing/rewrite/route.ts":  { "maxDuration": 60 },
+    "src/app/api/grade/writing/benchmark/route.ts": { "maxDuration": 60 }
+  }
+}
