@@ -16,6 +16,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 
 export const maxDuration = 60
+export const preferredRegion = 'iad1'
 import {
   SYSTEM_PROMPT,
   SCORING_SYSTEM_PROMPT,
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
         const s0  = Date.now()
         const msg = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
-          max_tokens: 5000,
+          max_tokens: 2500,
           system: [
             {
               type: 'text' as const,
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
         const h0  = Date.now()
         const msg = await anthropic.messages.create({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 4096,
+          max_tokens: 2000,
           system: CORRECTIONS_SYSTEM_PROMPT,
           messages: [{ role: 'user', content: correctionsPrompt }],
         })
