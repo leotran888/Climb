@@ -2,61 +2,90 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function ResultPendingLoader({ submissionId }: { submissionId: string }) {
-  const router = useRouter()
+  const router   = useRouter()
   const triggered = useRef(false)
   const [elapsed, setElapsed] = useState(0)
-  const [error, setError] = useState<string | null>(null)
+  const [error,   setError]   = useState<string | null>(null)
 
+  // ── Trigger Edge Function once ──────────────────────────────────────────
   useEffect(() => {
     if (triggered.current) return
     triggered.current = true
 
-    // Read image from sessionStorage if available
-    let imageData: { imageBase64: string; imageMediaType: string } | null = null
-    try {
-      const stored = sessionStorage.getItem(`pending_img_${submissionId}`)
-      if (stored) {
-        imageData = JSON.parse(stored)
-        sessionStorage.removeItem(`pending_img_${submissionId}`)
-      }
-    } catch { /* ignore */ }
+    async function triggerGrading() {
+      // Read image from sessionStorage if available
+      let imageData: { imageBase64: string; imageMediaType: string } | null = null
+      try {
+        const stored = sessionStorage.getItem(`pending_img_${submissionId}`)
+        if (stored) {
+          imageData = JSON.parse(stored)
+          sessionStorage.removeItem(`pending_img_${submissionId}`)
+        }
+      } catch { /* ignore */ }
 
-    // Trigger grading
-    fetch('/api/grade/writing/process', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        submissionId,
-        imageBase64:    imageData?.imageBase64    ?? null,
-        imageMediaType: imageData?.imageMediaType ?? null,
-      }),
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (d.error && d.error !== 'Already graded') setError(d.error)
-        else router.refresh()
+      // Get JWT from Supabase browser session
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      if (!token) {
+        setError('Session expired. Please log in again.')
+        return
+      }
+
+      // Call Supabase Edge Function directly (150s timeout — no Vercel limit)
+      const edgeFnUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/grade-writing`
+
+      fetch(edgeFnUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          submissionId,
+          imageBase64:    imageData?.imageBase64    ?? null,
+          imageMediaType: imageData?.imageMediaType ?? null,
+        }),
       })
-      .catch(() => setError('Network error. Please refresh.'))
+        .then(r => r.json())
+        .then(d => {
+          if (d.error && d.error !== 'Already graded') setError(d.error)
+          else router.refresh()
+        })
+        .catch(() => setError('Network error. Please refresh.'))
+    }
+
+    triggerGrading()
   }, [submissionId, router])
 
-  // Poll every 5s in case the process call already ran (e.g. page refresh)
+  // ── Poll status every 5s as fallback ───────────────────────────────────
+  // Catches cases where Edge Function already ran (page refresh, duplicate trigger)
   useEffect(() => {
-    const interval = setInterval(() => {
-      router.refresh()
+    const interval = setInterval(async () => {
+      try {
+        const res  = await fetch(`/api/grade/writing/status/${submissionId}`)
+        const data = await res.json()
+        if (data.done) router.refresh()
+      } catch { /* ignore poll errors */ }
     }, 5000)
     return () => clearInterval(interval)
-  }, [router])
+  }, [submissionId, router])
 
-  // Elapsed timer
+  // ── Elapsed timer ──────────────────────────────────────────────────────
   useEffect(() => {
     const t = setInterval(() => setElapsed(s => s + 1), 1000)
     return () => clearInterval(t)
   }, [])
 
-  const mins = Math.floor(elapsed / 60)
-  const secs = elapsed % 60
+  const mins       = Math.floor(elapsed / 60)
+  const secs       = elapsed % 60
   const elapsedStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`
 
   return (
@@ -79,11 +108,11 @@ export default function ResultPendingLoader({ submissionId }: { submissionId: st
       {/* Progress steps */}
       <div className="flex flex-col gap-2 w-full max-w-xs">
         {[
-          { label: 'Reading essay',          done: elapsed >= 3  },
-          { label: 'Scoring criteria',       done: elapsed >= 15 },
-          { label: 'Checking over-scoring',  done: elapsed >= 30 },
-          { label: 'Generating feedback',    done: elapsed >= 45 },
-          { label: 'Finalising result',      done: elapsed >= 55 },
+          { label: 'Reading essay',         done: elapsed >= 3  },
+          { label: 'Scoring criteria',      done: elapsed >= 15 },
+          { label: 'Checking over-scoring', done: elapsed >= 30 },
+          { label: 'Generating feedback',   done: elapsed >= 45 },
+          { label: 'Finalising result',     done: elapsed >= 55 },
         ].map(step => (
           <div key={step.label} className="flex items-center gap-3">
             <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors duration-500 ${step.done ? 'bg-emerald-500' : 'bg-slate-200'}`}>
