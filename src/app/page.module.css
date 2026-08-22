@@ -1,7 +1,7 @@
 /* Landing page styles — scoped to .lp wrapper */
 
 .lp {
-  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-family: inherit;
   background: #fff;
   color: #0c1a0e;
   line-height: 1.6;
