@@ -10,11 +10,26 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data } = await supabase
+  // Verify ownership before revealing status
+  const { data: submission } = await supabase
+    .from('writing_submissions')
+    .select('id')
+    .eq('id', submissionId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!submission) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const { data: result } = await supabase
     .from('writing_results')
     .select('id')
     .eq('submission_id', submissionId)
     .single()
 
-  return NextResponse.json({ done: !!data })
+  const done = !!result
+  return NextResponse.json({
+    done,
+    status: done ? 'completed' : 'processing',
+    submissionId,
+  })
 }

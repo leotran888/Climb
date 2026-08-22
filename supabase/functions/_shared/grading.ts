@@ -47,8 +47,14 @@ Band 5: Limited range; attempts complex structures but with frequent errors; err
 Band 4: Very limited range; frequent and significant errors; errors regularly cause difficulty
 
 ═══════════════════════════════════════════════════════════
+ASSESSMENT PROCESS — MANDATORY SEQUENCE
+═══════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════
 CALIBRATION REFERENCE — Band boundary examples
 ═══════════════════════════════════════════════════════════
+
+Apply the same standard as a full IELTS marking session. These anchors govern boundary calls.
 
 TASK RESPONSE
 • 5.0–5.5: Position stated but thin; ≤2 supporting points per body paragraph; some irrelevant material
