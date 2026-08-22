@@ -7,17 +7,19 @@ export default function LionCanvas() {
   useEffect(() => {
     const canvas = ref.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')!
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const cv = canvas as HTMLCanvasElement
+    const ctx = cv.getContext('2d')!
 
     let tPos: { x: number; y: number } | null = null
     let groundY = 0, halfW = 0
 
     function setup() {
-      const hero = canvas.parentElement
+      const hero = cv.parentElement
       if (!hero) return
       const hr = hero.getBoundingClientRect()
-      canvas.width = hr.width
-      canvas.height = hr.height
+      cv.width = hr.width
+      cv.height = hr.height
       groundY = hr.height - 50
       halfW = hr.width * 0.52
       const sw = document.getElementById('scoreWord')
@@ -320,14 +322,14 @@ export default function LionCanvas() {
         L.x = -90; L.y = 0; L.wc = 0; L.fl = false; L.hasLadder = false
       }
       const ph = getPhase(el), gY = groundY, lad = getLadderGeom(gY)
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.clearRect(0, 0, cv.width, cv.height)
       tickSparks()
       switch (ph.name) {
         case 'trophy': { const sf = (ph.f < .65 ? (ph.f / .65) * 1.22 : 1.22 - (ph.f - .65) / .35 * .22) * .62; drawTrophyFlat(tPos.x, tPos.y, sf); break }
         case 'search': { drawTrophyFlat(tPos.x, tPos.y, .62); L.x = -90 + ph.f * (halfW * .5 + 90); L.fl = false; L.hasLadder = false; L.wc += .085; drawLion(L.x, gY, L.wc, 'search', false, false, false); break }
         case 'spot': { drawTrophyFlat(tPos.x, tPos.y, .62); const jh = ph.f < .35 ? Math.sin(ph.f / .35 * Math.PI) * 28 : 0; if (ph.t > 15 && ph.t < 70) burst(L.x, gY - 75, 14); L.wc += .01; drawLion(L.x, gY - jh, L.wc, 'excited', false, false, false); break }
-        case 'run_out': { drawTrophyFlat(tPos.x, tPos.y, .62); L.fl = false; L.wc += .21; L.x += 7; if (L.x < canvas.width + 30) drawLion(L.x, gY, L.wc, 'excited', false, false, false); break }
-        case 'return': { drawTrophyFlat(tPos.x, tPos.y, .62); if (ph.t < 35) { L.x = canvas.width + 80; L.hasLadder = true } L.wc += .14; L.x -= 5; const stopX = lad.baseX + 22; if (L.x < stopX) L.x = stopX; drawLion(L.x, gY, L.wc, 'excited', true, L.hasLadder, false); break }
+        case 'run_out': { drawTrophyFlat(tPos.x, tPos.y, .62); L.fl = false; L.wc += .21; L.x += 7; if (L.x < cv.width + 30) drawLion(L.x, gY, L.wc, 'excited', false, false, false); break }
+        case 'return': { drawTrophyFlat(tPos.x, tPos.y, .62); if (ph.t < 35) { L.x = cv.width + 80; L.hasLadder = true } L.wc += .14; L.x -= 5; const stopX = lad.baseX + 22; if (L.x < stopX) L.x = stopX; drawLion(L.x, gY, L.wc, 'excited', true, L.hasLadder, false); break }
         case 'place': { drawTrophyFlat(tPos.x, tPos.y, .62); L.hasLadder = false; L.fl = true; L.wc = 0; drawLadderAngled(lad.baseX, lad.gY, lad.len, easeElastic(ph.f) * lad.finalAngle); if (!impacted && ph.f > .88) { impacted = true; burst(lad.baseX - Math.cos(lad.finalAngle) * lad.len, lad.gY - Math.sin(lad.finalAngle) * lad.len, 10) } drawLion(L.x, gY, L.wc, 'excited', true, false, false); break }
         case 'climb': { drawLadderAngled(lad.baseX, lad.gY, lad.len, lad.finalAngle); if (ph.f < .88) drawTrophyFlat(tPos.x, tPos.y, .62); L.wc += .12; L.hasLadder = false; L.x = lad.baseX - Math.cos(lad.finalAngle) * lad.len * ph.f - 3; L.y = gY - Math.sin(lad.finalAngle) * lad.len * ph.f; drawLion(L.x, L.y, L.wc, 'excited', false, false, true); break }
         case 'celebrate': { drawLadderAngled(lad.baseX, lad.gY, lad.len, lad.finalAngle); const sw = Math.sin(ph.t / 500) * 3.5; L.wc += .045; if (ph.t - lastBurst > 700) { burst(L.x + sw, L.y - 72, 10); lastBurst = ph.t } drawLion(L.x + sw, L.y, L.wc, 'celebrate', false, false, true); break }
