@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Outfit } from 'next/font/google'
 import './globals.css'
 
-const outfit = Outfit({ subsets: ['latin'], display: 'swap' })
+const outfit = Outfit({ subsets: ['latin', 'latin-ext'], display: 'swap' })
 
 export const metadata: Metadata = {
   title: 'CLIMB — IELTS AI Practice',
