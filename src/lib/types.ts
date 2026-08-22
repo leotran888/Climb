@@ -73,6 +73,7 @@ export interface WritingSubmission {
   word_count: number
   submitted_at: string
   time_taken: number | null
+  completion_time_seconds: number | null
   writing_prompts?: WritingPrompt | null
   writing_results?: WritingResult | null
 }

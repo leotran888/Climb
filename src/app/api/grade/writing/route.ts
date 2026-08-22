@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { question, essay, taskType, wordCount } = await request.json()
+  const { question, essay, taskType, wordCount, completionTimeSeconds } = await request.json()
 
   if (!essay?.trim() || !taskType) {
     return NextResponse.json({ error: 'Essay and task type are required' }, { status: 400 })
@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       response_text: essay,
       word_count: wordCount ?? 0,
       time_taken: null,
+      completion_time_seconds: typeof completionTimeSeconds === 'number' ? completionTimeSeconds : null,
     })
     .select()
     .single()

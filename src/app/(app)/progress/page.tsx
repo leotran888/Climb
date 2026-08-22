@@ -13,6 +13,7 @@ interface GradedItem {
   submittedAt: string
   question: string | null
   taskType: string | null
+  completionTimeSecs: number | null
   overall: number
   tr: number
   cc: number
@@ -136,7 +137,7 @@ export default async function ProgressPage() {
   const [submissionsRes, profileRes] = await Promise.all([
     supabase
       .from('writing_submissions')
-      .select('id, submitted_at, question, task_type')
+      .select('id, submitted_at, question, task_type, completion_time_seconds')
       .eq('user_id', user.id)
       .order('submitted_at', { ascending: true }),
     supabase
@@ -170,17 +171,18 @@ export default async function ProgressPage() {
     const r = resultMap.get(s.id)
     if (!r || typeof r.overall_band !== 'number') continue
     graded.push({
-      submissionId: s.id,
-      resultId:     r.id,
-      submittedAt:  s.submitted_at,
-      question:     s.question ?? null,
-      taskType:     s.task_type ?? null,
-      overall:      r.overall_band,
-      tr:           r.task_achievement,
-      cc:           r.coherence_cohesion,
-      lr:           r.lexical_resource,
-      gr:           r.grammatical_range,
-      corrections:  Array.isArray(r.corrections) ? r.corrections : [],
+      submissionId:       s.id,
+      resultId:           r.id,
+      submittedAt:        s.submitted_at,
+      question:           s.question ?? null,
+      taskType:           s.task_type ?? null,
+      completionTimeSecs: (s as Record<string, unknown>).completion_time_seconds as number | null ?? null,
+      overall:            r.overall_band,
+      tr:                 r.task_achievement,
+      cc:                 r.coherence_cohesion,
+      lr:                 r.lexical_resource,
+      gr:                 r.grammatical_range,
+      corrections:        Array.isArray(r.corrections) ? r.corrections : [],
     })
   }
 
@@ -226,9 +228,11 @@ export default async function ProgressPage() {
 
   // Chart data
   const chartData: ChartPoint[] = graded.map(g => ({
-    date:  g.submittedAt,
-    band:  g.overall,
-    label: formatShort(g.submittedAt),
+    date:           g.submittedAt,
+    band:           g.overall,
+    label:          formatShort(g.submittedAt),
+    completionTime: g.completionTimeSecs,
+    taskType:       g.taskType,
   }))
 
   // Criterion stats

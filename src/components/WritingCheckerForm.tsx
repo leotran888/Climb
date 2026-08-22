@@ -21,6 +21,8 @@ export default function WritingCheckerForm() {
   const [questionImage, setQuestionImage] = useState<string | null>(null)   // data URL
   const [questionImageType, setQuestionImageType] = useState<string>('image/png')
   const [essay, setEssay] = useState('')
+  const [completionTime, setCompletionTime] = useState('')
+  const [timeError, setTimeError] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -67,18 +69,37 @@ export default function WritingCheckerForm() {
     if (value !== 'academic_task1') clearImage()
   }
 
+  function parseCompletionTime(value: string): number | null {
+    if (!value.trim()) return null
+    const match = value.match(/^(\d{1,3}):([0-5]\d)$/)
+    if (!match) return null
+    return parseInt(match[1]) * 60 + parseInt(match[2])
+  }
+
+  function validateCompletionTime(value: string): string {
+    if (!value.trim()) return ''
+    if (!/^\d{1,3}:[0-5]\d$/.test(value)) return 'Định dạng không hợp lệ. Ví dụ: 42:35'
+    return ''
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!essay.trim()) return
+
+    const tErr = validateCompletionTime(completionTime)
+    if (tErr) { setTimeError(tErr); return }
+
     setLoading(true)
     setError('')
 
     try {
+      const completionTimeSeconds = parseCompletionTime(completionTime)
+
       // Step 1: save submission (fast, ~200ms)
       const res = await fetch('/api/grade/writing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, essay, taskType, wordCount }),
+        body: JSON.stringify({ question, essay, taskType, wordCount, completionTimeSeconds }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong')
@@ -253,6 +274,24 @@ export default function WritingCheckerForm() {
             )}
           </p>
         </div>
+      </div>
+
+      {/* Completion time */}
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-sm font-semibold text-slate-700 shrink-0">Thời gian hoàn thành bài</label>
+        <input
+          type="text"
+          value={completionTime}
+          onChange={e => { setCompletionTime(e.target.value); setTimeError('') }}
+          disabled={loading}
+          placeholder="42:35"
+          maxLength={7}
+          className={`w-24 border-2 rounded-lg px-3 py-1.5 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+            timeError ? 'border-red-400' : 'border-slate-300'
+          }`}
+        />
+        <span className="text-xs text-slate-400">phút:giây · để trống nếu không ghi lại</span>
+        {timeError && <span className="text-xs text-red-500">{timeError}</span>}
       </div>
 
       {error && (
