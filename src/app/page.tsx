@@ -1,338 +1,425 @@
+'use client'
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import ClimbMascotInteractive from '@/components/ClimbMascotInteractive'
+import s from './page.module.css'
+import LionCanvas from '@/components/LionCanvas'
 
-function ClimbMascot() {
+export default function LandingPage() {
+  const navRef = useRef<HTMLElement>(null)
+  const mockupRef = useRef<HTMLDivElement>(null)
+  const scoreNumRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const onScroll = () => nav.classList.toggle(s.navScrolled, window.scrollY > 48)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const mockup = mockupRef.current
+    if (!mockup) return
+    const onMove = (e: MouseEvent) => {
+      const cx = window.innerWidth / 2, cy = window.innerHeight / 2
+      const dx = (e.clientX - cx) / cx * 4
+      const dy = (e.clientY - cy) / cy * 2
+      mockup.style.transform = `rotateY(${-14 + dx}deg) rotateX(${5 - dy}deg) rotateZ(.5deg)`
+    }
+    document.addEventListener('mousemove', onMove, { passive: true })
+    return () => document.removeEventListener('mousemove', onMove)
+  }, [])
+
+  useEffect(() => {
+    function animateScore() {
+      const el = scoreNumRef.current
+      if (!el) return
+      const dur = 1600, t0 = performance.now()
+      ;(function step(now: number) {
+        const p = Math.min((now - t0) / dur, 1)
+        const e = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p
+        const v = 7 * e
+        el.innerHTML = (v >= 6.95 ? '7.0' : v.toFixed(1)) + '<span>/9</span>'
+        if (p < 1) requestAnimationFrame(step)
+      })(t0)
+      document.querySelectorAll(`.${s.criterionFill}`).forEach(b => {
+        const bar = b as HTMLElement
+        setTimeout(() => { bar.style.width = (bar.dataset.val ?? '0') + '%' }, 300)
+      })
+    }
+    const timer = setTimeout(animateScore, 600)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return
+        en.target.classList.add(s.revealIn)
+        en.target.querySelectorAll('[data-count-target]').forEach(c => {
+          const el = c as HTMLElement
+          const target = +(el.dataset.countTarget ?? 0)
+          const t0 = performance.now()
+          ;(function step(now: number) {
+            const p = Math.min((now - t0) / 1800, 1)
+            const e = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p
+            el.textContent = Math.floor(target * e).toLocaleString()
+            if (p < 1) requestAnimationFrame(step)
+          })(t0)
+        })
+        io.unobserve(en.target)
+      })
+    }, { threshold: 0.12 })
+    document.querySelectorAll(`.${s.reveal}`).forEach(el => io.observe(el))
+    return () => io.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const cards = document.querySelectorAll(`.${s.featCard}`)
+    const cleanups: (() => void)[] = []
+    cards.forEach(card => {
+      const el = card as HTMLElement
+      const onMove = (e: MouseEvent) => {
+        const r = el.getBoundingClientRect()
+        const x = (e.clientX - r.left) / r.width - 0.5
+        const y = (e.clientY - r.top) / r.height - 0.5
+        el.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateZ(8px)`
+        el.style.setProperty('--mx', `${(x + 0.5) * 100}%`)
+        el.style.setProperty('--my', `${(y + 0.5) * 100}%`)
+      }
+      const onLeave = () => { el.style.transform = '' }
+      el.addEventListener('mousemove', onMove)
+      el.addEventListener('mouseleave', onLeave)
+      cleanups.push(() => {
+        el.removeEventListener('mousemove', onMove)
+        el.removeEventListener('mouseleave', onLeave)
+      })
+    })
+    return () => cleanups.forEach(fn => fn())
+  }, [])
+
   return (
-    <div className="relative inline-block select-none">
-      <svg width="200" height="218" viewBox="0 0 200 218" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Soft glow ring */}
-        <circle cx="100" cy="118" r="92" fill="rgba(255,255,255,0.08)"/>
-        {/* Body */}
-        <circle cx="100" cy="118" r="78" fill="#1ab852"/>
-        {/* Shine highlight */}
-        <ellipse cx="80" cy="90" rx="34" ry="21" fill="rgba(255,255,255,0.18)" transform="rotate(-22 80 90)"/>
-        {/* Eyes */}
-        <circle cx="76" cy="112" r="14" fill="white"/>
-        <circle cx="124" cy="112" r="14" fill="white"/>
-        <circle cx="79" cy="115" r="8.5" fill="#0a2e14"/>
-        <circle cx="127" cy="115" r="8.5" fill="#0a2e14"/>
-        <circle cx="74" cy="110" r="3.5" fill="white"/>
-        <circle cx="122" cy="110" r="3.5" fill="white"/>
-        {/* Smile */}
-        <path d="M 75 140 Q 100 157 125 140" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round"/>
-        {/* Cap brim */}
-        <rect x="62" y="46" width="76" height="10" rx="3" fill="#0a2e14"/>
-        {/* Cap top */}
-        <polygon points="100,26 62,46 138,46" fill="#0a2e14"/>
-        {/* Tassel */}
-        <line x1="136" y1="46" x2="136" y2="62" stroke="#fbbf24" strokeWidth="3.5" strokeLinecap="round"/>
-        <circle cx="136" cy="66" r="5" fill="#fbbf24"/>
-      </svg>
-      {/* Floating: achieved band */}
-      <div
-        className="absolute top-6 -right-12 bg-white rounded-2xl px-3 py-2 text-xs font-black text-emerald-700 whitespace-nowrap flex items-center gap-1.5"
-        style={{ boxShadow: '0 4px 16px rgba(22,163,68,0.18)', border: '1.5px solid #d1fae5' }}
-      >
-        🎯 Band 7.5 đạt rồi!
-      </div>
-      {/* Floating: improvement */}
-      <div
-        className="absolute bottom-16 -left-10 bg-emerald-600 text-white rounded-xl px-3 py-1.5 text-xs font-bold whitespace-nowrap"
-        style={{ boxShadow: '0 4px 12px rgba(22,163,68,0.35)' }}
-      >
-        +1.5 bands ↑
-      </div>
-    </div>
-  )
-}
-
-function BlobChar({ shade }: { shade: string }) {
-  return (
-    <svg viewBox="0 0 180 126" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[150px] mx-auto block">
-      <ellipse cx="90" cy="70" rx="70" ry="54" fill={shade}/>
-      <circle cx="65" cy="60" r="13" fill="white"/>
-      <circle cx="115" cy="60" r="13" fill="white"/>
-      <circle cx="68" cy="63" r="8" fill="#0a0a0a"/>
-      <circle cx="118" cy="63" r="8" fill="#0a0a0a"/>
-      <circle cx="63" cy="58" r="3" fill="white"/>
-      <circle cx="113" cy="58" r="3" fill="white"/>
-      <path d="M 65 88 Q 90 104 115 88" fill="none" stroke="#0a0a0a" strokeWidth="4" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-export default function HomePage() {
-  return (
-    <div className="min-h-screen" style={{ background: '#f7f8f5' }}>
-
-      {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center shadow-sm shadow-emerald-200">
-              <span className="text-white font-black text-sm">C</span>
+    <div className={s.lp}>
+      {/* NAV */}
+      <nav ref={navRef} className={s.nav}>
+        <div className={`${s.wrap} ${s.navInner}`}>
+          <Link href="/" className={s.logo}>
+            <svg width="24" height="28" viewBox="0 0 36 42" fill="none">
+              <path d="M2 40 L2 32.5 Q2 29 5.5 29 L8.5 29 Q12 29 12 25.5 L12 21.5 Q12 18 15.5 18 L18.5 18 Q22 18 22 14.5 L22 11.5 Q22 8 25.5 8 L34 8"
+                stroke="#16a344" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <div className={s.logoText}>
+              <span className={s.logoWord}>Climb</span>
+              <span className={s.logoTag}>IELTS</span>
             </div>
-            <span className="font-black text-slate-900 text-lg tracking-tight">Climb</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors">
-              Đăng nhập
-            </Link>
-            <Link
-              href="/register"
-              className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors btn-press shadow-sm shadow-emerald-200"
-            >
-              Bắt đầu miễn phí →
-            </Link>
+          </Link>
+          <ul className={s.navLinks}>
+            <li><a href="#features">Tính năng</a></li>
+            <li><a href="#how">Cách hoạt động</a></li>
+            <li><a href="#testimonials">Đánh giá</a></li>
+          </ul>
+          <div className={s.navBtns}>
+            <button className={s.btnGhost} onClick={() => { location.href = '/login' }}>Đăng nhập</button>
+            <button className={s.btnNav} onClick={() => { location.href = '/register' }}>Thử miễn phí</button>
           </div>
         </div>
       </nav>
 
-      {/* ── Hero ── */}
-      <section
-        className="grid-bg relative overflow-hidden"
-        style={{ background: '#137a34' }}
-      >
-        {/* Decorative circles */}
-        <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-10" style={{ background: '#1ab852' }} />
-        <div className="absolute -bottom-16 right-24 w-60 h-60 rounded-full opacity-10" style={{ background: '#1ab852' }} />
-
-        <div className="max-w-6xl mx-auto px-6 py-20 grid grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-white/75 text-xs font-bold uppercase tracking-widest">Climb IELTS</span>
+      {/* HERO */}
+      <section className={s.hero}>
+        <LionCanvas />
+        <div style={{ display: 'contents' }}>
+          <div style={{ paddingLeft: 28 }}>
+            <div className={s.heroEyebrow}>
+              <span className={s.pulse}></span>AI chấm bài IELTS Writing
             </div>
-            <h1 className="text-[60px] font-black text-white leading-[1.05] mb-5">
-              Know your level.<br/>
-              <span style={{ color: '#fbbf24' }}>Climb higher.</span>
+            <h1 className={s.h1}>
+              Leo thang band <span id="scoreWord">score</span><br />
+              với <span className={s.acc}>AI thật sự</span>
             </h1>
-            <p className="text-white/65 text-lg leading-relaxed mb-8 max-w-md">
-              Luyện Writing & Speaking cùng AI thông minh. Nhận phản hồi chi tiết bằng tiếng Việt, cải thiện band score từng ngày.
-            </p>
-            <div className="flex gap-3">
-              <Link
-                href="/register"
-                className="bg-white text-emerald-700 px-6 py-3.5 rounded-2xl font-black text-base hover:bg-emerald-50 transition-colors btn-press"
-                style={{ boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }}
-              >
-                Bắt đầu miễn phí →
-              </Link>
-              <Link href="/login" className="text-white/80 px-6 py-3.5 rounded-2xl font-semibold border border-white/20 hover:bg-white/10 transition-colors text-base">
-                Đăng nhập
-              </Link>
+            <p className={s.heroSub}>Nhận điểm band 4 tiêu chí, sửa lỗi từng câu và gợi ý từ vựng nâng cấp — chính xác như giám khảo IELTS.</p>
+            <div className={s.heroCta}>
+              <button className={s.btnPrimary} onClick={() => { location.href = '/register' }}>Bắt đầu miễn phí</button>
+              <button className={s.btnLink} onClick={() => { location.href = '/writing' }}>
+                Xem demo
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
-            {/* Social proof */}
-            <p className="text-white/35 text-xs mt-6 font-medium">✦ Không cần thẻ tín dụng · Miễn phí để bắt đầu</p>
+            <div className={s.heroTrust}>
+              <div className={s.stars}>
+                {[0,1,2,3,4].map(i => (
+                  <svg key={i} width="13" height="13" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                ))}
+              </div>
+              <span>Hàng trăm học viên đã cải thiện band score Writing</span>
+            </div>
           </div>
 
-          {/* Mascot */}
-          <div className="flex justify-center items-center py-8 pr-8">
-            <ClimbMascotInteractive />
+          {/* 3D App Mockup */}
+          <div className={s.heroVisual} style={{ paddingRight: 28 }}>
+            <div className={`${s.chip} ${s.chipA}`}>Band 7.0 đạt rồi 🎯</div>
+            <div className={`${s.chip} ${s.chipB}`}>+1.5 sau 8 tuần</div>
+            <div className={s.mockupScene}>
+              <div className={s.mockup} ref={mockupRef}>
+                <div className={s.browserTop}>
+                  <div className={s.browserDots}>
+                    <span /><span /><span />
+                  </div>
+                  <div className={s.browserBar}>climbielts.com/writing/result</div>
+                </div>
+                <div className={s.appBody}>
+                  <div className={s.appSidebar}>
+                    <div className={s.appLogo}>✦ Climb</div>
+                    <div className={`${s.appNavItem} ${s.appNavItemActive}`}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      </svg>
+                      Writing
+                    </div>
+                    <div className={s.appNavItem}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-8" />
+                      </svg>
+                      Progress
+                    </div>
+                    <div className={s.appNavItem}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M4 6h16M4 12h16M4 18h10" />
+                      </svg>
+                      History
+                    </div>
+                  </div>
+                  <div className={s.appMain}>
+                    <div className={s.appScoreHeader}>
+                      <div>
+                        <div className={s.overallLabel}>Overall Band Score</div>
+                        <div className={s.overallNum} ref={scoreNumRef}>–<span>/9</span></div>
+                      </div>
+                      <div className={s.scoreBadge}>
+                        <div className={s.scoreBadgeLabel}>Mục tiêu</div>
+                        <div className={s.scoreBadgeVal}>7.5</div>
+                      </div>
+                    </div>
+                    <div className={s.criteria}>
+                      {[
+                        { name: 'TR', val: '77.7', score: '7.0' },
+                        { name: 'CC', val: '72.2', score: '6.5' },
+                        { name: 'LR', val: '77.7', score: '7.0' },
+                        { name: 'GRA', val: '83.3', score: '7.5' },
+                      ].map(c => (
+                        <div key={c.name} className={s.criterion}>
+                          <span className={s.criterionName}>{c.name}</span>
+                          <div className={s.criterionBar}>
+                            <div className={s.criterionFill} data-val={c.val} />
+                          </div>
+                          <span className={s.criterionScore}>{c.score}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className={s.corrections}>
+                      <div className={s.correctionsLabel}>Lỗi phát hiện</div>
+                      <div className={s.corrItem}>do positive impacts → have positive impacts</div>
+                      <div className={s.corrItem}>reductions on → reductions in</div>
+                      <div className={s.corrItem}>make a rise → experience a rise</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className={s.mockupShadow} />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Warm accent strip */}
-      <div style={{ background: 'linear-gradient(90deg, #16a344 0%, #fbbf24 50%, #f97316 100%)', height: '5px' }} />
-
-      {/* ── Skills section ── */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p className="text-emerald-600 font-bold text-xs uppercase tracking-widest mb-2">✦ Tính năng</p>
-            <h2 className="text-4xl font-black text-slate-900 mb-3">Luyện thi từng kỹ năng</h2>
-            <p className="text-slate-400 text-lg">Chọn kỹ năng bạn muốn cải thiện hôm nay</p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-6">
-
-            {/* Writing */}
-            <Link href="/register" className="group block">
-              <div
-                className="rounded-[28px] overflow-hidden flex flex-col h-[420px] transition-all duration-200 group-hover:-translate-y-1.5"
-                style={{ background: '#16a344', boxShadow: '0 8px 28px rgba(22,163,68,0.28)' }}
-              >
-                <div className="p-7 flex-1">
-                  <div className="w-13 h-13 bg-white/90 rounded-2xl flex items-center justify-center mb-5 w-12 h-12">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-                    </svg>
-                  </div>
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-2xl font-black text-white">Writing</h3>
-                    <span className="text-white/40 text-lg">✦</span>
-                  </div>
-                  <p className="text-white/75 text-sm leading-relaxed">
-                    AI chấm điểm theo 4 tiêu chí IELTS, nhận xét chi tiết bằng tiếng Việt và bài viết nâng cấp.
-                  </p>
-                </div>
-                <div className="px-8 flex justify-center -mb-1">
-                  <BlobChar shade="rgba(0,0,0,0.16)"/>
-                </div>
-                <div className="px-6 pb-5 pt-1">
-                  <span className="inline-block bg-black/15 text-white font-bold text-sm px-4 py-1.5 rounded-full">
-                    Task 1 & Task 2
-                  </span>
-                </div>
+      {/* STATS */}
+      <div className={s.stats}>
+        <div className={s.wrap}>
+          <div className={s.statsGrid}>
+            <div className={`${s.stat} ${s.reveal}`}>
+              <div className={s.statN}>
+                <span data-count-target="10000">0</span><span className={s.statU}>+</span>
               </div>
-            </Link>
+              <div className={s.statL}>Bài luận đã chấm</div>
+            </div>
+            <div className={`${s.stat} ${s.reveal} ${s.d1}`}>
+              <div className={s.statN}>4<span className={s.statU}> tiêu chí</span></div>
+              <div className={s.statL}>Đánh giá chuẩn IELTS</div>
+            </div>
+            <div className={`${s.stat} ${s.reveal} ${s.d2}`}>
+              <div className={s.statN}>24<span className={s.statU}>/7</span></div>
+              <div className={s.statL}>Chấm bài bất cứ lúc nào</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Speaking */}
-            <div className="opacity-75">
-              <div
-                className="rounded-[28px] overflow-hidden flex flex-col h-[420px] cursor-not-allowed"
-                style={{ background: '#e85c7a', boxShadow: '0 8px 28px rgba(232,92,122,0.22)' }}
-              >
-                <div className="p-7 flex-1">
-                  <div className="w-12 h-12 bg-white/90 rounded-2xl flex items-center justify-center mb-5">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e85c7a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                      <line x1="12" y1="19" x2="12" y2="23"/>
-                    </svg>
-                  </div>
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-2xl font-black text-white">Speaking</h3>
-                    <span className="text-white/40 text-lg">✦</span>
-                  </div>
-                  <p className="text-white/75 text-sm leading-relaxed">
-                    Luyện Part 1, 2 & 3 với AI phản hồi về fluency, từ vựng và phát âm.
-                  </p>
-                </div>
-                <div className="px-8 flex justify-center -mb-1">
-                  <BlobChar shade="rgba(0,0,0,0.16)"/>
-                </div>
-                <div className="px-6 pb-5 pt-1">
-                  <span className="inline-block bg-black/15 text-white font-bold text-sm px-4 py-1.5 rounded-full">
-                    Sắp ra mắt ✨
-                  </span>
+      {/* FEATURES */}
+      <section className={s.features} id="features">
+        <div className={s.wrap}>
+          <div className={`${s.sectionHead} ${s.reveal}`}>
+            <p className={s.eyebrow}>Tính năng</p>
+            <h2 className={s.h2}>Mọi thứ bạn cần để<br />tăng band score Writing</h2>
+            <p className={s.sub}>Không chỉ là điểm số — Climb giúp bạn hiểu rõ từng lỗi sai và cách khắc phục.</p>
+          </div>
+          <div className={s.featGrid}>
+            <div className={`${s.featCard} ${s.reveal}`}>
+              <div className={s.featIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
+                  <path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-8" />
+                </svg>
+              </div>
+              <div className={s.featTitle}>Chấm điểm 4 tiêu chí chuẩn IELTS</div>
+              <p className={s.featDesc}>Task Response, Coherence &amp; Cohesion, Lexical Resource, Grammatical Range &amp; Accuracy — band score 0.5 chính xác với giải thích chi tiết bằng tiếng Việt.</p>
+              <span className={s.featPill}>Band 4.0 – 9.0</span>
+            </div>
+            <div className={`${s.featCard} ${s.reveal} ${s.d1}`}>
+              <div className={s.featIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                </svg>
+              </div>
+              <div className={s.featTitle}>Sửa lỗi từng câu một</div>
+              <p className={s.featDesc}>AI phát hiện lỗi ngữ pháp, từ vựng, collocation và cấu trúc câu — kèm giải thích tại sao sai và cách sửa cụ thể.</p>
+              <span className={s.featPill}>Grammar · Collocation · Article</span>
+            </div>
+            <div className={`${s.featCard} ${s.reveal} ${s.d2}`}>
+              <div className={s.featIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <div className={s.featTitle}>Nâng cấp từ vựng &amp; câu văn</div>
+              <p className={s.featDesc}>Gợi ý từ đồng nghĩa chính xác hơn, cải thiện câu văn để nghe tự nhiên và học thuật hơn — không phải thay bừa từ khó.</p>
+              <span className={s.featPill}>Vocabulary · Paraphrase</span>
+            </div>
+            <div className={`${s.featCard} ${s.reveal} ${s.d3}`}>
+              <div className={s.featIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" /><path d="M17.5 14v6M14.5 17h6" />
+                </svg>
+              </div>
+              <div className={s.featTitle}>Task 1 &amp; Task 2 đều được hỗ trợ</div>
+              <p className={s.featDesc}>Upload ảnh biểu đồ cho Task 1 Academic, hoặc nhập đề bài cho Task 2 — AI hiểu ngữ cảnh để đánh giá đúng tiêu chí Task Achievement.</p>
+              <span className={s.featPill}>Task 1 · Task 2 · Academic · General</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className={s.hiw} id="how">
+        <div className={s.wrap}>
+          <div className={`${s.sectionHead} ${s.reveal}`}>
+            <p className={s.eyebrow}>Cách hoạt động</p>
+            <h2 className={s.hiwH2}>Ba bước để nhận<br />phản hồi chi tiết</h2>
+            <p className={s.hiwSub}>Đơn giản như nộp bài — phức tạp ở phía AI.</p>
+          </div>
+          <div className={s.hiwGrid}>
+            <div className={`${s.hiwStep} ${s.reveal}`}>
+              <div className={s.stepNum}>1</div>
+              <div className={s.stepTitle}>Nộp bài luận</div>
+              <p className={s.stepDesc}>Dán bài viết vào, chọn Task 1 hoặc Task 2, thêm đề bài hoặc upload ảnh biểu đồ nếu có.</p>
+            </div>
+            <div className={`${s.hiwStep} ${s.reveal} ${s.d1}`}>
+              <div className={s.stepNum}>2</div>
+              <div className={s.stepTitle}>AI phân tích song song</div>
+              <p className={s.stepDesc}>Hai mô hình AI chạy song song — một chấm điểm 4 tiêu chí, một tìm lỗi ngữ pháp — để cho ra kết quả nhanh nhất có thể.</p>
+            </div>
+            <div className={`${s.hiwStep} ${s.reveal} ${s.d2}`}>
+              <div className={s.stepNum}>3</div>
+              <div className={s.stepTitle}>Nhận kết quả đầy đủ</div>
+              <p className={s.stepDesc}>Band score chi tiết, danh sách lỗi sai, gợi ý từ vựng và bài tập cải thiện — tất cả trong một trang kết quả.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className={s.testimonials} id="testimonials">
+        <div className={s.wrap}>
+          <div className={`${s.sectionHead} ${s.reveal}`}>
+            <p className={s.eyebrow}>Đánh giá</p>
+            <h2 className={s.h2}>Học viên nói gì<br />về Climb?</h2>
+            <p className={s.sub}>Những câu chuyện thật từ những người đã cải thiện band score.</p>
+          </div>
+          <div className={s.testGrid}>
+            <div className={`${s.testCard} ${s.reveal}`}>
+              <div className={s.testScore}>
+                <span className={s.scoreFrom}>5.5</span>
+                <span className={s.scoreArr}>→</span>
+                <span className={s.scoreTo}>7.0</span>
+              </div>
+              <p className={s.testQuote}>&ldquo;Climb giúp tôi hiểu rõ từng lỗi sai hơn cả giám khảo. Không còn bị điểm thấp vì collocation sai nữa.&rdquo;</p>
+              <div className={s.testPerson}>
+                <div className={s.testAv}>TN</div>
+                <div>
+                  <div className={s.testName}>Trần Nhật</div>
+                  <div className={s.testMeta}>Sau 3 tháng luyện tập</div>
                 </div>
               </div>
             </div>
-
-            {/* Vocabulary */}
-            <Link href="/register" className="group block">
-              <div
-                className="rounded-[28px] overflow-hidden flex flex-col h-[420px] transition-all duration-200 group-hover:-translate-y-1.5"
-                style={{ background: '#7c3aed', boxShadow: '0 8px 28px rgba(124,58,237,0.24)' }}
-              >
-                <div className="p-7 flex-1">
-                  <div className="w-12 h-12 bg-white/90 rounded-2xl flex items-center justify-center mb-5">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                    </svg>
-                  </div>
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-2xl font-black text-white">Từ vựng</h3>
-                    <span className="text-white/40 text-lg">✦</span>
-                  </div>
-                  <p className="text-white/75 text-sm leading-relaxed">
-                    Sổ từ vựng theo chủ đề, luyện qua flashcard lật 3D — nhớ lâu hơn, học vui hơn.
-                  </p>
-                </div>
-                <div className="px-8 flex justify-center -mb-1">
-                  <BlobChar shade="rgba(0,0,0,0.16)"/>
-                </div>
-                <div className="px-6 pb-5 pt-1">
-                  <span className="inline-block bg-black/15 text-white font-bold text-sm px-4 py-1.5 rounded-full">
-                    Sổ từ + Flashcard
-                  </span>
+            <div className={`${s.testCard} ${s.reveal} ${s.d1}`}>
+              <div className={s.testScore}>
+                <span className={s.scoreFrom}>6.0</span>
+                <span className={s.scoreArr}>→</span>
+                <span className={s.scoreTo}>7.5</span>
+              </div>
+              <p className={s.testQuote}>&ldquo;Task 1 Academic luôn là điểm yếu của tôi. Nhờ Climb phát hiện đúng lỗi mô tả dữ liệu, tôi tăng 1.5 band chỉ trong 8 tuần.&rdquo;</p>
+              <div className={s.testPerson}>
+                <div className={s.testAv}>MA</div>
+                <div>
+                  <div className={s.testName}>Minh Anh</div>
+                  <div className={s.testMeta}>Mục tiêu du học Úc</div>
                 </div>
               </div>
-            </Link>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats strip ── */}
-      <section style={{ background: '#0f7230' }} className="py-14">
-        <div className="max-w-4xl mx-auto px-6 grid grid-cols-3 gap-8 text-center">
-          {[
-            { n: '< 2 min', label: 'Nhận kết quả AI', sub: 'chấm điểm tức thì' },
-            { n: '+1.5', label: 'Band tăng trung bình', sub: 'sau 3 tháng luyện tập' },
-            { n: '100%', label: 'Tiếng Việt', sub: 'phản hồi dễ hiểu' },
-          ].map(s => (
-            <div key={s.n}>
-              <p className="text-5xl font-black mb-1" style={{ color: '#fbbf24' }}>{s.n}</p>
-              <p className="text-white font-bold text-sm">{s.label}</p>
-              <p className="text-white/40 text-xs mt-0.5">{s.sub}</p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p className="text-emerald-600 font-bold text-xs uppercase tracking-widest mb-2">✦ Quy trình</p>
-            <h2 className="text-4xl font-black text-slate-900">Cách hoạt động</h2>
-          </div>
-          <div className="grid grid-cols-3 gap-6">
-            {[
-              {
-                n: '01', title: 'Chọn bài thi', bg: '#f0fdf4', accent: '#16a344',
-                desc: 'Chọn Task 1 (biểu đồ/sơ đồ) hoặc Task 2 (luận điểm). Viết ngay trong giao diện quen thuộc.',
-                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>,
-              },
-              {
-                n: '02', title: 'AI chấm & nhận xét', bg: '#fffbeb', accent: '#d97706',
-                desc: 'Claude AI phân tích theo 4 tiêu chí IELTS, cho điểm chi tiết và nhận xét bằng tiếng Việt dễ hiểu.',
-                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
-              },
-              {
-                n: '03', title: 'Học & tiến bộ', bg: '#faf5ff', accent: '#7c3aed',
-                desc: 'Đọc bài viết nâng cấp từ AI, lưu từ vựng hay và ôn luyện qua flashcard thông minh.',
-                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
-              },
-            ].map(s => (
-              <div
-                key={s.n}
-                className="rounded-3xl p-7 relative overflow-hidden"
-                style={{ background: s.bg, border: `1.5px solid ${s.accent}25`, boxShadow: `0 4px 20px ${s.accent}12` }}
-              >
-                <span className="absolute top-5 right-6 text-6xl font-black opacity-[0.07] leading-none text-slate-900">{s.n}</span>
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 shadow-sm"
-                  style={{ background: `${s.accent}15` }}
-                >
-                  {s.icon}
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">{s.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{s.desc}</p>
+            <div className={`${s.testCard} ${s.reveal} ${s.d2}`}>
+              <div className={s.testScore}>
+                <span className={s.scoreFrom}>6.5</span>
+                <span className={s.scoreArr}>→</span>
+                <span className={s.scoreTo}>7.5</span>
               </div>
-            ))}
+              <p className={s.testQuote}>&ldquo;Chấm bài nhanh và rẻ hơn gia sư nhiều. Quan trọng nhất là giải thích rõ tại sao bị điểm thấp, không phải chỉ nói &apos;cần cải thiện&apos;.&rdquo;</p>
+              <div className={s.testPerson}>
+                <div className={s.testAv}>PH</div>
+                <div>
+                  <div className={s.testName}>Phương Hà</div>
+                  <div className={s.testMeta}>Luyện thi 6 tháng</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section
-        className="py-20 text-center grid-bg"
-        style={{ background: '#137a34' }}
-      >
-        <div className="max-w-xl mx-auto px-6">
-          <p className="text-white/50 font-bold text-xs uppercase tracking-widest mb-4">✦ Miễn phí để bắt đầu</p>
-          <h2 className="text-5xl font-black text-white mb-4 leading-tight">
-            Ready to<br/>climb higher?
+      {/* CTA */}
+      <section className={s.ctaWrap}>
+        <div className={s.wrap}>
+          <h2 className={s.ctaH2}>
+            Bạn đã sẵn sàng<br /><span className={s.ctaBk}>Climb</span> chưa?
           </h2>
-          <p className="text-white/55 text-lg mb-8">Bắt đầu ngay hôm nay. Không cần thẻ tín dụng.</p>
-          <Link
-            href="/register"
-            className="inline-block bg-white text-emerald-700 px-8 py-4 rounded-2xl font-black text-lg hover:bg-emerald-50 transition-colors btn-press"
-            style={{ boxShadow: '0 6px 20px rgba(0,0,0,0.25)' }}
-          >
-            Tạo tài khoản miễn phí →
-          </Link>
+          <p className={s.ctaP}>Nộp bài luận đầu tiên miễn phí — kết quả chi tiết, không chờ đợi.</p>
+          <button className={s.btnCta} onClick={() => { location.href = '/register' }}>Tạo tài khoản miễn phí</button>
+          <p className={s.ctaNote}>Đã có tài khoản? <Link href="/login">Đăng nhập</Link></p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ background: '#0a2e14' }} className="py-5 text-center">
-        <p className="text-white/25 text-sm">© 2025 Climb · Built for IELTS learners</p>
+      {/* FOOTER */}
+      <footer className={s.footer}>
+        <div className={`${s.wrap} ${s.footInner}`}>
+          <span className={s.footCopy}>© 2025 Climb IELTS. All rights reserved.</span>
+          <ul className={s.footLinks}>
+            <li><a href="#">Điều khoản</a></li>
+            <li><a href="#">Quyền riêng tư</a></li>
+            <li><a href="#">Liên hệ</a></li>
+          </ul>
+        </div>
       </footer>
     </div>
   )
