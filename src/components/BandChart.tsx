@@ -224,7 +224,7 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
             ))}
             {[4, 5, 6, 7, 8, 9].map(v => (
               <text key={v} x={PAD.left - 10} y={yBand(v) + 4} textAnchor="end"
-                fontSize={11} fill="#94a3b8" fontFamily="system-ui,sans-serif">{v}</text>
+                fontSize={11} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">{v}</text>
             ))}
 
             {/* Target band */}
@@ -232,7 +232,7 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               <>
                 <line x1={PAD.left} x2={W - PAD.right} y1={yBand(targetBand)} y2={yBand(targetBand)}
                   stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="6 4" opacity={0.7} />
-                <text x={W - PAD.right + 4} y={yBand(targetBand) + 4} fontSize={10} fill="#f59e0b" fontFamily="system-ui,sans-serif">
+                <text x={W - PAD.right + 4} y={yBand(targetBand) + 4} fontSize={10} fill="#f59e0b" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                   {targetBand}
                 </text>
               </>
@@ -261,14 +261,14 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               return (
                 <g style={{ pointerEvents: 'none' }}>
                   <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#1e293b" opacity={0.92} />
-                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily="system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                     Band {d.band}
                   </text>
-                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                     {d.label} · {taskLabel(d.taskType)}
                   </text>
                   {hasT && (
-                    <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily="system-ui,sans-serif">
+                    <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                       {formatTime(d.completionTime!)}
                     </text>
                   )}
@@ -278,7 +278,7 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
 
             {/* X labels */}
             {filtered.map((d, i) => !showXLabel(i, filtered.length) ? null : (
-              <text key={i} x={bandPts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="system-ui,sans-serif">
+              <text key={i} x={bandPts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                 {d.label}
               </text>
             ))}
@@ -305,7 +305,7 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
             ))}
             {timeYLabels.map(v => (
               <text key={v} x={PAD.left - 10} y={yTime(v, Y_T_MIN, Y_T_MAX) + 4} textAnchor="end"
-                fontSize={11} fill="#94a3b8" fontFamily="system-ui,sans-serif">{v}m</text>
+                fontSize={11} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">{v}m</text>
             ))}
 
             <path d={timeArea} fill="url(#timeAreaFill)" />
@@ -330,13 +330,13 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               return (
                 <g style={{ pointerEvents: 'none' }}>
                   <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#1e293b" opacity={0.92} />
-                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily="system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                     {formatTime(d.completionTime!)}
                   </text>
-                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                     {d.label} · {taskLabel(d.taskType)}
                   </text>
-                  <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily="system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                     Band {d.band}
                   </text>
                 </g>
@@ -345,7 +345,7 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
 
             {/* X labels */}
             {timeFiltered.map((d, i) => !showXLabel(i, timeFiltered.length) ? null : (
-              <text key={i} x={timePts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="system-ui,sans-serif">
+              <text key={i} x={timePts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
                 {d.label}
               </text>
             ))}
