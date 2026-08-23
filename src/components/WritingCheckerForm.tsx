@@ -33,7 +33,11 @@ export default function WritingCheckerForm() {
   const minWords = taskType === 'task2' ? 250 : 150
 
   function handleImageFile(file: File) {
-    if (!file.type.startsWith('image/')) return
+    const supported = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!supported.includes(file.type)) {
+      setError('Định dạng ảnh không hỗ trợ. Vui lòng dùng JPG, PNG, GIF hoặc WebP.')
+      return
+    }
     const reader = new FileReader()
     reader.onload = ev => {
       setQuestionImage(ev.target?.result as string)

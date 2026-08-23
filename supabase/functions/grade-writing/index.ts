@@ -33,6 +33,15 @@ type AIMode      = 'hybrid' | 'sonnet'
 type ImageMType  = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
 type HaikuStatus = 'ok' | 'failed' | 'skipped'
 
+const VALID_IMAGE_TYPES: ImageMType[] = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+
+function normalizeMediaType(t: string | null | undefined): ImageMType {
+  if (!t) return 'image/png'
+  if (t === 'image/jpg') return 'image/jpeg'
+  if (VALID_IMAGE_TYPES.includes(t as ImageMType)) return t as ImageMType
+  return 'image/png'  // fallback for unsupported types (heic, bmp, tiff, etc.)
+}
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -89,7 +98,7 @@ Deno.serve(async (req) => {
 
     const { response_text: essay, question, task_type: taskType, word_count: wordCount } = submission
     const taskLabel      = TASK_LABELS[taskType as string] ?? taskType
-    const imageMediaType = (rawMediaType ?? 'image/png') as ImageMType
+    const imageMediaType = normalizeMediaType(rawMediaType)
 
     const questionSection = imageBase64
       ? `QUESTION:\n${question?.trim() ? question.trim() + '\n' : ''}[A chart/diagram image is provided — use it to assess Task Achievement accuracy and data selection.]`
