@@ -40,20 +40,28 @@ export default function AdminPlansPage() {
     const r = await fetch(`/api/admin/plans/${editing.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editing),
+      body: JSON.stringify({
+        name: editing.name,
+        description: editing.description,
+        price: editing.price,
+        limits: editing.limits,
+        is_active: editing.is_active,
+        sort_order: editing.sort_order,
+      }),
     })
     setSaving(false)
     setMsg(r.ok ? '✓ Đã lưu.' : '✗ Lỗi khi lưu.')
     if (r.ok) { setEditing(null); load() }
+    setTimeout(() => setMsg(''), 4000)
   }
 
-  if (loading) return <div className="text-slate-400 text-sm">Đang tải...</div>
+  if (loading) return <div className="text-slate-400 text-sm animate-pulse">Đang tải...</div>
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Plans</h1>
-        <p className="text-sm text-slate-500 mt-1">Quản lý các gói subscription</p>
+        <p className="text-sm text-slate-500 mt-1">Quản lý các gói subscription. Thay đổi giá và giới hạn sẽ áp dụng ngay lập tức.</p>
       </div>
 
       {msg && (
@@ -64,24 +72,30 @@ export default function AdminPlansPage() {
 
       <div className="grid gap-4">
         {plans.map(plan => (
-          <div key={plan.id} className="bg-white rounded-xl border border-slate-200 p-5">
+          <div key={plan.id} className={`bg-white rounded-xl border p-5 ${!plan.is_active ? 'opacity-60 border-slate-100' : 'border-slate-200'}`}>
             {editing?.id === plan.id ? (
               <form onSubmit={handleSave} className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-bold text-slate-900">{plan.name}</span>
+                  <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">{plan.slug}</span>
+                  <span className="text-xs text-slate-400 ml-1">(slug không thể sửa)</span>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-medium text-slate-500 block mb-1">Tên</label>
-                    <input
-                      value={editing.name}
-                      onChange={e => setEditing({ ...editing, name: e.target.value })}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
                   <div>
                     <label className="text-xs font-medium text-slate-500 block mb-1">Giá (VND)</label>
                     <input
                       type="number"
                       value={editing.price}
                       onChange={e => setEditing({ ...editing, price: parseFloat(e.target.value) })}
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500 block mb-1">Sort order</label>
+                    <input
+                      type="number"
+                      value={editing.sort_order}
+                      onChange={e => setEditing({ ...editing, sort_order: parseInt(e.target.value) })}
                       className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
@@ -112,6 +126,16 @@ export default function AdminPlansPage() {
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id={`active-${plan.id}`}
+                    type="checkbox"
+                    checked={editing.is_active}
+                    onChange={e => setEditing({ ...editing, is_active: e.target.checked })}
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <label htmlFor={`active-${plan.id}`} className="text-sm text-slate-700">Gói đang active</label>
+                </div>
                 <div className="flex gap-2">
                   <button
                     type="submit"
@@ -139,16 +163,20 @@ export default function AdminPlansPage() {
                       <span className="text-xs px-2 py-0.5 bg-red-50 text-red-500 rounded-full">Inactive</span>
                     )}
                   </div>
-                  <div className="text-sm text-slate-500 mb-2">{plan.description}</div>
-                  <div className="flex gap-4 text-sm text-slate-700">
-                    <span><strong>{plan.price.toLocaleString('vi-VN')}</strong> {plan.currency}/{plan.billing_interval}</span>
+                  {plan.description && <div className="text-sm text-slate-500 mb-2">{plan.description}</div>}
+                  <div className="flex flex-wrap gap-4 text-sm text-slate-700">
+                    <span>
+                      <strong className="text-slate-900">{plan.price.toLocaleString('vi-VN')}</strong>
+                      <span className="text-slate-400"> {plan.currency}/{plan.billing_interval}</span>
+                    </span>
                     <span>Writing: <strong>{plan.limits.writing_grading_monthly}/tháng</strong></span>
                     <span>Speaking: <strong>{plan.limits.speaking_grading_monthly}/tháng</strong></span>
+                    <span className="text-slate-400">Order: {plan.sort_order}</span>
                   </div>
                 </div>
                 <button
                   onClick={() => setEditing(plan)}
-                  className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600"
+                  className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 shrink-0"
                 >
                   Sửa
                 </button>

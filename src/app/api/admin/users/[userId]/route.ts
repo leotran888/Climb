@@ -31,22 +31,41 @@ export async function GET(
     { data: usageRows },
     { data: bonusCredits },
     { data: auditLogs },
+    { data: authUser },
   ] = await Promise.all([
     db.from('profiles').select('*').eq('user_id', userId).single(),
     db.from('subscriptions').select('*, plans(*)').eq('user_id', userId).single(),
     db.from('usage_records').select('feature').eq('user_id', userId).eq('billing_period', billingPeriod),
     db.from('bonus_credits').select('*').eq('user_id', userId).gt('remaining', 0).order('created_at', { ascending: false }),
     db.from('audit_logs').select('*').eq('target_user_id', userId).order('created_at', { ascending: false }).limit(20),
+    db.auth.admin.getUserById(userId),
   ])
+
+  // Resolve admin names for audit logs
+  const adminIds = [...new Set((auditLogs ?? []).map((l: { admin_user_id: string }) => l.admin_user_id).filter(Boolean))]
+  const adminNames: Record<string, string> = {}
+  if (adminIds.length > 0) {
+    const { data: adminProfiles } = await db
+      .from('profiles')
+      .select('user_id, full_name')
+      .in('user_id', adminIds)
+    for (const p of adminProfiles ?? []) adminNames[p.user_id] = p.full_name
+  }
+
+  const enrichedLogs = (auditLogs ?? []).map((l: Record<string, unknown>) => ({
+    ...l,
+    admin_name: adminNames[l.admin_user_id as string] ?? 'System',
+  }))
 
   const writingUsage = usageRows?.filter(r => r.feature === 'writing_grading').length ?? 0
   const speakingUsage = usageRows?.filter(r => r.feature === 'speaking_grading').length ?? 0
 
   return NextResponse.json({
     profile,
+    email: authUser?.user?.email ?? '',
     subscription,
     currentMonthUsage: { writing: writingUsage, speaking: speakingUsage },
     bonusCredits: bonusCredits ?? [],
-    auditLogs: auditLogs ?? [],
+    auditLogs: enrichedLogs,
   })
 }

@@ -25,38 +25,82 @@ export async function GET() {
 
   const [
     { count: totalUsers },
-    { count: activeSubscriptions },
-    { count: currentUsage },
-    { count: lastUsage },
     { count: suspendedUsers },
+    { data: currentUsageRows },
+    { data: lastUsageRows },
+    { data: subscriptions },
+    { data: bonusRows },
+    { data: recentLogs },
   ] = await Promise.all([
     db.from('profiles').select('*', { count: 'exact', head: true }),
-    db.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-    db.from('usage_records').select('*', { count: 'exact', head: true }).eq('billing_period', currentPeriod),
-    db.from('usage_records').select('*', { count: 'exact', head: true }).eq('billing_period', lastPeriod),
     db.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'suspended'),
+    db.from('usage_records').select('feature').eq('billing_period', currentPeriod),
+    db.from('usage_records').select('feature').eq('billing_period', lastPeriod),
+    db.from('subscriptions').select('status, user_id, plans(slug, name, price)').eq('status', 'active'),
+    db.from('bonus_credits').select('remaining').gt('remaining', 0),
+    db.from('audit_logs')
+      .select('id, action, reason, created_at, admin_user_id, target_user_id')
+      .order('created_at', { ascending: false })
+      .limit(10),
   ])
 
-  // Plan distribution
-  const { data: planDist } = await db
-    .from('subscriptions')
-    .select('plan_id, plans(slug, name)')
-    .eq('status', 'active')
+  // Usage breakdown
+  const writingThisMonth = currentUsageRows?.filter(r => r.feature === 'writing_grading').length ?? 0
+  const speakingThisMonth = currentUsageRows?.filter(r => r.feature === 'speaking_grading').length ?? 0
+  const writingLastMonth = lastUsageRows?.filter(r => r.feature === 'writing_grading').length ?? 0
+  const speakingLastMonth = lastUsageRows?.filter(r => r.feature === 'speaking_grading').length ?? 0
 
-  const planCounts: Record<string, { name: string; count: number }> = {}
-  for (const row of planDist ?? []) {
-    const plan = row.plans as unknown as { slug: string; name: string } | null
+  // Plan distribution + revenue
+  const planCounts: Record<string, { name: string; count: number; price: number }> = {}
+  let estimatedMRR = 0
+  let paidSubscribers = 0
+
+  for (const row of subscriptions ?? []) {
+    const plan = row.plans as unknown as { slug: string; name: string; price: number } | null
     if (!plan) continue
-    if (!planCounts[plan.slug]) planCounts[plan.slug] = { name: plan.name, count: 0 }
+    if (!planCounts[plan.slug]) planCounts[plan.slug] = { name: plan.name, count: 0, price: plan.price }
     planCounts[plan.slug].count++
+    if (plan.slug !== 'free' && plan.price > 0) {
+      estimatedMRR += plan.price
+      paidSubscribers++
+    }
   }
+
+  // Bonus credits total
+  const totalBonusCreditsRemaining = bonusRows?.reduce((sum, r) => sum + (r.remaining ?? 0), 0) ?? 0
+
+  // Recent audit logs — resolve admin names
+  const adminIds = [...new Set((recentLogs ?? []).map(l => l.admin_user_id).filter(Boolean))]
+  const adminNames: Record<string, string> = {}
+  if (adminIds.length > 0) {
+    const { data: adminProfiles } = await db
+      .from('profiles')
+      .select('user_id, full_name')
+      .in('user_id', adminIds)
+    for (const p of adminProfiles ?? []) adminNames[p.user_id] = p.full_name
+  }
+
+  const recentActivity = (recentLogs ?? []).map(l => ({
+    id: l.id,
+    action: l.action,
+    reason: l.reason,
+    created_at: l.created_at,
+    admin_name: adminNames[l.admin_user_id] ?? 'System',
+    target_user_id: l.target_user_id,
+  }))
 
   return NextResponse.json({
     totalUsers: totalUsers ?? 0,
-    activeSubscriptions: activeSubscriptions ?? 0,
-    currentMonthUsage: currentUsage ?? 0,
-    lastMonthUsage: lastUsage ?? 0,
     suspendedUsers: suspendedUsers ?? 0,
+    activeSubscriptions: (subscriptions ?? []).length,
+    paidSubscribers,
+    writingThisMonth,
+    speakingThisMonth,
+    writingLastMonth,
+    speakingLastMonth,
+    totalBonusCreditsRemaining,
+    estimatedMRR,
     planDistribution: planCounts,
+    recentActivity,
   })
 }
