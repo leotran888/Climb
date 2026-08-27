@@ -68,10 +68,14 @@ export default function Sidebar({ name }: { name: string }) {
         href="/dashboard"
         className="flex items-center gap-2.5 px-3 mb-8 group"
       >
-        <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center shadow-sm shadow-emerald-200 transition-transform duration-150 group-hover:scale-105">
-          <span className="text-white font-black text-sm tracking-tight">C</span>
+        <svg width="20" height="23" viewBox="0 0 36 42" fill="none" className="shrink-0">
+          <path d="M2 40 L2 32.5 Q2 29 5.5 29 L8.5 29 Q12 29 12 25.5 L12 21.5 Q12 18 15.5 18 L18.5 18 Q22 18 22 14.5 L22 11.5 Q22 8 25.5 8 L34 8"
+            stroke="#16a344" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <div className="flex flex-col gap-0">
+          <span className="font-bold text-slate-900 text-lg leading-none tracking-tight">Climb</span>
+          <span className="text-[8px] font-semibold tracking-[0.15em] text-emerald-600 leading-none">IELTS</span>
         </div>
-        <span className="font-bold text-slate-900 text-lg tracking-tight">Climb</span>
       </Link>
 
       {/* Navigation */}
