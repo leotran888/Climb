@@ -68,46 +68,57 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  let query = db
+  let profilesQuery = db
     .from('profiles')
-    .select(
-      `id, user_id, full_name, role, status, created_at,
-       subscriptions(status, started_at, expires_at, plans(id, slug, name, price, limits))`,
-      { count: 'exact' }
-    )
+    .select('id, user_id, full_name, role, status, created_at', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, to)
 
-  if (search && !search.includes('@')) query = query.ilike('full_name', `%${search}%`)
-  if (emailMatchIds) query = query.in('user_id', emailMatchIds)
-  if (statusFilter) query = query.eq('status', statusFilter)
-  if (planMatchIds) query = query.in('user_id', planMatchIds)
+  if (search && !search.includes('@')) profilesQuery = profilesQuery.ilike('full_name', `%${search}%`)
+  if (emailMatchIds) profilesQuery = profilesQuery.in('user_id', emailMatchIds)
+  if (statusFilter) profilesQuery = profilesQuery.eq('status', statusFilter)
+  if (planMatchIds) profilesQuery = profilesQuery.in('user_id', planMatchIds)
 
-  const { data, count, error } = await query
+  const { data, count, error } = await profilesQuery
   if (error) {
-    console.error('[admin/users] query error:', error)
+    console.error('[admin/users] profiles query error:', error)
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
   }
 
-  // Fetch current month usage for these users
   const userIds = (data ?? []).map(u => u.user_id)
+
+  // Fetch subscriptions + plans and usage in parallel
+  const [subsResult, usageResult] = await Promise.all([
+    userIds.length > 0
+      ? db
+          .from('subscriptions')
+          .select('user_id, status, started_at, expires_at, plans(id, slug, name, price, limits)')
+          .in('user_id', userIds)
+      : Promise.resolve({ data: [] }),
+    userIds.length > 0
+      ? db
+          .from('usage_records')
+          .select('user_id, feature')
+          .in('user_id', userIds)
+          .eq('billing_period', currentPeriod)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const subsByUser: Record<string, any> = {}
+  for (const s of subsResult.data ?? []) subsByUser[s.user_id] = s
+
   const usageMap: Record<string, { writing: number; speaking: number }> = {}
-  if (userIds.length > 0) {
-    const { data: usageRows } = await db
-      .from('usage_records')
-      .select('user_id, feature')
-      .in('user_id', userIds)
-      .eq('billing_period', currentPeriod)
-    for (const row of usageRows ?? []) {
-      if (!usageMap[row.user_id]) usageMap[row.user_id] = { writing: 0, speaking: 0 }
-      if (row.feature === 'writing_grading') usageMap[row.user_id].writing++
-      else if (row.feature === 'speaking_grading') usageMap[row.user_id].speaking++
-    }
+  for (const row of usageResult.data ?? []) {
+    if (!usageMap[row.user_id]) usageMap[row.user_id] = { writing: 0, speaking: 0 }
+    if (row.feature === 'writing_grading') usageMap[row.user_id].writing++
+    else if (row.feature === 'speaking_grading') usageMap[row.user_id].speaking++
   }
 
   const users = (data ?? []).map(u => ({
     ...u,
     email: emailMap[u.user_id] ?? '',
+    subscriptions: subsByUser[u.user_id] ? [subsByUser[u.user_id]] : [],
     usage: usageMap[u.user_id] ?? { writing: 0, speaking: 0 },
   }))
 
