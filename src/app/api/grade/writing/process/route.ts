@@ -279,7 +279,7 @@ async function handleAnthropicDirect(request: NextRequest, mode: 'hybrid' | 'son
   }
   console.log('[process] metrics:', JSON.stringify(metrics))
 
-  const c = gradeData?.criteria as Record<string, { band: number; justification?: string }> | undefined
+  const c = gradeData?.criteria as Record<string, { band: number; justification?: string; to_reach?: string }> | undefined
   const criterionBands = [c?.task_response?.band, c?.coherence_cohesion?.band, c?.lexical_resource?.band, c?.grammatical_range_accuracy?.band]
   if (criterionBands.some(b => typeof b !== 'number' || b < 1 || b > 9)) {
     console.error('[process] invalid criterion bands:', criterionBands)
@@ -304,12 +304,12 @@ async function handleAnthropicDirect(request: NextRequest, mode: 'hybrid' | 'son
     task_achievement: c!.task_response.band, coherence_cohesion: c!.coherence_cohesion.band,
     lexical_resource: c!.lexical_resource.band, grammatical_range: c!.grammatical_range_accuracy.band,
     overall_band: overallBand,
-    task_feedback:      c!.task_response.justification              ?? '',
-    coherence_feedback: c!.coherence_cohesion.justification         ?? '',
-    lexical_feedback:   c!.lexical_resource.justification           ?? '',
-    grammar_feedback:   c!.grammatical_range_accuracy.justification ?? '',
+    task_feedback:      c!.task_response.to_reach              ?? c!.task_response.justification              ?? '',
+    coherence_feedback: c!.coherence_cohesion.to_reach         ?? c!.coherence_cohesion.justification         ?? '',
+    lexical_feedback:   c!.lexical_resource.to_reach           ?? c!.lexical_resource.justification           ?? '',
+    grammar_feedback:   c!.grammatical_range_accuracy.to_reach ?? c!.grammatical_range_accuracy.justification ?? '',
     task_errors: [], coherence_errors: [], lexical_errors: [], grammar_errors: [],
-    summary: gradeData.overall_feedback ?? '',
+    summary: (gradeData.overall_feedback ?? (Array.isArray(gradeData.priority_improvements) ? (gradeData.priority_improvements as string[]).join(' ') : '')) || '',
     ai_model: metrics.model, criteria_detail: criteriaDetail,
     corrections: gradeData.corrections ?? [], vocabulary_improvements: vocabImprovements,
     sentence_improvements: gradeData.sentence_improvements ?? [],

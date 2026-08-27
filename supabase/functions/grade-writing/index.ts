@@ -255,7 +255,7 @@ Deno.serve(async (req) => {
     }))
 
     // ── Validate bands ────────────────────────────────────────────────────
-    const c = gradeData?.criteria as Record<string, { band: number; justification?: string }> | undefined
+    const c = gradeData?.criteria as Record<string, { band: number; justification?: string; to_reach?: string }> | undefined
     const criterionBands = [
       c?.task_response?.band,
       c?.coherence_cohesion?.band,
@@ -294,12 +294,12 @@ Deno.serve(async (req) => {
       lexical_resource:   c!.lexical_resource.band,
       grammatical_range:  c!.grammatical_range_accuracy.band,
       overall_band:       overallBand,
-      task_feedback:      c!.task_response.justification              ?? '',
-      coherence_feedback: c!.coherence_cohesion.justification         ?? '',
-      lexical_feedback:   c!.lexical_resource.justification           ?? '',
-      grammar_feedback:   c!.grammatical_range_accuracy.justification ?? '',
+      task_feedback:      c!.task_response.to_reach              ?? c!.task_response.justification              ?? '',
+      coherence_feedback: c!.coherence_cohesion.to_reach         ?? c!.coherence_cohesion.justification         ?? '',
+      lexical_feedback:   c!.lexical_resource.to_reach           ?? c!.lexical_resource.justification           ?? '',
+      grammar_feedback:   c!.grammatical_range_accuracy.to_reach ?? c!.grammatical_range_accuracy.justification ?? '',
       task_errors: [], coherence_errors: [], lexical_errors: [], grammar_errors: [],
-      summary:                 gradeData.overall_feedback             ?? '',
+      summary:                 (gradeData.overall_feedback ?? (Array.isArray(gradeData.priority_improvements) ? (gradeData.priority_improvements as string[]).join(' ') : '')) || '',
       ai_model:                mode === 'hybrid' ? 'claude-sonnet-4-6+haiku-4-5' : 'claude-sonnet-4-6',
       criteria_detail:         criteriaDetail,
       corrections:             gradeData.corrections                  ?? [],

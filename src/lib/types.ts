@@ -51,9 +51,11 @@ export interface CriterionDetail {
   band?: number
   evidence?: string[]
   strengths: string[]
-  weaknesses: string[]
-  justification?: string
-  why_not_higher?: string
+  weaknesses?: string[]         // old format
+  needs_improvement?: string[]  // new format
+  justification?: string        // old format
+  why_not_higher?: string       // old format
+  to_reach?: string             // new format
 }
 
 export interface CriteriaDetail {

@@ -129,31 +129,11 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
                   <BandPill band={result[c.bandKey]} />
                 </div>
 
-                {/* Feedback paragraph (justification) */}
-                <p className="text-slate-700 leading-7 mb-4">
-                  {result[c.feedbackKey]}
-                </p>
-
-                {/* Evidence */}
-                {detail?.evidence && detail.evidence.length > 0 && (
-                  <div className="mb-4 bg-slate-100/70 border-2 border-emerald-600 rounded-lg p-3">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Evidence from your essay</p>
-                    <ul className="space-y-1">
-                      {detail.evidence.map((e: string, i: number) => (
-                        <li key={i} className="text-sm text-slate-700 flex items-start gap-2 leading-snug">
-                          <span className="text-slate-400 shrink-0 mt-0.5">•</span>
-                          <span className="italic">{e}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Strengths & Weaknesses — 2 columns */}
-                {detail && (detail.strengths.length > 0 || detail.weaknesses.length > 0) && (
-                  <div className="grid grid-cols-2 gap-3 mb-3">
+                {detail?.to_reach ? (
+                  /* ── New format ── */
+                  <>
                     {detail.strengths.length > 0 && (
-                      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-3">
                         <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                           Strengths
@@ -168,34 +148,98 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
                         </ul>
                       </div>
                     )}
-                    {detail.weaknesses.length > 0 && (
-                      <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                    {detail.needs_improvement && detail.needs_improvement.length > 0 && (
+                      <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-3">
                         <p className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                          Areas to Improve
+                          Needs Improvement
                         </p>
                         <ul className="space-y-1.5">
-                          {detail.weaknesses.map((w: string, i: number) => (
+                          {detail.needs_improvement.map((n: string, i: number) => (
                             <li key={i} className="text-sm text-red-900 flex items-start gap-2 leading-snug">
                               <span className="text-red-400 shrink-0 mt-0.5 font-bold">·</span>
-                              {w}
+                              {n}
                             </li>
                           ))}
                         </ul>
                       </div>
                     )}
-                  </div>
-                )}
-
-                {/* Why not higher */}
-                {detail?.why_not_higher && (
-                  <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
-                    <span className="text-amber-500 text-sm shrink-0 mt-0.5">↑</span>
-                    <div>
-                      <span className="text-xs font-bold text-amber-700 uppercase tracking-wide mr-1.5">To reach the next band:</span>
-                      <span className="text-sm text-amber-900">{detail.why_not_higher}</span>
+                    <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+                      <span className="text-amber-500 text-sm shrink-0 mt-0.5">↑</span>
+                      <div>
+                        <span className="text-xs font-bold text-amber-700 uppercase tracking-wide mr-1.5">To reach the next band:</span>
+                        <span className="text-sm text-amber-900">{detail.to_reach}</span>
+                      </div>
                     </div>
-                  </div>
+                  </>
+                ) : (
+                  /* ── Old format — backward compat ── */
+                  <>
+                    <p className="text-slate-700 leading-7 mb-4">
+                      {result[c.feedbackKey]}
+                    </p>
+
+                    {detail?.evidence && detail.evidence.length > 0 && (
+                      <div className="mb-4 bg-slate-100/70 border-2 border-emerald-600 rounded-lg p-3">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Evidence from your essay</p>
+                        <ul className="space-y-1">
+                          {detail.evidence.map((e: string, i: number) => (
+                            <li key={i} className="text-sm text-slate-700 flex items-start gap-2 leading-snug">
+                              <span className="text-slate-400 shrink-0 mt-0.5">•</span>
+                              <span className="italic">{e}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {detail && (detail.strengths.length > 0 || (detail.weaknesses && detail.weaknesses.length > 0)) && (
+                      <div className="grid grid-cols-2 gap-3 mb-3">
+                        {detail.strengths.length > 0 && (
+                          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              Strengths
+                            </p>
+                            <ul className="space-y-1.5">
+                              {detail.strengths.map((s: string, i: number) => (
+                                <li key={i} className="text-sm text-emerald-900 flex items-start gap-2 leading-snug">
+                                  <span className="text-emerald-400 shrink-0 mt-0.5 font-bold">·</span>
+                                  {s}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {detail.weaknesses && detail.weaknesses.length > 0 && (
+                          <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                            <p className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                              Areas to Improve
+                            </p>
+                            <ul className="space-y-1.5">
+                              {detail.weaknesses.map((w: string, i: number) => (
+                                <li key={i} className="text-sm text-red-900 flex items-start gap-2 leading-snug">
+                                  <span className="text-red-400 shrink-0 mt-0.5 font-bold">·</span>
+                                  {w}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {detail?.why_not_higher && (
+                      <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+                        <span className="text-amber-500 text-sm shrink-0 mt-0.5">↑</span>
+                        <div>
+                          <span className="text-xs font-bold text-amber-700 uppercase tracking-wide mr-1.5">To reach the next band:</span>
+                          <span className="text-sm text-amber-900">{detail.why_not_higher}</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )

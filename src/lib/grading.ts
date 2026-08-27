@@ -288,7 +288,7 @@ OVER-SCORING CHECK — apply before finalizing:
 If YES to any → adjust the relevant criterion score downward before continuing.
 
 PHASE 2: GENERATE FEEDBACK (scores are now FIXED — do not change them)
-Generate concise evidence-based feedback based on the fixed Phase 1 scores.
+Generate concise structured feedback based on the fixed Phase 1 scores. Keep each criterion to: maximum 2 strengths, 2 needs_improvement points, and 1 to_reach sentence.
 
 ═══════════════════════════════════════════════════════════
 OUTPUT — Return ONLY valid JSON, no markdown, no text outside JSON:
@@ -298,38 +298,29 @@ OUTPUT — Return ONLY valid JSON, no markdown, no text outside JSON:
   "criteria": {
     "task_response": {
       "band": 6.5,
-      "evidence": ["Direct quote or specific observation from the essay", "Another example"],
-      "strengths": ["Specific strength with example"],
-      "weaknesses": ["Specific weakness with example"],
-      "justification": "2–3 sentences explaining why this band. Must reference specific parts of the essay.",
-      "why_not_higher": "1–2 sentences: what specific gap prevents the next 0.5 band."
+      "strengths": ["Specific strength — include brief evidence from the essay (max 2 bullets)"],
+      "needs_improvement": ["Most important issue affecting this band — be specific (max 2 bullets)"],
+      "to_reach": "One actionable sentence: what must improve to reach the next 0.5 band."
     },
     "coherence_cohesion": {
       "band": 6.0,
-      "evidence": ["Direct quote or observation", "Another example"],
-      "strengths": ["Specific strength"],
-      "weaknesses": ["Specific weakness"],
-      "justification": "2–3 sentences referencing the essay.",
-      "why_not_higher": "1–2 sentences on the gap."
+      "strengths": ["Specific strength with evidence"],
+      "needs_improvement": ["Most important issue"],
+      "to_reach": "One actionable sentence for the next 0.5 band."
     },
     "lexical_resource": {
       "band": 6.5,
-      "evidence": ["Direct quote or observation", "Another example"],
-      "strengths": ["Specific strength"],
-      "weaknesses": ["Specific weakness"],
-      "justification": "2–3 sentences referencing the essay.",
-      "why_not_higher": "1–2 sentences on the gap."
+      "strengths": ["Specific strength with evidence"],
+      "needs_improvement": ["Most important issue"],
+      "to_reach": "One actionable sentence for the next 0.5 band."
     },
     "grammatical_range_accuracy": {
       "band": 6.0,
-      "evidence": ["Direct quote or observation", "Another example"],
-      "strengths": ["Specific strength"],
-      "weaknesses": ["Specific weakness"],
-      "justification": "2–3 sentences referencing the essay.",
-      "why_not_higher": "1–2 sentences on the gap."
+      "strengths": ["Specific strength with evidence"],
+      "needs_improvement": ["Most important issue"],
+      "to_reach": "One actionable sentence for the next 0.5 band."
     }
   },
-  "overall_feedback": "80–120 word summary: main strength, main weakness, most important focus area. Must be specific to this essay — not generic advice.",
   "priority_improvements": [
     "Most impactful, specific action based on actual performance in this essay",
     "Second priority",
@@ -340,9 +331,13 @@ OUTPUT — Return ONLY valid JSON, no markdown, no text outside JSON:
 ═══════════════════════════════════════════════════════════
 STRICT RULES
 ═══════════════════════════════════════════════════════════
-- Write ALL explanatory text in Vietnamese: evidence, strengths, weaknesses, justification, why_not_higher, overall_feedback, priority_improvements. Keep all JSON keys in English.
-- evidence: exactly 2–3 items per criterion. Direct quotes or named specific observations from the actual essay — not general statements.
-- priority_improvements: exactly 3 items. Highest-impact, actionable advice based on this submission.
+- Write ALL explanatory text in Vietnamese: strengths, needs_improvement, to_reach, priority_improvements. Keep all JSON keys in English.
+- strengths: maximum 2 bullets per criterion. Must reference specific performance in the essay — not generic praise.
+- needs_improvement: maximum 2 bullets per criterion. Must name the specific gap suppressing the current band — not generic advice.
+- to_reach: exactly 1 sentence per criterion. Must be actionable and mention the next 0.5 band explicitly.
+- priority_improvements: exactly 3 items. Highest-impact actionable advice. Do NOT repeat points already in needs_improvement.
+- Do NOT repeat the same observation across multiple criteria.
+- Do NOT describe essay content unless it is essential evidence for a bullet.
 - When uncertain between two adjacent bands: choose the LOWER band unless there is clear evidence for the higher one.
 - Return ONLY the JSON object — nothing before or after it.`
 
