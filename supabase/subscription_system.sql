@@ -199,6 +199,16 @@ BEGIN
   v_lock_key := hashtext(p_user_id::TEXT || p_feature);
   PERFORM pg_advisory_xact_lock(v_lock_key);
 
+  -- Idempotency: if this submission_id is already recorded, allow without re-charging
+  IF p_submission_id IS NOT NULL THEN
+    IF EXISTS (
+      SELECT 1 FROM usage_records
+      WHERE user_id = p_user_id AND feature = p_feature AND submission_id = p_submission_id
+    ) THEN
+      RETURN jsonb_build_object('allowed', true, 'source', 'idempotent');
+    END IF;
+  END IF;
+
   -- Current billing period in YYYY-MM format
   v_billing_period := to_char(NOW(), 'YYYY-MM');
 

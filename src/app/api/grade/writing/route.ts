@@ -13,19 +13,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Essay and task type are required' }, { status: 400 })
   }
 
-  // Check entitlement before creating submission
-  const entitlement = await checkAndRecordUsage(user.id, 'writing_grading')
-  if (!entitlement.allowed) {
-    return NextResponse.json(
-      {
-        error: 'quota_exceeded',
-        message: 'Bạn đã dùng hết lượt chấm Writing tháng này. Nâng cấp gói để tiếp tục.',
-        remaining: 0,
-      },
-      { status: 403 }
-    )
-  }
-
+  // Create submission first — so quota is only consumed if submission succeeds
   const { data: submission, error: subError } = await supabase
     .from('writing_submissions')
     .insert({
@@ -44,6 +32,21 @@ export async function POST(request: NextRequest) {
   if (subError || !submission) {
     console.error('[grade/writing] submission insert error:', subError)
     return NextResponse.json({ error: 'Failed to save submission' }, { status: 500 })
+  }
+
+  // Check + record quota atomically, linked to this submission
+  const entitlement = await checkAndRecordUsage(user.id, 'writing_grading', submission.id)
+  if (!entitlement.allowed) {
+    // Rollback the submission so user is not left with a dangling record
+    await supabase.from('writing_submissions').delete().eq('id', submission.id)
+    return NextResponse.json(
+      {
+        error: 'quota_exceeded',
+        message: 'Bạn đã dùng hết lượt chấm Writing tháng này. Nâng cấp gói để tiếp tục.',
+        remaining: 0,
+      },
+      { status: 403 }
+    )
   }
 
   return NextResponse.json({ submissionId: submission.id })

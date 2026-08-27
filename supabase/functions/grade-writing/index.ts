@@ -94,6 +94,35 @@ Deno.serve(async (req) => {
     if (!submission) return json({ error: 'Submission not found' }, 404)
     if (existing)    return json({ error: 'Already graded' }, 409)
 
+    // ── Entitlement check ─────────────────────────────────────────────────
+    // Service role client (already available as supabaseAdmin below — create early)
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+
+    // Idempotency: if quota was already recorded for this submission (normal flow),
+    // skip to avoid double-counting. Only re-check for direct Edge Function calls.
+    const { data: existingUsage } = await supabaseAdmin
+      .from('usage_records')
+      .select('id')
+      .eq('submission_id', submissionId)
+      .maybeSingle()
+
+    if (!existingUsage) {
+      const { data: quota, error: quotaErr } = await supabaseAdmin.rpc('check_and_record_usage', {
+        p_user_id: user.id,
+        p_feature: 'writing_grading',
+        p_submission_id: submissionId,
+      })
+      if (quotaErr) {
+        console.error('[grade-writing] entitlement RPC error:', quotaErr)
+        // Fail open on RPC errors — do not block legitimate users
+      } else if (!quota?.allowed) {
+        return json({
+          error: 'quota_exceeded',
+          message: 'Bạn đã dùng hết lượt chấm Writing tháng này.',
+        }, 403)
+      }
+    }
+
     const anthropic = new Anthropic({ apiKey: anthropicKey })
 
     const { response_text: essay, question, task_type: taskType, word_count: wordCount } = submission
@@ -285,8 +314,6 @@ Deno.serve(async (req) => {
     }))
 
     // ── Save to DB via service role (bypass RLS) ──────────────────────────
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
-
     const { error: resultError } = await supabaseAdmin.from('writing_results').insert({
       submission_id:      submissionId,
       task_achievement:   c!.task_response.band,
