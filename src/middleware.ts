@@ -28,22 +28,49 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-  const protectedPaths = ['/dashboard', '/writing', '/speaking', '/progress', '/history', '/profile', '/teacher']
+  const protectedPaths = ['/dashboard', '/writing', '/speaking', '/progress', '/history', '/profile', '/vocabulary', '/subscription']
+  const adminPaths = ['/admin']
   const authPaths = ['/login', '/register']
 
   const isProtected = protectedPaths.some(p => pathname.startsWith(p))
+  const isAdmin = adminPaths.some(p => pathname.startsWith(p))
   const isAuthPath = authPaths.some(p => pathname.startsWith(p))
 
-  if (isProtected && !user) {
+  // Redirect unauthenticated users
+  if ((isProtected || isAdmin) && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
+  // Redirect authenticated users away from auth pages
   if (isAuthPath && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Admin-only route guard + suspended user check
+  if (user && (isProtected || isAdmin)) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, status')
+      .eq('user_id', user.id)
+      .single()
+
+    // Block suspended users
+    if (profile?.status === 'suspended') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/suspended'
+      return NextResponse.redirect(url)
+    }
+
+    // Admin route — require admin role
+    if (isAdmin && profile?.role !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

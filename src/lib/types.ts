@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'teacher' | 'admin'
+export type UserRole = 'user' | 'admin'
 
 export type WritingTaskType = 'academic_task1' | 'general_task1' | 'task2'
 
@@ -121,4 +121,97 @@ export const CRITERIA_LABELS = {
   coherence_cohesion: 'Coherence & Cohesion',
   lexical_resource: 'Lexical Resource',
   grammatical_range: 'Grammatical Range & Accuracy',
+}
+
+// ─── Subscription system ──────────────────────────────────
+
+export type GradingFeature = 'writing_grading' | 'speaking_grading'
+
+export interface PlanLimits {
+  writing_grading_monthly: number
+  speaking_grading_monthly: number
+}
+
+export interface PlanFeatures {
+  writing_grading: boolean
+  speaking_grading: boolean
+  advanced_correction: boolean
+  progress_tracking: boolean
+  ai_tutor: boolean
+}
+
+export interface Plan {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  price: number
+  currency: string
+  billing_interval: 'month' | 'year' | 'lifetime' | 'none'
+  limits: PlanLimits
+  features: PlanFeatures
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type SubscriptionStatus = 'active' | 'canceled' | 'expired' | 'paused'
+
+export interface Subscription {
+  id: string
+  user_id: string
+  plan_id: string
+  status: SubscriptionStatus
+  started_at: string
+  expires_at: string | null
+  canceled_at: string | null
+  provider: 'manual' | 'stripe' | 'payos'
+  provider_customer_id: string | null
+  provider_subscription_id: string | null
+  provider_price_id: string | null
+  created_at: string
+  updated_at: string
+  plan?: Plan
+}
+
+export interface UsageRecord {
+  id: string
+  user_id: string
+  feature: GradingFeature
+  submission_id: string | null
+  billing_period: string
+  created_at: string
+}
+
+export interface BonusCredit {
+  id: string
+  user_id: string
+  feature: GradingFeature
+  amount: number
+  remaining: number
+  granted_by: string | null
+  reason: string | null
+  expires_at: string | null
+  created_at: string
+}
+
+export interface Entitlement {
+  allowed: boolean
+  remaining: number
+  monthlyLimit: number
+  currentUsage: number
+  bonusRemaining: number
+  planSlug: string
+  planName: string
+}
+
+export interface CheckUsageResult {
+  allowed: boolean
+  source?: 'plan' | 'bonus'
+  reason?: 'no_active_subscription' | 'quota_exceeded'
+  plan?: string
+  remaining?: number
+  monthly_limit?: number
+  current_usage?: number
 }
