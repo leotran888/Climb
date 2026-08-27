@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single()
 
   return (
-    <div className="flex h-screen bg-[#d8dce0]" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+    <div className="flex h-screen bg-[#d8dce0]">
       <Sidebar name={profile?.full_name ?? ''} />
       <main className="flex-1 overflow-y-auto flex flex-col">
         <div className="max-w-5xl w-full mx-auto px-8 py-4 flex-1 flex flex-col">
