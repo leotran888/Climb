@@ -7,7 +7,7 @@ export default async function SubscriptionPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [subData, entitlements] = await Promise.all([
+  const [subData, entitlements, allPlans] = await Promise.all([
     supabase
       .from('subscriptions')
       .select('*, plans(*)')
@@ -15,9 +15,17 @@ export default async function SubscriptionPage() {
       .single()
       .then(r => r.data),
     getUserEntitlements(user.id),
+    supabase
+      .from('plans')
+      .select('slug, name, price, currency, billing_interval, limits')
+      .eq('is_active', true)
+      .order('sort_order')
+      .then(r => r.data ?? []),
   ])
 
+  type PlanRow = { slug: string; name: string; price: number; currency: string; billing_interval: string; limits: Record<string, number> }
   const plan = (subData as { plans?: { name: string; description: string | null; slug: string; limits: Record<string, number> } } | null)?.plans
+  const nextPlan = (allPlans as PlanRow[]).find(p => p.slug !== 'free' && p.slug !== plan?.slug) ?? null
   const billingPeriod = new Date().toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })
 
   return (
@@ -68,11 +76,13 @@ export default async function SubscriptionPage() {
       </div>
 
       {/* Upgrade CTA */}
-      {plan?.slug === 'free' && (
+      {plan?.slug === 'free' && nextPlan && (
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl border border-emerald-200 p-6 text-center">
           <div className="text-lg font-bold text-emerald-900 mb-2">Nâng cấp để luyện tập không giới hạn</div>
           <div className="text-sm text-emerald-700 mb-4">
-            Gói Basic từ 149.000đ/tháng — 20 lượt Writing & Speaking mỗi tháng
+            Gói {nextPlan.name} từ {nextPlan.price.toLocaleString('vi-VN')}đ/{nextPlan.billing_interval === 'month' ? 'tháng' : nextPlan.billing_interval}
+            {' — '}
+            {nextPlan.limits.writing_grading_monthly} lượt Writing & Speaking mỗi tháng
           </div>
           <div className="text-xs text-emerald-600">
             Liên hệ admin để nâng cấp gói
