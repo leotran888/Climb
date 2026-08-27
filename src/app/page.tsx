@@ -414,11 +414,6 @@ export default function LandingPage() {
       <footer className={s.footer}>
         <div className={`${s.wrap} ${s.footInner}`}>
           <span className={s.footCopy}>© 2025 Climb IELTS. All rights reserved.</span>
-          <ul className={s.footLinks}>
-            <li><a href="#">Điều khoản</a></li>
-            <li><a href="#">Quyền riêng tư</a></li>
-            <li><a href="#">Liên hệ</a></li>
-          </ul>
         </div>
       </footer>
     </div>
