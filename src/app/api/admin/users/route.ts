@@ -29,11 +29,16 @@ export async function GET(request: NextRequest) {
   const from = (page - 1) * limit
   const to = from + limit - 1
 
-  // Fetch auth users for email lookup
-  const { data: authData } = await db.auth.admin.listUsers({ perPage: 1000 })
-  const authUsers = authData?.users ?? []
+  // Fetch auth users for email lookup (non-blocking — proceed without emails on failure)
   const emailMap: Record<string, string> = {}
-  for (const u of authUsers) emailMap[u.id] = u.email ?? ''
+  let authUsers: Array<{ id: string; email?: string }> = []
+  try {
+    const { data: authData } = await db.auth.admin.listUsers({ perPage: 1000 })
+    authUsers = authData?.users ?? []
+    for (const u of authUsers) emailMap[u.id] = u.email ?? ''
+  } catch (e) {
+    console.error('[admin/users] auth.admin.listUsers failed:', e)
+  }
 
   // Email search: filter by matching auth users
   let emailMatchIds: string[] | null = null
