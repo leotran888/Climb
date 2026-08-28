@@ -70,7 +70,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
   let sectionN = 1
 
   return (
-    <div className="max-w-5xl space-y-4 pb-16 text-[15px] leading-7">
+    <div className="space-y-4 pb-16 text-[15px] leading-7">
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
@@ -130,48 +130,47 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
                 </div>
 
                 {detail?.to_reach ? (
-                  /* ── New format ── */
-                  <>
-                    {detail.strengths.length > 0 && (
-                      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-3">
-                        <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          Strengths
-                        </p>
-                        <ul className="space-y-1.5">
-                          {detail.strengths.map((s: string, i: number) => (
-                            <li key={i} className="text-sm text-emerald-900 flex items-start gap-2 leading-snug">
-                              <span className="text-emerald-400 shrink-0 mt-0.5 font-bold">·</span>
-                              {s}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {detail.needs_improvement && detail.needs_improvement.length > 0 && (
-                      <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-3">
-                        <p className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                          Needs Improvement
-                        </p>
-                        <ul className="space-y-1.5">
-                          {detail.needs_improvement.map((n: string, i: number) => (
-                            <li key={i} className="text-sm text-red-900 flex items-start gap-2 leading-snug">
-                              <span className="text-red-400 shrink-0 mt-0.5 font-bold">·</span>
-                              {n}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
-                      <span className="text-amber-500 text-sm shrink-0 mt-0.5">↑</span>
-                      <div>
-                        <span className="text-xs font-bold text-amber-700 uppercase tracking-wide mr-1.5">To reach the next band:</span>
-                        <span className="text-sm text-amber-900">{detail.to_reach}</span>
-                      </div>
+                  /* ── New format: 3 columns ── */
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Strengths */}
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                      <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Strengths
+                      </p>
+                      <ul className="space-y-1.5">
+                        {detail.strengths.length > 0 ? detail.strengths.map((s: string, i: number) => (
+                          <li key={i} className="text-sm text-emerald-900 flex items-start gap-2 leading-snug">
+                            <span className="text-emerald-400 shrink-0 mt-0.5 font-bold">·</span>
+                            {s}
+                          </li>
+                        )) : <li className="text-sm text-emerald-700 italic">—</li>}
+                      </ul>
                     </div>
-                  </>
+                    {/* Needs Improvement */}
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                      <p className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Needs Improvement
+                      </p>
+                      <ul className="space-y-1.5">
+                        {detail.needs_improvement && detail.needs_improvement.length > 0 ? detail.needs_improvement.map((n: string, i: number) => (
+                          <li key={i} className="text-sm text-red-900 flex items-start gap-2 leading-snug">
+                            <span className="text-red-400 shrink-0 mt-0.5 font-bold">·</span>
+                            {n}
+                          </li>
+                        )) : <li className="text-sm text-red-700 italic">—</li>}
+                      </ul>
+                    </div>
+                    {/* To Reach Next Band */}
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                      <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <span>↑</span>
+                        To Reach Next Band
+                      </p>
+                      <p className="text-sm text-amber-900 leading-snug">{detail.to_reach}</p>
+                    </div>
+                  </div>
                 ) : (
                   /* ── Old format — backward compat ── */
                   <>
