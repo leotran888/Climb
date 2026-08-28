@@ -70,7 +70,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
   let sectionN = 1
 
   return (
-    <div className="max-w-3xl space-y-4 pb-16 text-[15px] leading-7">
+    <div className="max-w-5xl space-y-4 pb-16 text-[15px] leading-7">
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
