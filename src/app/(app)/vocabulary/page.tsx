@@ -62,8 +62,7 @@ export default async function VocabularyPage() {
             </svg>
           </div>
           <p className="font-semibold text-slate-700">Chưa có thư mục nào</p>
-          <p className="text-slate-400 text-sm mt-1 mb-5">Tạo thư mục để bắt đầu lưu từ vựng IELTS.</p>
-          <CreateFolderButton userId={user!.id} />
+          <p className="text-slate-400 text-sm mt-1">Tạo thư mục để bắt đầu lưu từ vựng IELTS.</p>
         </div>
       ) : (
         <div>
