@@ -2,7 +2,7 @@
 
 export default function WritingPage() {
   return (
-    <div className="space-y-3 max-w-5xl flex-1 flex flex-col">
+    <div className="space-y-3 flex-1 flex flex-col">
       {/* Header */}
       <div>
         <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">

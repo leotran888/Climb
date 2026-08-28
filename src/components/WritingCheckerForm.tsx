@@ -165,7 +165,7 @@ export default function WritingCheckerForm() {
       </div>
 
       {/* 2-column inputs */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 flex-1">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_7fr] gap-5 flex-1">
 
         {/* Question / Image area */}
         <div className="flex flex-col gap-2">
