@@ -34,7 +34,7 @@ export default function RegisterPage() {
     // Create profile directly (fallback in case DB trigger fails)
     if (data.user) {
       await supabase.from('profiles').upsert(
-        { user_id: data.user.id, full_name: fullName, role: 'student' },
+        { user_id: data.user.id, full_name: fullName, role: 'user' },
         { onConflict: 'user_id' }
       )
     }
