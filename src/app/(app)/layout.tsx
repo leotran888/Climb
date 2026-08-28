@@ -17,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-[#d8dce0]">
       <Sidebar name={profile?.full_name ?? ''} />
       <main className="flex-1 overflow-y-auto flex flex-col">
-        <div className="max-w-5xl w-full mx-auto px-8 py-4 flex-1 flex flex-col">
+        <div className="max-w-7xl w-full mx-auto px-8 py-4 flex-1 flex flex-col">
           {children}
         </div>
       </main>
