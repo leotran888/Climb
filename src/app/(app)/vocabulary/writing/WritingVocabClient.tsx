@@ -2,21 +2,36 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { VOCABULARY_DATA } from './data'
+import {
+  ALL_VOCABULARY,
+  ALL_COLLOCATIONS,
+  ALL_PHRASAL_VERBS,
+  ALL_WRITING_PHRASES,
+  ALL_MISTAKES,
+  LEARN_FIRST_IDS,
+  type StudyItem,
+} from './data'
 import {
   VocabularyItem,
-  ItemType,
+  CollocationItem,
+  PhrasalVerbItem,
+  WritingPhraseItem,
+  CommonMistakeItem,
   WritingTask,
   BandLevel,
+  LearningPriority,
   TOPICS,
   BAND_COLORS,
   SUITABILITY_LABELS,
+  PRIORITY_LABELS,
+  PHRASE_FUNCTIONS,
 } from './types'
 
 const LS_SAVED = 'climb_wv_saved'
 const LS_STATUS = 'climb_wv_status'
 
 type StatusMap = Record<string, 'learning' | 'learned'>
+type TabKey = 'vocabulary' | 'collocation' | 'phrasal_verb' | 'writing_phrase' | 'common_mistake'
 
 // ─── Small UI helpers ────────────────────────────────────────────────────────
 
@@ -55,13 +70,52 @@ function TaskPill({ task }: { task: WritingTask }) {
   return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{label}</span>
 }
 
+function PriorityPill({ p }: { p: LearningPriority }) {
+  const info = PRIORITY_LABELS[p]
+  return (
+    <span className={`text-xs font-medium ${info.color} flex items-center gap-0.5`}>
+      <span>{info.icon}</span>
+      <span>{info.label}</span>
+    </span>
+  )
+}
+
+function TagList({ label, items, tone }: { label: string; items: string[]; tone: 'green' | 'blue' | 'slate' }) {
+  if (items.length === 0) return null
+  const cls =
+    tone === 'green'
+      ? 'bg-emerald-50 text-emerald-700'
+      : tone === 'blue'
+      ? 'bg-blue-50 text-blue-700'
+      : 'bg-slate-100 text-slate-600'
+  return (
+    <div>
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map(i => (
+          <span key={i} className={`${cls} text-xs px-2 py-0.5 rounded`}>{i}</span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function WritingTip({ text }: { text: string }) {
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+      <span className="font-semibold text-amber-700">Writing Tip: </span>
+      {text}
+    </div>
+  )
+}
+
 // ─── Practice Modal ──────────────────────────────────────────────────────────
 
 function PracticeModal({
   item,
   onClose,
 }: {
-  item: VocabularyItem
+  item: StudyItem
   onClose: () => void
 }) {
   const [sentence, setSentence] = useState('')
@@ -90,7 +144,6 @@ function PracticeModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h2 className="font-bold text-slate-900 text-base">Practice: <span className="text-emerald-600">{item.term}</span></h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -137,9 +190,9 @@ function PracticeModal({
   )
 }
 
-// ─── Vocabulary Card ─────────────────────────────────────────────────────────
+// ─── Study card (vocabulary / collocation / phrasal verb) ────────────────────
 
-function VocabCard({
+function StudyCard({
   item,
   saved,
   status,
@@ -147,14 +200,32 @@ function VocabCard({
   onSetStatus,
   onPractice,
 }: {
-  item: VocabularyItem
+  item: StudyItem
   saved: boolean
   status: 'learning' | 'learned' | undefined
   onToggleSave: (id: string) => void
   onSetStatus: (id: string, s: 'learning' | 'learned') => void
-  onPractice: (item: VocabularyItem) => void
+  onPractice: (item: StudyItem) => void
 }) {
   const [expanded, setExpanded] = useState(false)
+
+  const isVocab = item.type === 'vocabulary'
+  const isColl = item.type === 'collocation'
+  const isPhrasal = item.type === 'phrasal_verb'
+
+  const vocab = isVocab ? (item as VocabularyItem) : null
+  const coll = isColl ? (item as CollocationItem) : null
+  const phrasal = isPhrasal ? (item as PhrasalVerbItem) : null
+
+  const pronunciation = vocab?.pronunciation
+  const partOfSpeech = vocab?.partOfSpeech ?? phrasal?.partOfSpeech
+  const suitability = vocab?.writingSuitability ?? phrasal?.writingSuitability
+
+  const collocationTags = vocab?.collocations ?? phrasal?.collocations ?? []
+  const alternativeTags =
+    vocab?.alternatives ?? phrasal?.academicAlternatives ?? (coll?.alternative ? [coll.alternative] : [])
+  const alternativesLabel = phrasal ? 'Academic alternatives' : 'Alternatives'
+  const writingTip = vocab?.writingTip ?? coll?.writingTip
 
   const speakTerm = useCallback(() => {
     try {
@@ -169,10 +240,13 @@ function VocabCard({
   }, [item.term])
 
   const hasExtra =
-    (item.collocations && item.collocations.length > 0) ||
-    (item.alternatives && item.alternatives.length > 0) ||
-    (item.academicAlternatives && item.academicAlternatives.length > 0) ||
-    item.writingTip
+    collocationTags.length > 0 ||
+    alternativeTags.length > 0 ||
+    (vocab?.wordFamily?.length ?? 0) > 0 ||
+    Boolean(vocab?.antonym) ||
+    Boolean(phrasal?.formalAlternative) ||
+    Boolean(phrasal?.usageWarning) ||
+    Boolean(writingTip)
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
@@ -181,25 +255,30 @@ function VocabCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-lg font-bold text-slate-900">{item.term}</span>
-            {item.pronunciation && (
+            {LEARN_FIRST_IDS.has(item.id) && (
+              <span title="Learn this first" className="text-xs px-1.5 py-0.5 rounded bg-red-50 text-red-600 font-semibold">
+                Learn first
+              </span>
+            )}
+            {pronunciation && (
               <button
                 onClick={speakTerm}
                 title="Listen"
                 className="text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-1 text-xs"
               >
-                🔊 <span className="text-slate-400 font-mono text-xs">{item.pronunciation}</span>
+                🔊 <span className="text-slate-400 font-mono text-xs">{pronunciation}</span>
               </button>
             )}
           </div>
-          {item.partOfSpeech && (
-            <span className="text-xs text-slate-400 italic">{item.partOfSpeech}</span>
-          )}
-          {item.collocationType && (
-            <span className="text-xs text-slate-400 italic ml-1">{item.collocationType}</span>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {partOfSpeech && <span className="text-xs text-slate-400 italic">{partOfSpeech}</span>}
+            {coll && <span className="text-xs text-slate-400 italic">{coll.collocationType}</span>}
+            {vocab?.cefrLevel && (
+              <span className="text-xs text-slate-400 font-mono">{vocab.cefrLevel}</span>
+            )}
+          </div>
         </div>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => onToggleSave(item.id)}
@@ -214,60 +293,52 @@ function VocabCard({
       </div>
 
       {/* Metadata pills */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         <BandPill band={item.bandLevel} />
         <TopicPill topic={item.topic} />
         <TaskPill task={item.task} />
-        <SuitabilityBadge s={item.writingSuitability} />
+        {suitability && <SuitabilityBadge s={suitability} />}
+        <PriorityPill p={item.priority} />
       </div>
 
-      {/* Definition */}
       <p className="text-slate-700 text-sm">{item.definition}</p>
-
-      {/* Vietnamese */}
       <p className="text-slate-500 text-sm italic">{item.vietnameseMeaning}</p>
 
-      {/* Example */}
       <div className="text-slate-700 text-sm bg-slate-50 rounded-lg p-3 border-l-2 border-emerald-500">
         <span className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-0.5">Example</span>
         {item.example}
       </div>
 
-      {/* Expandable section */}
       {hasExtra && (
         <>
           {expanded && (
             <div className="space-y-3">
-              {item.collocations && item.collocations.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Collocations</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.collocations.map(c => (
-                      <span key={c} className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded">{c}</span>
-                    ))}
-                  </div>
+              <TagList label="Collocations" items={collocationTags} tone="green" />
+              <TagList label={alternativesLabel} items={alternativeTags} tone="blue" />
+              {vocab?.wordFamily && <TagList label="Word family" items={vocab.wordFamily} tone="slate" />}
+
+              {vocab?.antonym && (
+                <p className="text-sm text-slate-600">
+                  <span className="font-semibold text-slate-500 uppercase tracking-wide text-xs">Opposite: </span>
+                  {vocab.antonym}
+                </p>
+              )}
+
+              {phrasal?.formalAlternative && (
+                <p className="text-sm text-slate-600">
+                  <span className="font-semibold text-slate-500 uppercase tracking-wide text-xs">Formal alternative: </span>
+                  {phrasal.formalAlternative}
+                </p>
+              )}
+
+              {phrasal?.usageWarning && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+                  <span className="font-semibold text-red-700">Usage warning: </span>
+                  {phrasal.usageWarning}
                 </div>
               )}
 
-              {(item.alternatives || item.academicAlternatives) && (
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-                    {item.academicAlternatives ? 'Academic alternatives' : 'Alternatives'}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(item.academicAlternatives ?? item.alternatives ?? []).map(a => (
-                      <span key={a} className="bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded">{a}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {item.writingTip && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-                  <span className="font-semibold text-amber-700">Writing Tip: </span>
-                  {item.writingTip}
-                </div>
-              )}
+              {writingTip && <WritingTip text={writingTip} />}
             </div>
           )}
 
@@ -280,7 +351,6 @@ function VocabCard({
         </>
       )}
 
-      {/* Status + Practice */}
       <div className="flex items-center gap-2 pt-1 border-t border-slate-100 flex-wrap">
         <button
           onClick={() => onSetStatus(item.id, status === 'learning' ? 'learned' : 'learning')}
@@ -306,20 +376,89 @@ function VocabCard({
   )
 }
 
+// ─── Writing phrase card ─────────────────────────────────────────────────────
+
+function PhraseCard({
+  item,
+  saved,
+  onToggleSave,
+}: {
+  item: WritingPhraseItem
+  saved: boolean
+  onToggleSave: (id: string) => void
+}) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-base font-semibold text-slate-900 leading-snug flex-1">{item.term}</p>
+        <button
+          onClick={() => onToggleSave(item.id)}
+          title={saved ? 'Unsave' : 'Save'}
+          className={`p-1.5 rounded-lg shrink-0 transition-colors ${saved ? 'text-red-500 hover:text-red-700' : 'text-slate-300 hover:text-red-400'}`}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">{item.function}</span>
+        <BandPill band={item.bandLevel} />
+        <TopicPill topic={item.topic} />
+        <TaskPill task={item.task} />
+        <PriorityPill p={item.priority} />
+      </div>
+
+      <p className="text-slate-500 text-sm italic">{item.vietnameseMeaning}</p>
+
+      <div className="text-slate-700 text-sm bg-slate-50 rounded-lg p-3 border-l-2 border-indigo-500">
+        <span className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-0.5">In an essay</span>
+        {item.example}
+      </div>
+    </div>
+  )
+}
+
+// ─── Common mistake card ─────────────────────────────────────────────────────
+
+function MistakeCard({ item }: { item: CommonMistakeItem }) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <TopicPill topic={item.topic} />
+        <PriorityPill p={item.priority} />
+      </div>
+
+      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <span className="text-red-600 text-xs font-semibold uppercase tracking-wide block mb-0.5">✗ Incorrect</span>
+        <p className="text-sm text-red-900 line-through decoration-red-300">{item.incorrect}</p>
+      </div>
+
+      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+        <span className="text-emerald-600 text-xs font-semibold uppercase tracking-wide block mb-0.5">✓ Correct</span>
+        <p className="text-sm text-emerald-900">{item.correct}</p>
+      </div>
+
+      <p className="text-slate-600 text-sm leading-relaxed">{item.explanation}</p>
+    </div>
+  )
+}
+
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export default function WritingVocabClient({ userId }: { userId: string }) {
-  const [activeTab, setActiveTab] = useState<ItemType>('vocabulary')
+  const [activeTab, setActiveTab] = useState<TabKey>('vocabulary')
   const [search, setSearch] = useState('')
   const [topicFilter, setTopicFilter] = useState('All Topics')
   const [bandFilter, setBandFilter] = useState<BandLevel | 'all'>('all')
   const [taskFilter, setTaskFilter] = useState<WritingTask | 'all'>('all')
+  const [functionFilter, setFunctionFilter] = useState<string>('All Functions')
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [statusMap, setStatusMap] = useState<StatusMap>({})
-  const [practiceItem, setPracticeItem] = useState<VocabularyItem | null>(null)
+  const [practiceItem, setPracticeItem] = useState<StudyItem | null>(null)
   const [hydrated, setHydrated] = useState(false)
 
-  // Load from localStorage on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_SAVED)
@@ -333,12 +472,10 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
   }, [])
 
   const persistSaved = useCallback((next: Set<string>) => {
-    setSavedIds(next)
     try { localStorage.setItem(LS_SAVED, JSON.stringify([...next])) } catch { /* ignore */ }
   }, [])
 
   const persistStatus = useCallback((next: StatusMap) => {
-    setStatusMap(next)
     try { localStorage.setItem(LS_STATUS, JSON.stringify(next)) } catch { /* ignore */ }
   }, [])
 
@@ -364,46 +501,96 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
 
   const q = search.toLowerCase().trim()
 
-  const filtered = useMemo(() => {
-    return VOCABULARY_DATA.filter(item => {
-      if (item.type !== activeTab) return false
-      if (topicFilter !== 'All Topics' && item.topic !== topicFilter) return false
-      if (bandFilter !== 'all' && item.bandLevel !== bandFilter) return false
-      if (taskFilter !== 'all' && item.task !== taskFilter && item.task !== 'both') return false
-      if (q) {
-        const hay = [
-          item.term,
-          item.definition,
-          item.vietnameseMeaning,
-          item.topic,
-          ...(item.collocations ?? []),
-          ...(item.alternatives ?? []),
-          ...(item.academicAlternatives ?? []),
-        ].join(' ').toLowerCase()
-        if (!hay.includes(q)) return false
-      }
+  const matchesShared = useCallback(
+    (topic: string, band: BandLevel, task: WritingTask) => {
+      if (topicFilter !== 'All Topics' && topic !== topicFilter) return false
+      if (bandFilter !== 'all' && band !== bandFilter) return false
+      if (taskFilter !== 'all' && task !== taskFilter && task !== 'both') return false
       return true
+    },
+    [topicFilter, bandFilter, taskFilter]
+  )
+
+  const filteredStudy = useMemo(() => {
+    const source: StudyItem[] =
+      activeTab === 'vocabulary'
+        ? ALL_VOCABULARY
+        : activeTab === 'collocation'
+        ? ALL_COLLOCATIONS
+        : ALL_PHRASAL_VERBS
+
+    return source.filter(item => {
+      if (!matchesShared(item.topic, item.bandLevel, item.task)) return false
+      if (!q) return true
+      const extras =
+        item.type === 'vocabulary'
+          ? [...(item.collocations ?? []), ...(item.alternatives ?? []), ...(item.wordFamily ?? [])]
+          : item.type === 'phrasal_verb'
+          ? [...(item.collocations ?? []), ...(item.academicAlternatives ?? [])]
+          : item.alternative
+          ? [item.alternative]
+          : []
+      const hay = [item.term, item.definition, item.vietnameseMeaning, item.topic, item.example, ...extras]
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
     })
-  }, [activeTab, topicFilter, bandFilter, taskFilter, q])
+  }, [activeTab, matchesShared, q])
 
-  const tabCounts = useMemo(() => ({
-    vocabulary: VOCABULARY_DATA.filter(i => i.type === 'vocabulary').length,
-    collocation: VOCABULARY_DATA.filter(i => i.type === 'collocation').length,
-    phrasal_verb: VOCABULARY_DATA.filter(i => i.type === 'phrasal_verb').length,
-  }), [])
+  const filteredPhrases = useMemo(() => {
+    return ALL_WRITING_PHRASES.filter(item => {
+      if (!matchesShared(item.topic, item.bandLevel, item.task)) return false
+      if (functionFilter !== 'All Functions' && item.function !== functionFilter) return false
+      if (!q) return true
+      const hay = [item.term, item.function, item.vietnameseMeaning, item.topic, item.example]
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [matchesShared, functionFilter, q])
 
-  const tabs: { type: ItemType; label: string }[] = [
-    { type: 'vocabulary', label: 'Vocabulary' },
-    { type: 'collocation', label: 'Collocations' },
-    { type: 'phrasal_verb', label: 'Phrasal Verbs' },
+  const filteredMistakes = useMemo(() => {
+    return ALL_MISTAKES.filter(item => {
+      if (topicFilter !== 'All Topics' && item.topic !== topicFilter) return false
+      if (!q) return true
+      const hay = [item.incorrect, item.correct, item.explanation, item.topic].join(' ').toLowerCase()
+      return hay.includes(q)
+    })
+  }, [topicFilter, q])
+
+  const tabs: { key: TabKey; label: string; count: number }[] = [
+    { key: 'vocabulary', label: 'Vocabulary', count: ALL_VOCABULARY.length },
+    { key: 'collocation', label: 'Collocations', count: ALL_COLLOCATIONS.length },
+    { key: 'phrasal_verb', label: 'Phrasal Verbs', count: ALL_PHRASAL_VERBS.length },
+    { key: 'writing_phrase', label: 'Writing Phrases', count: ALL_WRITING_PHRASES.length },
+    { key: 'common_mistake', label: 'Common Mistakes', count: ALL_MISTAKES.length },
   ]
 
   const bands: (BandLevel | 'all')[] = ['all', '5-6', '6-7', '7+']
-  const tasks: { v: WritingTask | 'all'; label: string }[] = [
+  const taskOptions: { v: WritingTask | 'all'; label: string }[] = [
     { v: 'all', label: 'All Tasks' },
     { v: 'task1', label: 'Task 1' },
     { v: 'task2', label: 'Task 2' },
   ]
+
+  const isStudyTab =
+    activeTab === 'vocabulary' || activeTab === 'collocation' || activeTab === 'phrasal_verb'
+  const isPhraseTab = activeTab === 'writing_phrase'
+  const isMistakeTab = activeTab === 'common_mistake'
+
+  const resultCount = isStudyTab
+    ? filteredStudy.length
+    : isPhraseTab
+    ? filteredPhrases.length
+    : filteredMistakes.length
+
+  const clearFilters = () => {
+    setSearch('')
+    setTopicFilter('All Topics')
+    setBandFilter('all')
+    setTaskFilter('all')
+    setFunctionFilter('All Functions')
+  }
 
   // suppress hydration mismatch for localStorage-driven state
   if (!hydrated) return null
@@ -420,7 +607,7 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Writing Vocabulary</h1>
             <p className="text-slate-400 text-sm mt-1">
-              IELTS-curated vocabulary, collocations, and phrasal verbs for writing tasks.
+              18 IELTS topics: vocabulary, collocations, phrasal verbs, writing phrases and common mistakes.
             </p>
           </div>
           <Link
@@ -435,23 +622,23 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
         </div>
 
         {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {tabs.map(t => (
-            <div key={t.type} className="bg-white rounded-xl border border-slate-200 p-3 text-center">
-              <p className="text-2xl font-black text-slate-900">{tabCounts[t.type]}</p>
+            <div key={t.key} className="bg-white rounded-xl border border-slate-200 p-3 text-center">
+              <p className="text-2xl font-black text-slate-900">{t.count}</p>
               <p className="text-xs text-slate-400 mt-0.5">{t.label}</p>
             </div>
           ))}
         </div>
 
         {/* Tab bar */}
-        <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
+        <div className="flex gap-1 bg-slate-100 rounded-xl p-1 overflow-x-auto">
           {tabs.map(t => (
             <button
-              key={t.type}
-              onClick={() => setActiveTab(t.type)}
-              className={`flex-1 text-sm font-semibold py-2 rounded-lg transition-all ${
-                activeTab === t.type
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`flex-1 whitespace-nowrap text-sm font-semibold py-2 px-3 rounded-lg transition-all ${
+                activeTab === t.key
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
@@ -480,39 +667,60 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
             ))}
           </div>
 
+          {/* Function filter (writing phrases only) */}
+          {isPhraseTab && (
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {PHRASE_FUNCTIONS.map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFunctionFilter(f)}
+                  className={`shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap ${
+                    functionFilter === f
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-400'
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Band + Task filters */}
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex gap-1">
-              {bands.map(b => (
-                <button
-                  key={b}
-                  onClick={() => setBandFilter(b)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
-                    bandFilter === b
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
-                  }`}
-                >
-                  {b === 'all' ? 'All Bands' : `Band ${b}`}
-                </button>
-              ))}
+          {!isMistakeTab && (
+            <div className="flex gap-4 flex-wrap">
+              <div className="flex gap-1">
+                {bands.map(b => (
+                  <button
+                    key={b}
+                    onClick={() => setBandFilter(b)}
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                      bandFilter === b
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
+                    }`}
+                  >
+                    {b === 'all' ? 'All Bands' : `Band ${b}`}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1">
+                {taskOptions.map(t => (
+                  <button
+                    key={t.v}
+                    onClick={() => setTaskFilter(t.v)}
+                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                      taskFilter === t.v
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-1">
-              {tasks.map(t => (
-                <button
-                  key={t.v}
-                  onClick={() => setTaskFilter(t.v)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
-                    taskFilter === t.v
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Search */}
@@ -524,7 +732,7 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search term, definition, Vietnamese meaning, collocations..."
+            placeholder="Search term, definition, Vietnamese meaning, example..."
             className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
           />
           {search && (
@@ -538,18 +746,18 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
 
         {/* Results count */}
         <p className="text-xs text-slate-400">
-          {filtered.length} item{filtered.length !== 1 ? 's' : ''} found
+          {resultCount} item{resultCount !== 1 ? 's' : ''} found
           {q ? ` for "${search}"` : ''}
         </p>
 
         {/* Card grid */}
-        {filtered.length === 0 ? (
+        {resultCount === 0 ? (
           <div className="bg-white rounded-xl border border-slate-200 py-16 text-center">
             <p className="text-4xl mb-3">🔍</p>
             <p className="font-semibold text-slate-700">No items found</p>
             <p className="text-slate-400 text-sm mt-1">Try adjusting your filters or search query.</p>
             <button
-              onClick={() => { setSearch(''); setTopicFilter('All Topics'); setBandFilter('all'); setTaskFilter('all') }}
+              onClick={clearFilters}
               className="mt-4 text-sm text-emerald-600 hover:text-emerald-800 font-medium"
             >
               Clear all filters
@@ -557,17 +765,30 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map(item => (
-              <VocabCard
-                key={item.id}
-                item={item}
-                saved={savedIds.has(item.id)}
-                status={statusMap[item.id]}
-                onToggleSave={toggleSave}
-                onSetStatus={setStatus}
-                onPractice={setPracticeItem}
-              />
-            ))}
+            {isStudyTab &&
+              filteredStudy.map(item => (
+                <StudyCard
+                  key={item.id}
+                  item={item}
+                  saved={savedIds.has(item.id)}
+                  status={statusMap[item.id]}
+                  onToggleSave={toggleSave}
+                  onSetStatus={setStatus}
+                  onPractice={setPracticeItem}
+                />
+              ))}
+
+            {isPhraseTab &&
+              filteredPhrases.map(item => (
+                <PhraseCard
+                  key={item.id}
+                  item={item}
+                  saved={savedIds.has(item.id)}
+                  onToggleSave={toggleSave}
+                />
+              ))}
+
+            {isMistakeTab && filteredMistakes.map(item => <MistakeCard key={item.id} item={item} />)}
           </div>
         )}
       </div>

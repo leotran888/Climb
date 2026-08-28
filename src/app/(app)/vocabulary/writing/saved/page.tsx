@@ -2,16 +2,36 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { VOCABULARY_DATA } from '../data'
-import { VocabularyItem, ItemType, BAND_COLORS, SUITABILITY_LABELS, BandLevel } from '../types'
+import { ALL_ITEMS, ALL_WRITING_PHRASES, type StudyItem } from '../data'
+import {
+  VocabularyItem,
+  CollocationItem,
+  PhrasalVerbItem,
+  WritingPhraseItem,
+  BAND_COLORS,
+  SUITABILITY_LABELS,
+  BandLevel,
+} from '../types'
 
 const LS_SAVED = 'climb_wv_saved'
 const LS_STATUS = 'climb_wv_status'
 
 type StatusMap = Record<string, 'learning' | 'learned'>
+type SavedTab = 'all' | 'vocabulary' | 'collocation' | 'phrasal_verb' | 'writing_phrase'
+type SavedEntry = StudyItem | WritingPhraseItem
 
 function BandPill({ band }: { band: BandLevel }) {
   return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BAND_COLORS[band]}`}>Band {band}</span>
+}
+
+function StatusPill({ status }: { status: 'learning' | 'learned' }) {
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+      status === 'learned' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+    }`}>
+      {status === 'learned' ? '✓ Learned' : '⟳ Learning'}
+    </span>
+  )
 }
 
 function SavedCard({
@@ -19,12 +39,27 @@ function SavedCard({
   status,
   onUnsave,
 }: {
-  item: VocabularyItem
+  item: SavedEntry
   status: 'learning' | 'learned' | undefined
   onUnsave: (id: string) => void
 }) {
   const [expanded, setExpanded] = useState(false)
-  const suitability = SUITABILITY_LABELS[item.writingSuitability]
+
+  const vocab = item.type === 'vocabulary' ? (item as VocabularyItem) : null
+  const coll = item.type === 'collocation' ? (item as CollocationItem) : null
+  const phrasal = item.type === 'phrasal_verb' ? (item as PhrasalVerbItem) : null
+  const phrase = item.type === 'writing_phrase' ? (item as WritingPhraseItem) : null
+
+  const suitability = vocab?.writingSuitability ?? phrasal?.writingSuitability
+  const suitabilityInfo = suitability ? SUITABILITY_LABELS[suitability] : null
+  const partOfSpeech = vocab?.partOfSpeech ?? phrasal?.partOfSpeech
+  const pronunciation = vocab?.pronunciation
+
+  const collocationTags = vocab?.collocations ?? phrasal?.collocations ?? []
+  const alternativeTags =
+    vocab?.alternatives ?? phrasal?.academicAlternatives ?? (coll?.alternative ? [coll.alternative] : [])
+
+  const writingTip = vocab?.writingTip ?? coll?.writingTip
 
   const speakTerm = () => {
     try {
@@ -37,30 +72,33 @@ function SavedCard({
   }
 
   const hasExtra =
-    (item.collocations && item.collocations.length > 0) ||
-    (item.alternatives && item.alternatives.length > 0) ||
-    (item.academicAlternatives && item.academicAlternatives.length > 0) ||
-    item.writingTip
+    collocationTags.length > 0 ||
+    alternativeTags.length > 0 ||
+    (vocab?.wordFamily?.length ?? 0) > 0 ||
+    Boolean(phrasal?.usageWarning) ||
+    Boolean(writingTip)
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-lg font-bold text-slate-900">{item.term}</span>
-            {item.pronunciation && (
+            <span className={`font-bold text-slate-900 ${phrase ? 'text-base leading-snug' : 'text-lg'}`}>{item.term}</span>
+            {pronunciation && (
               <button onClick={speakTerm} title="Listen" className="text-slate-400 hover:text-emerald-600 transition-colors text-xs flex items-center gap-1">
-                🔊 <span className="font-mono text-slate-400">{item.pronunciation}</span>
+                🔊 <span className="font-mono text-slate-400">{pronunciation}</span>
               </button>
             )}
           </div>
-          {item.partOfSpeech && <span className="text-xs text-slate-400 italic">{item.partOfSpeech}</span>}
-          {item.collocationType && <span className="text-xs text-slate-400 italic ml-1">{item.collocationType}</span>}
+          <div className="flex items-center gap-2 flex-wrap">
+            {partOfSpeech && <span className="text-xs text-slate-400 italic">{partOfSpeech}</span>}
+            {coll && <span className="text-xs text-slate-400 italic">{coll.collocationType}</span>}
+          </div>
         </div>
         <button
           onClick={() => onUnsave(item.id)}
           title="Remove from saved"
-          className="p-1.5 rounded-lg text-red-400 hover:text-red-600 transition-colors"
+          className="p-1.5 rounded-lg text-red-400 hover:text-red-600 transition-colors shrink-0"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -68,26 +106,27 @@ function SavedCard({
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {phrase && (
+          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">{phrase.function}</span>
+        )}
         <BandPill band={item.bandLevel} />
         <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{item.topic}</span>
-        <span className={`text-xs font-medium ${suitability.color} flex items-center gap-0.5`}>
-          <span>{suitability.icon}</span><span>{suitability.label}</span>
-        </span>
-        {status && (
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-            status === 'learned' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-          }`}>
-            {status === 'learned' ? '✓ Learned' : '⟳ Learning'}
+        {suitabilityInfo && (
+          <span className={`text-xs font-medium ${suitabilityInfo.color} flex items-center gap-0.5`}>
+            <span>{suitabilityInfo.icon}</span><span>{suitabilityInfo.label}</span>
           </span>
         )}
+        {status && <StatusPill status={status} />}
       </div>
 
-      <p className="text-slate-700 text-sm">{item.definition}</p>
+      {!phrase && <p className="text-slate-700 text-sm">{(item as StudyItem).definition}</p>}
       <p className="text-slate-500 text-sm italic">{item.vietnameseMeaning}</p>
 
-      <div className="text-slate-700 text-sm bg-slate-50 rounded-lg p-3 border-l-2 border-emerald-500">
-        <span className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-0.5">Example</span>
+      <div className={`text-slate-700 text-sm bg-slate-50 rounded-lg p-3 border-l-2 ${phrase ? 'border-indigo-500' : 'border-emerald-500'}`}>
+        <span className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-0.5">
+          {phrase ? 'In an essay' : 'Example'}
+        </span>
         {item.example}
       </div>
 
@@ -95,32 +134,48 @@ function SavedCard({
         <>
           {expanded && (
             <div className="space-y-3">
-              {item.collocations && item.collocations.length > 0 && (
+              {collocationTags.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Collocations</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {item.collocations.map(c => (
+                    {collocationTags.map(c => (
                       <span key={c} className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded">{c}</span>
                     ))}
                   </div>
                 </div>
               )}
-              {(item.alternatives || item.academicAlternatives) && (
+              {alternativeTags.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-                    {item.academicAlternatives ? 'Academic alternatives' : 'Alternatives'}
+                    {phrasal ? 'Academic alternatives' : 'Alternatives'}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {(item.academicAlternatives ?? item.alternatives ?? []).map(a => (
+                    {alternativeTags.map(a => (
                       <span key={a} className="bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded">{a}</span>
                     ))}
                   </div>
                 </div>
               )}
-              {item.writingTip && (
+              {vocab?.wordFamily && vocab.wordFamily.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Word family</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {vocab.wordFamily.map(w => (
+                      <span key={w} className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded">{w}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {phrasal?.usageWarning && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+                  <span className="font-semibold text-red-700">Usage warning: </span>
+                  {phrasal.usageWarning}
+                </div>
+              )}
+              {writingTip && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
                   <span className="font-semibold text-amber-700">Writing Tip: </span>
-                  {item.writingTip}
+                  {writingTip}
                 </div>
               )}
             </div>
@@ -140,7 +195,7 @@ function SavedCard({
 export default function SavedVocabPage() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [statusMap, setStatusMap] = useState<StatusMap>({})
-  const [activeTab, setActiveTab] = useState<ItemType | 'all'>('all')
+  const [activeTab, setActiveTab] = useState<SavedTab>('all')
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
@@ -164,13 +219,13 @@ export default function SavedVocabPage() {
     })
   }
 
-  const savedItems = useMemo(
-    () => VOCABULARY_DATA.filter(item => savedIds.has(item.id)),
+  const savedItems = useMemo<SavedEntry[]>(
+    () => [...ALL_ITEMS, ...ALL_WRITING_PHRASES].filter(item => savedIds.has(item.id)),
     [savedIds]
   )
 
   const filtered = useMemo(
-    () => activeTab === 'all' ? savedItems : savedItems.filter(i => i.type === activeTab),
+    () => (activeTab === 'all' ? savedItems : savedItems.filter(i => i.type === activeTab)),
     [savedItems, activeTab]
   )
 
@@ -179,13 +234,15 @@ export default function SavedVocabPage() {
     vocabulary: savedItems.filter(i => i.type === 'vocabulary').length,
     collocation: savedItems.filter(i => i.type === 'collocation').length,
     phrasal_verb: savedItems.filter(i => i.type === 'phrasal_verb').length,
+    writing_phrase: savedItems.filter(i => i.type === 'writing_phrase').length,
   }), [savedItems])
 
-  const tabs: { type: ItemType | 'all'; label: string }[] = [
+  const tabs: { type: SavedTab; label: string }[] = [
     { type: 'all', label: 'All' },
     { type: 'vocabulary', label: 'Vocabulary' },
     { type: 'collocation', label: 'Collocations' },
     { type: 'phrasal_verb', label: 'Phrasal Verbs' },
+    { type: 'writing_phrase', label: 'Writing Phrases' },
   ]
 
   if (!hydrated) return null
@@ -207,12 +264,13 @@ export default function SavedVocabPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
           { label: 'Total saved', value: counts.all, color: 'text-slate-900' },
           { label: 'Vocabulary', value: counts.vocabulary, color: 'text-emerald-600' },
           { label: 'Collocations', value: counts.collocation, color: 'text-blue-600' },
           { label: 'Phrasal verbs', value: counts.phrasal_verb, color: 'text-purple-600' },
+          { label: 'Writing phrases', value: counts.writing_phrase, color: 'text-indigo-600' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-3 text-center">
             <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
@@ -222,12 +280,12 @@ export default function SavedVocabPage() {
       </div>
 
       {/* Tab filter */}
-      <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
+      <div className="flex gap-1 bg-slate-100 rounded-xl p-1 overflow-x-auto">
         {tabs.map(t => (
           <button
             key={t.type}
             onClick={() => setActiveTab(t.type)}
-            className={`flex-1 text-sm font-semibold py-1.5 rounded-lg transition-all ${
+            className={`flex-1 whitespace-nowrap text-sm font-semibold py-1.5 px-3 rounded-lg transition-all ${
               activeTab === t.type
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
