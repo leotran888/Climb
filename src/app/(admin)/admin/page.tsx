@@ -14,7 +14,7 @@ interface ActivityItem {
 interface Stats {
   totalUsers: number
   suspendedUsers: number
-  activeSubscriptions: number
+  onlineUsers: number
   paidSubscribers: number
   writingThisMonth: number
   speakingThisMonth: number
@@ -90,7 +90,7 @@ export default function AdminOverviewPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Tổng users" value={stats.totalUsers} />
           <StatCard label="Bị suspended" value={stats.suspendedUsers} sub="tài khoản" />
-          <StatCard label="Active subs" value={stats.activeSubscriptions} sub="đang hoạt động" />
+          <StatCard label="Đang online" value={stats.onlineUsers} sub="15 phút qua" />
           <StatCard label="Paid subscribers" value={stats.paidSubscribers} sub="có trả phí" />
         </div>
       </section>

@@ -31,6 +31,7 @@ export async function GET() {
     { data: subscriptions },
     { data: bonusRows },
     { data: recentLogs },
+    { data: onlineData },
   ] = await Promise.all([
     db.from('profiles').select('*', { count: 'exact', head: true }),
     db.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'suspended'),
@@ -42,6 +43,7 @@ export async function GET() {
       .select('id, action, reason, created_at, admin_user_id, target_user_id')
       .order('created_at', { ascending: false })
       .limit(10),
+    db.rpc('count_online_users', { minutes_ago: 15 }),
   ])
 
   // Usage breakdown
@@ -92,7 +94,7 @@ export async function GET() {
   return NextResponse.json({
     totalUsers: totalUsers ?? 0,
     suspendedUsers: suspendedUsers ?? 0,
-    activeSubscriptions: (subscriptions ?? []).length,
+    onlineUsers: (onlineData as unknown as number) ?? 0,
     paidSubscribers,
     writingThisMonth,
     speakingThisMonth,
