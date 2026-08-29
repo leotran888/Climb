@@ -249,7 +249,7 @@ function StudyCard({
     Boolean(writingTip)
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <div className="bg-white border-2 border-slate-300 rounded-xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md hover:border-slate-400 transition-all">
       {/* Top row */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -388,7 +388,7 @@ function PhraseCard({
   onToggleSave: (id: string) => void
 }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <div className="bg-white border-2 border-slate-300 rounded-xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md hover:border-slate-400 transition-all">
       <div className="flex items-start justify-between gap-2">
         <p className="text-base font-semibold text-slate-900 leading-snug flex-1">{item.term}</p>
         <button
@@ -424,7 +424,7 @@ function PhraseCard({
 
 function MistakeCard({ item }: { item: CommonMistakeItem }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <div className="bg-white border-2 border-slate-300 rounded-xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md hover:border-slate-400 transition-all">
       <div className="flex flex-wrap items-center gap-1.5">
         <TopicPill topic={item.topic} />
         <PriorityPill p={item.priority} />
@@ -624,7 +624,7 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {tabs.map(t => (
-            <div key={t.key} className="bg-white rounded-xl border border-slate-200 p-3 text-center">
+            <div key={t.key} className="bg-white rounded-xl border-2 border-slate-300 p-3 text-center shadow-sm">
               <p className="text-2xl font-black text-slate-900">{t.count}</p>
               <p className="text-xs text-slate-400 mt-0.5">{t.label}</p>
             </div>
@@ -752,7 +752,7 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
 
         {/* Card grid */}
         {resultCount === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 py-16 text-center">
+          <div className="bg-white rounded-xl border-2 border-slate-300 py-16 text-center shadow-sm">
             <p className="text-4xl mb-3">🔍</p>
             <p className="font-semibold text-slate-700">No items found</p>
             <p className="text-slate-400 text-sm mt-1">Try adjusting your filters or search query.</p>
