@@ -624,7 +624,7 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {tabs.map(t => (
-            <div key={t.key} className="bg-white rounded-xl border-2 border-slate-300 p-3 text-center shadow-sm">
+            <div key={t.key} className="bg-white rounded-xl border-2 border-emerald-600 p-3 text-center">
               <p className="text-2xl font-black text-slate-900">{t.count}</p>
               <p className="text-xs text-slate-400 mt-0.5">{t.label}</p>
             </div>
