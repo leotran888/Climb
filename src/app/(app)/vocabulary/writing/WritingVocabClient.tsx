@@ -632,15 +632,15 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
         </div>
 
         {/* Tab bar */}
-        <div className="flex gap-1 bg-slate-100 rounded-xl p-1 overflow-x-auto">
+        <div className="flex gap-2 bg-white border-2 border-slate-300 rounded-xl p-1.5 overflow-x-auto shadow-sm">
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`flex-1 whitespace-nowrap text-sm font-semibold py-2 px-3 rounded-lg transition-all ${
+              className={`flex-1 whitespace-nowrap text-sm font-semibold py-2 px-3 rounded-lg transition-all border-2 ${
                 activeTab === t.key
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-white text-emerald-700 border-emerald-600 shadow-sm'
+                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-200'
               }`}
             >
               {t.label}
