@@ -138,7 +138,7 @@ export default function LandingPage() {
               Leo thang band <span id="scoreWord">score</span><br />
               với <span className={s.acc}>AI thật sự</span>
             </h1>
-            <p className={s.heroSub}>AI viết lại bài của bạn đạt Band mục tiêu — không chỉ chỉ lỗi. Phản hồi trong 60 giây, hiểu đúng lỗi đặc thù của học viên Việt.</p>
+            <p className={s.heroSub}>AI viết lại bài của bạn đạt Band mục tiêu — không chỉ chỉ lỗi. Kho từ vựng 18 topic IELTS Writing và hiểu đúng lỗi đặc thù của học viên Việt.</p>
             <div className={s.heroCta}>
               <button className={s.btnPrimary} onClick={() => { location.href = '/register' }}>Bắt đầu miễn phí</button>
               <button className={s.btnLink} onClick={() => { location.href = '/writing' }}>
