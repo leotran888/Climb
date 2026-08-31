@@ -136,15 +136,18 @@ export default function AdminPlansPage() {
                     ].map(f => {
                       const enabled = editing.features?.[f.key] ?? false
                       return (
-                        <label key={f.key} className="flex items-center gap-3 cursor-pointer">
+                        <label key={f.key} className="flex items-center gap-3 cursor-pointer select-none">
                           <button
                             type="button"
                             onClick={() => setEditing({ ...editing, features: { ...editing.features, [f.key]: !enabled } })}
-                            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${enabled ? 'bg-emerald-600' : 'bg-slate-200'}`}
+                            className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 ${enabled ? 'bg-emerald-600 border-emerald-600' : 'bg-slate-200 border-slate-300'}`}
                           >
-                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                            <span className={`inline-block h-4 w-4 transform rounded-full shadow-md transition-transform ${enabled ? 'translate-x-5 bg-white' : 'translate-x-1 bg-slate-400'}`} />
                           </button>
-                          <span className="text-sm text-slate-700">{f.label}</span>
+                          <div>
+                            <span className="text-sm font-medium text-slate-800">{f.label}</span>
+                            <p className={`text-xs mt-0.5 ${enabled ? 'text-emerald-600' : 'text-slate-400'}`}>{enabled ? 'Đang bật' : 'Đang tắt'}</p>
+                          </div>
                         </label>
                       )
                     })}
