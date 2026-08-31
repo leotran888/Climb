@@ -120,8 +120,8 @@ export default function LandingPage() {
             <li><a href="#pricing">Bảng giá</a></li>
           </ul>
           <div className={s.navBtns}>
-            <button className={s.btnGhost} onClick={() => { location.href = '/login' }}>Đăng nhập</button>
-            <button className={s.btnNav} onClick={() => { location.href = '/register' }}>Thử miễn phí</button>
+            <Link href="/login" className={s.btnGhost}>Đăng nhập</Link>
+            <Link href="/register" className={s.btnNav}>Thử miễn phí</Link>
           </div>
         </div>
       </nav>
@@ -503,7 +503,7 @@ export default function LandingPage() {
             Bạn đã sẵn sàng<br /><span className={s.ctaBk}>Climb</span> chưa?
           </h2>
           <p className={s.ctaP}>Nộp bài luận đầu tiên miễn phí — kết quả chi tiết, không chờ đợi.</p>
-          <button className={s.btnCta} onClick={() => { location.href = '/register' }}>Tạo tài khoản miễn phí</button>
+          <Link href="/register" className={s.btnCta}>Tạo tài khoản miễn phí</Link>
           <p className={s.ctaNote}>Đã có tài khoản? <Link href="/login">Đăng nhập</Link></p>
         </div>
       </section>
@@ -512,6 +512,11 @@ export default function LandingPage() {
       <footer className={s.footer}>
         <div className={`${s.wrap} ${s.footInner}`}>
           <span className={s.footCopy}>© 2025 Climb IELTS. All rights reserved.</span>
+          <nav className={s.footLinks} aria-label="Footer">
+            <Link href="/privacy">Chính sách bảo mật</Link>
+            <Link href="/terms">Điều khoản sử dụng</Link>
+            <a href="mailto:support@climbielts.com">Liên hệ</a>
+          </nav>
         </div>
       </footer>
     </div>
