@@ -77,9 +77,16 @@ export default function AdminPlansPage() {
             {editing?.id === plan.id ? (
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-bold text-slate-900">{plan.name}</span>
                   <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">{plan.slug}</span>
-                  <span className="text-xs text-slate-400 ml-1">(slug không thể sửa)</span>
+                  <span className="text-xs text-slate-400">(slug không thể sửa)</span>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-500 block mb-1">Tên gói</label>
+                  <input
+                    value={editing.name}
+                    onChange={e => setEditing({ ...editing, name: e.target.value })}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
