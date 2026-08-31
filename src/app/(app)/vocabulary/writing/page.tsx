@@ -9,12 +9,14 @@ export default async function WritingVocabPage() {
 
   const { data: sub } = await supabase
     .from('subscriptions')
-    .select('plans(slug)')
+    .select('plans(slug, features)')
     .eq('user_id', user.id)
     .eq('status', 'active')
     .single()
 
-  const planSlug: string = (sub?.plans as unknown as { slug: string } | null)?.slug ?? 'free'
+  const plan = sub?.plans as unknown as { slug: string; features: Record<string, boolean> } | null
+  const planSlug: string = plan?.slug ?? 'free'
+  const hasWritingVocabFull: boolean = plan?.features?.writing_vocab_full ?? false
 
-  return <WritingVocabClient userId={user.id} planSlug={planSlug} />
+  return <WritingVocabClient userId={user.id} planSlug={planSlug} hasWritingVocabFull={hasWritingVocabFull} />
 }

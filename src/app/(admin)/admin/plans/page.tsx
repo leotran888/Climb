@@ -45,6 +45,7 @@ export default function AdminPlansPage() {
         description: editing.description,
         price: editing.price,
         limits: editing.limits,
+        features: editing.features,
         is_active: editing.is_active,
         sort_order: editing.sort_order,
       }),
@@ -126,6 +127,30 @@ export default function AdminPlansPage() {
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
+                {/* Feature toggles */}
+                <div>
+                  <p className="text-xs font-medium text-slate-500 mb-2">Tính năng có thể truy cập</p>
+                  <div className="flex flex-col gap-2 bg-slate-50 rounded-lg p-3 border border-slate-100">
+                    {[
+                      { key: 'writing_vocab_full', label: 'Writing Vocabulary — toàn bộ 18 topics' },
+                    ].map(f => {
+                      const enabled = editing.features?.[f.key] ?? false
+                      return (
+                        <label key={f.key} className="flex items-center gap-3 cursor-pointer">
+                          <button
+                            type="button"
+                            onClick={() => setEditing({ ...editing, features: { ...editing.features, [f.key]: !enabled } })}
+                            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${enabled ? 'bg-emerald-600' : 'bg-slate-200'}`}
+                          >
+                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                          </button>
+                          <span className="text-sm text-slate-700">{f.label}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2">
                   <input
                     id={`active-${plan.id}`}
@@ -172,6 +197,11 @@ export default function AdminPlansPage() {
                     <span>Writing: <strong>{plan.limits.writing_grading_monthly}/tháng</strong></span>
                     <span>Speaking: <strong>{plan.limits.speaking_grading_monthly}/tháng</strong></span>
                     <span className="text-slate-400">Order: {plan.sort_order}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${plan.features?.writing_vocab_full ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
+                      {plan.features?.writing_vocab_full ? '✓' : '✗'} Writing Vocabulary Full
+                    </span>
                   </div>
                 </div>
                 <button

@@ -449,8 +449,8 @@ function MistakeCard({ item }: { item: CommonMistakeItem }) {
 
 const FREE_TOPICS = ['Environment', 'Education', 'Health']
 
-export default function WritingVocabClient({ userId, planSlug }: { userId: string; planSlug: string }) {
-  const isFree = planSlug === 'free'
+export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFull }: { userId: string; planSlug: string; hasWritingVocabFull: boolean }) {
+  const isFree = !hasWritingVocabFull
   const isTopicLocked = (topic: string) => isFree && topic !== 'All Topics' && !FREE_TOPICS.includes(topic)
   const [activeTab, setActiveTab] = useState<TabKey>('vocabulary')
   const [search, setSearch] = useState('')
