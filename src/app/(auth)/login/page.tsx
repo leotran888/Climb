@@ -52,7 +52,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-sm font-medium text-slate-700">Password</label>
               <Link href="/forgot-password" className="text-xs text-emerald-700 hover:underline">
-                Quên mật khẩu?
+                Forgot password?
               </Link>
             </div>
             <input
