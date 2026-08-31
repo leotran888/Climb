@@ -220,25 +220,28 @@ export default async function SubscriptionPage() {
 }
 
 function UsageBar({ label, used, limit, bonus }: { label: string; used: number; limit: number; bonus: number }) {
-  const pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0
-  const isNearLimit = pct >= 80
-  const isAtLimit = used >= limit
+  const isUnlimited = limit >= 999
+  const pct = (!isUnlimited && limit > 0) ? Math.min(100, (used / limit) * 100) : 0
+  const isNearLimit = !isUnlimited && pct >= 80
+  const isAtLimit = !isUnlimited && used >= limit
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-slate-700">{label}</span>
         <span className="text-sm text-slate-500">
-          {used} / {limit}
-          {bonus > 0 && <span className="text-emerald-600 ml-1">+{bonus} bonus</span>}
+          {isUnlimited
+            ? <span className="text-emerald-600 font-medium">Không giới hạn</span>
+            : <>{used} / {limit}{bonus > 0 && <span className="text-emerald-600 ml-1">+{bonus} bonus</span>}</>
+          }
         </span>
       </div>
       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${
-            isAtLimit ? 'bg-red-400' : isNearLimit ? 'bg-amber-400' : 'bg-emerald-500'
+            isUnlimited ? 'bg-emerald-500' : isAtLimit ? 'bg-red-400' : isNearLimit ? 'bg-amber-400' : 'bg-emerald-500'
           }`}
-          style={{ width: `${pct}%` }}
+          style={{ width: isUnlimited ? '100%' : `${pct}%` }}
         />
       </div>
       {isAtLimit && bonus === 0 && (
