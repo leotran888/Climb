@@ -986,6 +986,269 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* ── Pricing ── */
+.pricing {
+  padding: 88px 0;
+  background: #fff;
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.planCard {
+  background: #fff;
+  border-radius: 22px;
+  padding: 26px 24px;
+  border: 1px solid #d0edd8;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.planCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(12, 26, 14, 0.09);
+}
+
+.planCardPro {
+  background: #0c1a0e;
+  border-color: #0c1a0e;
+  transform: scale(1.04);
+  box-shadow: 0 24px 64px rgba(12, 26, 14, 0.28);
+  z-index: 1;
+}
+
+.planCardPro:hover {
+  transform: scale(1.04) translateY(-4px);
+  box-shadow: 0 32px 80px rgba(12, 26, 14, 0.34);
+}
+
+.planCardYearly {
+  background: #f0fdf4;
+  border-color: rgba(22, 163, 68, 0.25);
+}
+
+.planBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.planBadgePop {
+  background: rgba(22, 163, 68, 0.14);
+  color: #16a344;
+}
+
+.planBadgeSave {
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.planBadgeSaveGreen {
+  background: rgba(22, 163, 68, 0.12);
+  color: #0d7a32;
+}
+
+.planName {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9cb8a5;
+  margin-bottom: 10px;
+}
+
+.planNameLight { color: rgba(255,255,255,0.38); }
+
+.planPrice {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #0c1a0e;
+  margin-bottom: 3px;
+}
+
+.planPriceFree {
+  font-size: 26px;
+  color: #9cb8a5;
+}
+
+.planPriceLight { color: #fff; }
+
+.planPriceSub {
+  font-size: 12px;
+  color: #9cb8a5;
+  margin-bottom: 4px;
+}
+
+.planPriceSubLight { color: rgba(255,255,255,0.32); }
+
+.planPriceDay {
+  font-size: 11.5px;
+  color: #16a344;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.planPriceDayMuted {
+  color: #9cb8a5;
+  font-weight: 400;
+}
+
+.planDesc {
+  font-size: 12.5px;
+  color: #4d7460;
+  line-height: 1.55;
+  margin-bottom: 18px;
+  min-height: 36px;
+}
+
+.planDescLight { color: rgba(255,255,255,0.42); }
+
+.planDivider {
+  height: 1px;
+  background: #d0edd8;
+  margin-bottom: 16px;
+}
+
+.planDividerLight { background: rgba(255,255,255,0.08); }
+
+.planFeatures {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  margin-bottom: 22px;
+}
+
+.planFeat {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #0c1a0e;
+  line-height: 1.45;
+}
+
+.planFeatLight { color: rgba(255,255,255,0.72); }
+
+.planFeatLocked {
+  color: #c0d4c8;
+  text-decoration: line-through;
+  text-decoration-color: #d0e8da;
+}
+
+.checkIcon { flex-shrink: 0; margin-top: 1px; color: #16a344; }
+.lockIcon  { flex-shrink: 0; margin-top: 1px; color: #c0d4c8; }
+
+.planCta {
+  display: block;
+  width: 100%;
+  padding: 11px 0;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+  text-decoration: none;
+}
+
+.planCtaGhost {
+  background: none;
+  border: 1.5px solid #d0edd8;
+  color: #4d7460;
+}
+
+.planCtaGhost:hover {
+  border-color: #16a344;
+  color: #16a344;
+  transform: translateY(-1px);
+}
+
+.planCtaSecondary {
+  background: #f0fdf4;
+  border: 1.5px solid #d0edd8;
+  color: #16a344;
+}
+
+.planCtaSecondary:hover {
+  background: #dcfce7;
+  transform: translateY(-1px);
+}
+
+.planCtaPrimary {
+  background: #16a344;
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(22,163,68,0.32);
+}
+
+.planCtaPrimary:hover {
+  background: #0d7a32;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(22,163,68,0.42);
+}
+
+.planCtaYearly {
+  background: #16a344;
+  border: none;
+  color: #fff;
+  box-shadow: 0 3px 14px rgba(22,163,68,0.25);
+}
+
+.planCtaYearly:hover {
+  background: #0d7a32;
+  transform: translateY(-1px);
+}
+
+.planSaving {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a344;
+}
+
+.pricingFootnote {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 12.5px;
+  color: #9cb8a5;
+}
+
+@media (max-width: 900px) {
+  .pricingGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .planCardPro {
+    transform: none;
+  }
+  .planCardPro:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 580px) {
+  .pricingGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Scroll reveal ── */
 .reveal {
   opacity: 0;

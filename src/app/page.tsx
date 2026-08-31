@@ -117,6 +117,7 @@ export default function LandingPage() {
             <li><a href="#features">Tính năng</a></li>
             <li><a href="#how">Cách hoạt động</a></li>
             <li><a href="#testimonials">Đánh giá</a></li>
+            <li><a href="#pricing">Bảng giá</a></li>
           </ul>
           <div className={s.navBtns}>
             <button className={s.btnGhost} onClick={() => { location.href = '/login' }}>Đăng nhập</button>
@@ -395,6 +396,103 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section className={s.pricing} id="pricing">
+        <div className={s.wrap}>
+          <div className={`${s.sectionHead} ${s.reveal}`}>
+            <p className={s.eyebrow}>Bảng giá</p>
+            <h2 className={s.h2}>Đầu tư nhỏ,<br />tăng band score lớn</h2>
+            <p className={s.sub}>Bắt đầu miễn phí — nâng cấp bất cứ lúc nào khi bạn sẵn sàng luyện nghiêm túc hơn.</p>
+          </div>
+
+          <div className={`${s.pricingGrid} ${s.reveal}`}>
+            {/* FREE */}
+            <div className={s.planCard}>
+              <p className={s.planName}>Free</p>
+              <div className={`${s.planPrice} ${s.planPriceFree}`}>0đ</div>
+              <p className={s.planPriceSub}>Mãi mãi miễn phí</p>
+              <p className={`${s.planPriceDay} ${s.planPriceDayMuted}`}>Không cần thẻ tín dụng</p>
+              <p className={s.planDesc}>Làm quen với Climb trước khi cam kết.</p>
+              <div className={s.planDivider} />
+              <ul className={s.planFeatures}>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>2 lượt Writing AI/tháng</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>3 topic Vocabulary</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Xem lịch sử bài nộp</li>
+                <li className={`${s.planFeat} ${s.planFeatLocked}`}><span className={s.lockIcon}>✗</span>18 topic Vocabulary</li>
+                <li className={`${s.planFeat} ${s.planFeatLocked}`}><span className={s.lockIcon}>✗</span>Speaking AI</li>
+              </ul>
+              <button className={`${s.planCta} ${s.planCtaGhost}`} onClick={() => { location.href = '/register' }}>
+                Bắt đầu miễn phí
+              </button>
+            </div>
+
+            {/* STARTER */}
+            <div className={s.planCard}>
+              <p className={s.planName}>Starter</p>
+              <div className={s.planPrice}>99<span style={{ fontSize: 18, fontWeight: 700 }}>k</span></div>
+              <p className={s.planPriceSub}>/tháng</p>
+              <p className={s.planPriceDay}>~3.300đ/ngày</p>
+              <p className={s.planDesc}>Học từ vựng bài bản, luyện Writing đều đặn mỗi tuần.</p>
+              <div className={s.planDivider} />
+              <ul className={s.planFeatures}>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>10 lượt Writing AI/tháng</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>18 topic Vocabulary đầy đủ</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Lưu từ & theo dõi tiến độ</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Lịch sử bài nộp đầy đủ</li>
+                <li className={`${s.planFeat} ${s.planFeatLocked}`}><span className={s.lockIcon}>✗</span>Speaking AI</li>
+              </ul>
+              <button className={`${s.planCta} ${s.planCtaSecondary}`} onClick={() => { location.href = '/register' }}>
+                Chọn Starter
+              </button>
+            </div>
+
+            {/* PRO */}
+            <div className={`${s.planCard} ${s.planCardPro}`}>
+              <div className={`${s.planBadge} ${s.planBadgePop}`}>🔥 Phổ biến nhất</div>
+              <p className={`${s.planName} ${s.planNameLight}`}>Pro</p>
+              <div className={`${s.planPrice} ${s.planPriceLight}`}>199<span style={{ fontSize: 18, fontWeight: 700 }}>k</span></div>
+              <p className={`${s.planPriceSub} ${s.planPriceSubLight}`}>/tháng</p>
+              <p className={s.planPriceDay}>~6.600đ/ngày — đổi lấy 1 band score</p>
+              <p className={`${s.planDesc} ${s.planDescLight}`}>Luyện không giới hạn, tăng band nhanh nhất có thể.</p>
+              <div className={`${s.planDivider} ${s.planDividerLight}`} />
+              <ul className={s.planFeatures}>
+                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Writing AI <strong>không giới hạn</strong></li>
+                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Speaking AI 15 lượt/tháng</li>
+                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>18 topic Vocabulary đầy đủ</li>
+                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Lưu từ & theo dõi tiến độ</li>
+                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Ưu tiên xử lý nhanh hơn</li>
+              </ul>
+              <button className={`${s.planCta} ${s.planCtaPrimary}`} onClick={() => { location.href = '/register' }}>
+                Chọn Pro ngay
+              </button>
+            </div>
+
+            {/* PRO YEARLY */}
+            <div className={`${s.planCard} ${s.planCardYearly}`}>
+              <div className={`${s.planBadge} ${s.planBadgeSaveGreen}`}>✦ Tiết kiệm nhất</div>
+              <p className={s.planName}>Pro · 1 năm</p>
+              <div className={s.planPrice}>1.49<span style={{ fontSize: 18, fontWeight: 700 }}>M</span></div>
+              <p className={s.planPriceSub}>/năm · ~124k/tháng</p>
+              <p className={s.planPriceDay}>~4.100đ/ngày</p>
+              <p className={s.planDesc}>Cam kết cả lộ trình — tiết kiệm gần 1 triệu mỗi năm.</p>
+              <div className={s.planDivider} />
+              <ul className={s.planFeatures}>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Mọi thứ trong Pro</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Tiết kiệm 998.000đ/năm</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Tương đương 2 tháng miễn phí</li>
+                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Ưu tiên hỗ trợ</li>
+              </ul>
+              <button className={`${s.planCta} ${s.planCtaYearly}`} onClick={() => { location.href = '/register' }}>
+                Chọn Pro Yearly
+              </button>
+              <p className={s.planSaving}>Tiết kiệm 998.000đ so với mua tháng</p>
+            </div>
+          </div>
+
+          <p className={s.pricingFootnote}>Tất cả gói đều có thể hủy bất cứ lúc nào · Thanh toán an toàn</p>
         </div>
       </section>
 
