@@ -430,7 +430,7 @@ export default function LandingPage() {
             {/* STARTER */}
             <div className={s.planCard}>
               <p className={s.planName}>Starter</p>
-              <div className={s.planPrice}>99<span style={{ fontSize: 18, fontWeight: 700 }}>k</span></div>
+              <div className={s.planPrice}>99.000<span style={{ fontSize: 22, fontWeight: 700 }}>đ</span></div>
               <p className={s.planPriceSub}>/tháng</p>
               <p className={s.planPriceDay}>~3.300đ/ngày</p>
               <p className={s.planDesc}>Học từ vựng bài bản, luyện Writing đều đặn mỗi tuần.</p>
@@ -451,7 +451,7 @@ export default function LandingPage() {
             <div className={`${s.planCard} ${s.planCardPro}`}>
               <div className={`${s.planBadge} ${s.planBadgePop}`}>🔥 Phổ biến nhất</div>
               <p className={`${s.planName} ${s.planNameLight}`}>Pro</p>
-              <div className={`${s.planPrice} ${s.planPriceLight}`}>199<span style={{ fontSize: 18, fontWeight: 700 }}>k</span></div>
+              <div className={`${s.planPrice} ${s.planPriceLight}`}>199.000<span style={{ fontSize: 22, fontWeight: 700 }}>đ</span></div>
               <p className={`${s.planPriceSub} ${s.planPriceSubLight}`}>/tháng</p>
               <p className={s.planPriceDay}>~6.600đ/ngày — đổi lấy 1 band score</p>
               <p className={`${s.planDesc} ${s.planDescLight}`}>Luyện không giới hạn, tăng band nhanh nhất có thể.</p>
@@ -472,8 +472,8 @@ export default function LandingPage() {
             <div className={`${s.planCard} ${s.planCardYearly}`}>
               <div className={`${s.planBadge} ${s.planBadgeSaveGreen}`}>✦ Tiết kiệm nhất</div>
               <p className={s.planName}>Pro · 1 năm</p>
-              <div className={s.planPrice}>1.49<span style={{ fontSize: 18, fontWeight: 700 }}>M</span></div>
-              <p className={s.planPriceSub}>/năm · ~124k/tháng</p>
+              <div className={s.planPrice}>1.490.000<span style={{ fontSize: 22, fontWeight: 700 }}>đ</span></div>
+              <p className={s.planPriceSub}>/năm · ~124.000đ/tháng</p>
               <p className={s.planPriceDay}>~4.100đ/ngày</p>
               <p className={s.planDesc}>Cam kết cả lộ trình — tiết kiệm gần 1 triệu mỗi năm.</p>
               <div className={s.planDivider} />
