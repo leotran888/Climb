@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     description: 'Chấm bài IELTS Writing bằng AI trong 60 giây. Phản hồi chi tiết theo 4 tiêu chí, gợi ý từ vựng và câu mẫu. Thử miễn phí.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og',
         width: 1200,
         height: 630,
         alt: 'Climb IELTS — AI Writing & Speaking Practice',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Climb IELTS — Luyện Writing & Speaking với AI',
     description: 'Chấm bài IELTS Writing bằng AI trong 60 giây. Thử miễn phí.',
-    images: ['/og-image.png'],
+    images: ['/og'],
   },
   robots: {
     index: true,
