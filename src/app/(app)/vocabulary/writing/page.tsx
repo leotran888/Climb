@@ -14,7 +14,7 @@ export default async function WritingVocabPage() {
     .eq('status', 'active')
     .single()
 
-  const planSlug: string = (sub?.plans as { slug: string } | null)?.slug ?? 'free'
+  const planSlug: string = (sub?.plans as unknown as { slug: string } | null)?.slug ?? 'free'
 
   return <WritingVocabClient userId={user.id} planSlug={planSlug} />
 }
