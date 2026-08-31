@@ -273,7 +273,7 @@ export default function LandingPage() {
                   <path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-8" />
                 </svg>
               </div>
-              <div className={s.featTitle}>Chấm điểm 4 tiêu chí chuẩn IELTS</div>
+              <h3 className={s.featTitle}>Chấm điểm 4 tiêu chí chuẩn IELTS</h3>
               <p className={s.featDesc}>Task Response, Coherence &amp; Cohesion, Lexical Resource, Grammatical Range &amp; Accuracy — band score 0.5 chính xác với giải thích chi tiết bằng tiếng Việt.</p>
               <span className={s.featPill}>Band 4.0 – 9.0</span>
             </div>
@@ -284,7 +284,7 @@ export default function LandingPage() {
                   <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
                 </svg>
               </div>
-              <div className={s.featTitle}>Sửa lỗi từng câu một</div>
+              <h3 className={s.featTitle}>Sửa lỗi từng câu một</h3>
               <p className={s.featDesc}>AI phát hiện lỗi ngữ pháp, từ vựng, collocation và cấu trúc câu — kèm giải thích tại sao sai và cách sửa cụ thể.</p>
               <span className={s.featPill}>Grammar · Collocation · Article</span>
             </div>
@@ -294,7 +294,7 @@ export default function LandingPage() {
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </div>
-              <div className={s.featTitle}>Nâng cấp từ vựng &amp; câu văn</div>
+              <h3 className={s.featTitle}>Nâng cấp từ vựng &amp; câu văn</h3>
               <p className={s.featDesc}>Gợi ý từ đồng nghĩa chính xác hơn, cải thiện câu văn để nghe tự nhiên và học thuật hơn — không phải thay bừa từ khó.</p>
               <span className={s.featPill}>Vocabulary · Paraphrase</span>
             </div>
@@ -305,7 +305,7 @@ export default function LandingPage() {
                   <rect x="3" y="14" width="7" height="7" rx="1" /><path d="M17.5 14v6M14.5 17h6" />
                 </svg>
               </div>
-              <div className={s.featTitle}>Task 1 &amp; Task 2 đều được hỗ trợ</div>
+              <h3 className={s.featTitle}>Task 1 &amp; Task 2 đều được hỗ trợ</h3>
               <p className={s.featDesc}>Upload ảnh biểu đồ cho Task 1 Academic, hoặc nhập đề bài cho Task 2 — AI hiểu ngữ cảnh để đánh giá đúng tiêu chí Task Achievement.</p>
               <span className={s.featPill}>Task 1 · Task 2 · Academic · General</span>
             </div>
@@ -324,17 +324,17 @@ export default function LandingPage() {
           <div className={s.hiwGrid}>
             <div className={`${s.hiwStep} ${s.reveal}`}>
               <div className={s.stepNum}>1</div>
-              <div className={s.stepTitle}>Nộp bài luận</div>
+              <h3 className={s.stepTitle}>Nộp bài luận</h3>
               <p className={s.stepDesc}>Dán bài viết vào, chọn Task 1 hoặc Task 2, thêm đề bài hoặc upload ảnh biểu đồ nếu có.</p>
             </div>
             <div className={`${s.hiwStep} ${s.reveal} ${s.d1}`}>
               <div className={s.stepNum}>2</div>
-              <div className={s.stepTitle}>AI phân tích song song</div>
+              <h3 className={s.stepTitle}>AI phân tích song song</h3>
               <p className={s.stepDesc}>Hai mô hình AI chạy song song — một chấm điểm 4 tiêu chí, một tìm lỗi ngữ pháp — để cho ra kết quả nhanh nhất có thể.</p>
             </div>
             <div className={`${s.hiwStep} ${s.reveal} ${s.d2}`}>
               <div className={s.stepNum}>3</div>
-              <div className={s.stepTitle}>Nhận kết quả đầy đủ</div>
+              <h3 className={s.stepTitle}>Nhận kết quả đầy đủ</h3>
               <p className={s.stepDesc}>Band score chi tiết, danh sách lỗi sai, gợi ý từ vựng và bài tập cải thiện — tất cả trong một trang kết quả.</p>
             </div>
           </div>
@@ -507,6 +507,59 @@ export default function LandingPage() {
           <p className={s.ctaNote}>Đã có tài khoản? <Link href="/login">Đăng nhập</Link></p>
         </div>
       </section>
+
+      {/* FAQ Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'Climb IELTS chấm bài theo tiêu chí nào?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Climb IELTS chấm theo 4 tiêu chí chuẩn của Cambridge: Task Response (TR), Coherence & Cohesion (CC), Lexical Resource (LR), và Grammatical Range & Accuracy (GRA). Mỗi tiêu chí được chấm riêng và tổng hợp thành band score từ 4.0 đến 9.0.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Climb IELTS có hỗ trợ Task 1 và Task 2 không?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Có. Climb IELTS hỗ trợ cả Task 1 Academic (có thể upload ảnh biểu đồ), Task 1 General Training, và Task 2 cho cả Academic lẫn General. AI sẽ đánh giá đúng tiêu chí Task Achievement tương ứng với từng dạng bài.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Kết quả chấm bài mất bao lâu?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Thông thường từ 30 đến 90 giây. Hệ thống chạy song song hai mô hình AI để cho kết quả nhanh nhất có thể.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Gói miễn phí có những gì?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Gói Free cho phép bạn chấm 2 bài Writing AI mỗi tháng, truy cập 3 topic từ vựng Writing, và xem lịch sử bài nộp. Không cần thẻ tín dụng, miễn phí mãi mãi.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Climb IELTS có chính xác như giám khảo thật không?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Climb IELTS được thiết kế để phản ánh tiêu chí chấm thi IELTS chính thức và cho kết quả tham khảo có độ chính xác cao. Tuy nhiên điểm số AI là điểm ước lượng và không thay thế điểm thi IELTS chính thức.',
+                },
+              },
+            ],
+          }),
+        }}
+      />
 
       {/* FOOTER */}
       <footer className={s.footer}>
