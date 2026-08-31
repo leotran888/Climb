@@ -36,7 +36,7 @@ export default async function SubscriptionPage() {
       </div>
 
       {/* Current plan */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="bg-white rounded-2xl border-2 border-emerald-600 p-6">
         <div className="flex items-start justify-between">
           <div>
             <div className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-1">Gói hiện tại</div>
@@ -55,7 +55,7 @@ export default async function SubscriptionPage() {
       </div>
 
       {/* Usage */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="bg-white rounded-2xl border-2 border-emerald-600 p-6">
         <div className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-4">
           Lượt sử dụng — {billingPeriod}
         </div>
