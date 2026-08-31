@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     default: 'Climb IELTS — Luyện Writing & Speaking với AI',
     template: '%s | Climb IELTS',
   },
-  description: 'Chấm bài IELTS Writing bằng AI trong 60 giây. Nhận phản hồi chi tiết theo 4 tiêu chí, gợi ý từ vựng và câu mẫu. Thử miễn phí ngay.',
+  description: 'AI viết lại bài của bạn đạt Band mục tiêu — không chỉ chỉ lỗi. Kho từ vựng 18 topic IELTS Writing, hiểu đúng lỗi đặc thù học viên Việt. Thử miễn phí.',
   keywords: ['IELTS', 'luyện IELTS', 'chấm bài IELTS', 'IELTS Writing', 'IELTS Speaking', 'AI IELTS', 'tăng band IELTS'],
   authors: [{ name: 'Climb IELTS' }],
   creator: 'Climb IELTS',
@@ -19,12 +19,12 @@ export const metadata: Metadata = {
     url: BASE_URL,
     siteName: 'Climb IELTS',
     title: 'Climb IELTS — Luyện Writing & Speaking với AI',
-    description: 'Chấm bài IELTS Writing bằng AI trong 60 giây. Phản hồi chi tiết theo 4 tiêu chí, gợi ý từ vựng và câu mẫu. Thử miễn phí.',
+    description: 'AI viết lại bài đạt Band mục tiêu · Kho từ vựng 18 topic IELTS · Hiểu lỗi người Việt. Thử miễn phí.',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Climb IELTS — Luyện Writing & Speaking với AI',
-    description: 'Chấm bài IELTS Writing bằng AI trong 60 giây. Thử miễn phí.',
+    description: 'AI viết lại bài đạt Band mục tiêu · Kho từ vựng 18 topic · Hiểu lỗi người Việt. Miễn phí.',
   },
   robots: {
     index: true,
