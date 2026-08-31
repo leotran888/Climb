@@ -1,8 +1,9 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
 
-export async function GET() {
+export default function Image() {
   return new ImageResponse(
     (
       <div
@@ -40,23 +41,17 @@ export async function GET() {
             </div>
           </div>
 
-          {/* Middle — headline */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+          {/* Headline */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a344' }} />
               <div style={{ color: '#16a344', fontSize: '15px', fontWeight: 600, letterSpacing: '0.04em' }}>
                 AI chấm bài IELTS Writing
               </div>
             </div>
-            <div style={{ color: '#ffffff', fontSize: '68px', fontWeight: 900, lineHeight: '1.05', letterSpacing: '-0.03em' }}>
-              Leo thang
-            </div>
-            <div style={{ color: '#ffffff', fontSize: '68px', fontWeight: 900, lineHeight: '1.05', letterSpacing: '-0.03em' }}>
-              band score
-            </div>
-            <div style={{ color: '#16a344', fontSize: '68px', fontWeight: 900, lineHeight: '1.05', letterSpacing: '-0.03em' }}>
-              với AI thật sự
-            </div>
+            <div style={{ color: '#ffffff', fontSize: '68px', fontWeight: 900, lineHeight: '1.05', letterSpacing: '-0.03em' }}>Leo thang</div>
+            <div style={{ color: '#ffffff', fontSize: '68px', fontWeight: 900, lineHeight: '1.05', letterSpacing: '-0.03em' }}>band score</div>
+            <div style={{ color: '#16a344', fontSize: '68px', fontWeight: 900, lineHeight: '1.05', letterSpacing: '-0.03em' }}>với AI thật sự</div>
             <div style={{ marginTop: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '18px', fontWeight: 400, lineHeight: '1.5' }}>
               Chấm bài trong 60 giây · Phản hồi theo 4 tiêu chí · Miễn phí
             </div>
