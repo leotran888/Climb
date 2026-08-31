@@ -769,13 +769,13 @@ export default function WritingVocabClient({ userId, planSlug }: { userId: strin
           <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
             <span className="text-lg">🔒</span>
             <p className="text-sm text-amber-800 flex-1">
-              <span className="font-semibold">Free plan:</span> Only <strong>Environment</strong>, <strong>Education</strong>, and <strong>Health</strong> topics are available.
+              Upgrade to unlock <strong>15 more topics</strong> and get full access to all vocabulary.
             </p>
             <Link
               href="/subscription"
-              className="shrink-0 text-xs font-semibold text-emerald-700 hover:text-emerald-900 bg-white border border-emerald-300 px-3 py-1.5 rounded-lg transition-colors"
+              className="shrink-0 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition-colors"
             >
-              Upgrade
+              Upgrade now
             </Link>
           </div>
         )}
