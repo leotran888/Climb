@@ -138,7 +138,7 @@ export default function LandingPage() {
               Leo thang band <span id="scoreWord">score</span><br />
               với <span className={s.acc}>AI thật sự</span>
             </h1>
-            <p className={s.heroSub}>Nhận điểm band 4 tiêu chí, sửa lỗi từng câu và gợi ý từ vựng nâng cấp — chính xác như giám khảo IELTS.</p>
+            <p className={s.heroSub}>AI viết lại bài của bạn đạt Band mục tiêu — không chỉ chỉ lỗi. Phản hồi trong 60 giây, hiểu đúng lỗi đặc thù của học viên Việt.</p>
             <div className={s.heroCta}>
               <button className={s.btnPrimary} onClick={() => { location.href = '/register' }}>Bắt đầu miễn phí</button>
               <button className={s.btnLink} onClick={() => { location.href = '/writing' }}>
@@ -263,51 +263,49 @@ export default function LandingPage() {
         <div className={s.wrap}>
           <div className={`${s.sectionHead} ${s.reveal}`}>
             <p className={s.eyebrow}>Tính năng</p>
-            <h2 className={s.h2}>Mọi thứ bạn cần để<br />tăng band score Writing</h2>
-            <p className={s.sub}>Không chỉ là điểm số — Climb giúp bạn hiểu rõ từng lỗi sai và cách khắc phục.</p>
+            <h2 className={s.h2}>Không AI nào làm được<br />những thứ này</h2>
+            <p className={s.sub}>Climb được xây riêng cho học viên IELTS Việt — không phải grammar tool dịch sang tiếng Việt.</p>
           </div>
           <div className={s.featGrid}>
             <div className={`${s.featCard} ${s.reveal}`}>
               <div className={s.featIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-8" />
+                  <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
                 </svg>
               </div>
-              <h3 className={s.featTitle}>Chấm điểm 4 tiêu chí chuẩn IELTS</h3>
-              <p className={s.featDesc}>Task Response, Coherence &amp; Cohesion, Lexical Resource, Grammatical Range &amp; Accuracy — band score 0.5 chính xác với giải thích chi tiết bằng tiếng Việt.</p>
-              <span className={s.featPill}>Band 4.0 – 9.0</span>
+              <h3 className={s.featTitle}>Bài viết chuẩn band mục tiêu của bạn</h3>
+              <p className={s.featDesc}>AI không chỉ chỉ lỗi — còn viết lại toàn bộ bài của bạn ở Band 7.0, 7.5 hoặc 8.0. Đây là cách học nhanh nhất để nội hoá cấu trúc câu học thuật.</p>
+              <span className={s.featPill}>Upgraded Essay</span>
             </div>
             <div className={`${s.featCard} ${s.reveal} ${s.d1}`}>
               <div className={s.featIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                  <path d="M9 12h6M9 16h6M9 8h6M5 20h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
                 </svg>
               </div>
-              <h3 className={s.featTitle}>Sửa lỗi từng câu một</h3>
-              <p className={s.featDesc}>AI phát hiện lỗi ngữ pháp, từ vựng, collocation và cấu trúc câu — kèm giải thích tại sao sai và cách sửa cụ thể.</p>
-              <span className={s.featPill}>Grammar · Collocation · Article</span>
+              <h3 className={s.featTitle}>Hiểu đúng lỗi của học viên Việt</h3>
+              <p className={s.featDesc}>Tiếng Việt không có mạo từ, không chia thì, không biến đổi số nhiều. Climb biết chính xác những lỗi cấu trúc mà học sinh Việt hay mắc — không phải feedback kiểu generic.</p>
+              <span className={s.featPill}>Vietnamese-native AI</span>
             </div>
             <div className={`${s.featCard} ${s.reveal} ${s.d2}`}>
               <div className={s.featIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  <path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-8" />
                 </svg>
               </div>
-              <h3 className={s.featTitle}>Nâng cấp từ vựng &amp; câu văn</h3>
-              <p className={s.featDesc}>Gợi ý từ đồng nghĩa chính xác hơn, cải thiện câu văn để nghe tự nhiên và học thuật hơn — không phải thay bừa từ khó.</p>
-              <span className={s.featPill}>Vocabulary · Paraphrase</span>
+              <h3 className={s.featTitle}>Band score đủ 4 tiêu chí như examiner thật</h3>
+              <p className={s.featDesc}>TR · CC · LR · GRA — đúng rubric IELTS Writing band descriptors, không phải "grammar + vocabulary" chung chung. Band score có thể so với kết quả thi thật.</p>
+              <span className={s.featPill}>Examiner-accurate · Band 4.0–9.0</span>
             </div>
             <div className={`${s.featCard} ${s.reveal} ${s.d3}`}>
               <div className={s.featIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
-                  <rect x="3" y="14" width="7" height="7" rx="1" /><path d="M17.5 14v6M14.5 17h6" />
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                 </svg>
               </div>
-              <h3 className={s.featTitle}>Task 1 &amp; Task 2 đều được hỗ trợ</h3>
-              <p className={s.featDesc}>Upload ảnh biểu đồ cho Task 1 Academic, hoặc nhập đề bài cho Task 2 — AI hiểu ngữ cảnh để đánh giá đúng tiêu chí Task Achievement.</p>
-              <span className={s.featPill}>Task 1 · Task 2 · Academic · General</span>
+              <h3 className={s.featTitle}>Biểu đồ leo thang band score</h3>
+              <p className={s.featDesc}>Mỗi bài nộp là một điểm trên biểu đồ tiến độ. Thấy ngay đường band score thay đổi theo thời gian, biết mình yếu nhất tiêu chí nào để tập trung đúng chỗ.</p>
+              <span className={s.featPill}>Progress Tracking</span>
             </div>
           </div>
         </div>
