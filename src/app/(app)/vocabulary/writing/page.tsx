@@ -6,5 +6,15 @@ export default async function WritingVocabPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  return <WritingVocabClient userId={user.id} />
+
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('plans(slug)')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .single()
+
+  const planSlug: string = (sub?.plans as { slug: string } | null)?.slug ?? 'free'
+
+  return <WritingVocabClient userId={user.id} planSlug={planSlug} />
 }

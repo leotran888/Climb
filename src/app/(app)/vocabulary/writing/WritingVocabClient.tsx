@@ -447,7 +447,11 @@ function MistakeCard({ item }: { item: CommonMistakeItem }) {
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export default function WritingVocabClient({ userId }: { userId: string }) {
+const FREE_TOPICS = ['Environment', 'Education', 'Health']
+
+export default function WritingVocabClient({ userId, planSlug }: { userId: string; planSlug: string }) {
+  const isFree = planSlug === 'free'
+  const isTopicLocked = (topic: string) => isFree && topic !== 'All Topics' && !FREE_TOPICS.includes(topic)
   const [activeTab, setActiveTab] = useState<TabKey>('vocabulary')
   const [search, setSearch] = useState('')
   const [topicFilter, setTopicFilter] = useState('All Topics')
@@ -503,12 +507,13 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
 
   const matchesShared = useCallback(
     (topic: string, band: BandLevel, task: WritingTask) => {
+      if (isFree && !FREE_TOPICS.includes(topic)) return false
       if (topicFilter !== 'All Topics' && topic !== topicFilter) return false
       if (bandFilter !== 'all' && band !== bandFilter) return false
       if (taskFilter !== 'all' && task !== taskFilter && task !== 'both') return false
       return true
     },
-    [topicFilter, bandFilter, taskFilter]
+    [isFree, topicFilter, bandFilter, taskFilter]
   )
 
   const filteredStudy = useMemo(() => {
@@ -551,12 +556,13 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
 
   const filteredMistakes = useMemo(() => {
     return ALL_MISTAKES.filter(item => {
+      if (isFree && !FREE_TOPICS.includes(item.topic)) return false
       if (topicFilter !== 'All Topics' && item.topic !== topicFilter) return false
       if (!q) return true
       const hay = [item.incorrect, item.correct, item.explanation, item.topic].join(' ').toLowerCase()
       return hay.includes(q)
     })
-  }, [topicFilter, q])
+  }, [isFree, topicFilter, q])
 
   const tabs: { key: TabKey; label: string; count: number }[] = [
     { key: 'vocabulary', label: 'Vocabulary', count: ALL_VOCABULARY.length },
@@ -652,19 +658,27 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
         <div className="space-y-3">
           {/* Topic scroll */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {TOPICS.map(t => (
-              <button
-                key={t}
-                onClick={() => setTopicFilter(t)}
-                className={`shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap ${
-                  topicFilter === t
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
+            {TOPICS.map(t => {
+              const locked = isTopicLocked(t)
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTopicFilter(t)}
+                  className={`shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap flex items-center gap-1 ${
+                    topicFilter === t
+                      ? locked
+                        ? 'bg-slate-200 text-slate-500 border border-slate-300'
+                        : 'bg-emerald-600 text-white'
+                      : locked
+                      ? 'bg-white border border-slate-100 text-slate-400'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
+                  }`}
+                >
+                  {locked && <span className="text-[10px]">🔒</span>}
+                  {t}
+                </button>
+              )
+            })}
           </div>
 
           {/* Function filter (writing phrases only) */}
@@ -750,8 +764,39 @@ export default function WritingVocabClient({ userId }: { userId: string }) {
           {q ? ` for "${search}"` : ''}
         </p>
 
+        {/* Free tier upgrade banner */}
+        {isFree && (
+          <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <span className="text-lg">🔒</span>
+            <p className="text-sm text-amber-800 flex-1">
+              <span className="font-semibold">Free plan:</span> Only <strong>Environment</strong>, <strong>Education</strong>, and <strong>Health</strong> topics are available.
+            </p>
+            <Link
+              href="/subscription"
+              className="shrink-0 text-xs font-semibold text-emerald-700 hover:text-emerald-900 bg-white border border-emerald-300 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Upgrade
+            </Link>
+          </div>
+        )}
+
         {/* Card grid */}
-        {resultCount === 0 ? (
+        {isTopicLocked(topicFilter) ? (
+          <div className="bg-white rounded-xl border-2 border-slate-200 py-16 px-8 text-center shadow-sm">
+            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">🔒</div>
+            <p className="font-bold text-slate-800 text-lg mb-1">{topicFilter} is locked</p>
+            <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+              Upgrade to unlock all 18 IELTS topics and get full access to vocabulary, collocations, phrasal verbs, writing phrases, and common mistakes.
+            </p>
+            <Link
+              href="/subscription"
+              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+            >
+              Upgrade to unlock all topics
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </Link>
+          </div>
+        ) : resultCount === 0 ? (
           <div className="bg-white rounded-xl border-2 border-slate-300 py-16 text-center shadow-sm">
             <p className="text-4xl mb-3">🔍</p>
             <p className="font-semibold text-slate-700">No items found</p>
