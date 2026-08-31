@@ -135,7 +135,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white rounded-2xl border-2 border-emerald-600 p-4 card-hover" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.22)' }}>
           <div className="flex items-center justify-between mb-2">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Điểm mới nhất</p>
@@ -171,10 +171,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Night Sky Widgets ── */}
-      <div className="grid grid-cols-5 gap-3 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-start">
 
         {/* Streak (col-span-3) — with expandable calendar */}
-        <div className="col-span-3">
+        <div className="md:col-span-3">
           <StreakWidget
             streak={streak}
             weekDays={weekDays}
@@ -191,7 +191,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Exam countdown (col-span-2) */}
-        <div className="col-span-2">
+        <div className="md:col-span-2">
           <ExamCountdownWidget examDate={profile?.exam_date ?? null} userId={user!.id} />
         </div>
       </div>
@@ -199,7 +199,7 @@ export default async function DashboardPage() {
       {/* Practice cards */}
       <div>
         <h2 className="text-sm font-black text-slate-900 mb-2">Luyện tập ngay</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
           {/* Writing */}
           <Link href="/writing" className="group block">
