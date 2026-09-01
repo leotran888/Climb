@@ -13,6 +13,14 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  async function handleGoogle() {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${location.origin}/auth/callback` },
+    })
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
@@ -127,6 +135,26 @@ export default function RegisterPage() {
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
+
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 h-px bg-slate-200"/>
+          <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase">Hoặc tiếp tục với</span>
+          <div className="flex-1 h-px bg-slate-200"/>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogle}
+          className="w-full flex items-center justify-center gap-3 border border-slate-200 rounded-xl py-3 font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M47.532 24.552c0-1.636-.132-3.2-.388-4.704H24.48v9.02h12.984c-.572 2.98-2.26 5.508-4.792 7.208v5.972h7.74c4.532-4.176 7.12-10.32 7.12-17.496z" fill="#4285F4"/>
+            <path d="M24.48 48c6.48 0 11.916-2.148 15.888-5.828l-7.74-5.972c-2.148 1.436-4.896 2.284-8.148 2.284-6.264 0-11.568-4.224-13.468-9.9H2.98v6.168C6.936 42.9 15.132 48 24.48 48z" fill="#34A853"/>
+            <path d="M11.012 28.584A14.4 14.4 0 0 1 10.2 24c0-1.592.276-3.14.812-4.584v-6.168H2.98A23.964 23.964 0 0 0 .48 24c0 3.876.924 7.548 2.5 10.752l8.032-6.168z" fill="#FBBC05"/>
+            <path d="M24.48 9.516c3.54 0 6.716 1.216 9.216 3.608l6.888-6.888C36.392 2.38 30.956 0 24.48 0 15.132 0 6.936 5.1 2.98 13.248l8.032 6.168c1.9-5.676 7.204-9.9 13.468-9.9z" fill="#EA4335"/>
+          </svg>
+          Google
+        </button>
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Already have an account?{' '}
