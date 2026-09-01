@@ -168,7 +168,7 @@
 /* desktop-only: scale up hero mascot */
 @media (min-width: 801px) {
   .heroMascotSvg { width: 380px; height: 355px; }
-  .pc:not(.best) { background: #cce8d2; }
+  .pc:not(.best) { background: #d9eedf; }
 }
 
 /* ── FEATURES ── */
