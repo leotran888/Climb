@@ -284,7 +284,7 @@
 .pc {
   border: 2px solid rgba(22,163,68,.14);
   border-radius: var(--r); padding: 32px 28px;
-  background: #d8eede; position: relative;
+  background: #e2f2e6; position: relative;
   transition: transform .2s;
 }
 .pc:hover { transform: translateY(-4px); }
