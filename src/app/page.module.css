@@ -233,13 +233,18 @@
 
 /* ── ABOUT ── */
 .aboutWrap {
-  background: #f5edda;
+  background: #fdf8ef;
   margin: 0 28px;
   border-radius: 30px;
   padding: 72px 64px;
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 60px; align-items: center;
-  box-shadow: 0 0 0 1.5px rgba(180,145,60,.18), 0 12px 40px rgba(0,0,0,.06);
+}
+@media (min-width: 801px) {
+  .aboutWrap {
+    background: #f5edda;
+    box-shadow: 0 0 0 1.5px rgba(180,145,60,.18), 0 12px 40px rgba(0,0,0,.06);
+  }
 }
 .aboutTag {
   color: var(--accent); font-size: 11px; font-weight: 800;
