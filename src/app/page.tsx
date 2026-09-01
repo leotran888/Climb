@@ -1,575 +1,407 @@
-'use client'
-import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import s from './page.module.css'
-import LionCanvas from '@/components/LionCanvas'
 
 export default function LandingPage() {
-  const navRef = useRef<HTMLElement>(null)
-  const mockupRef = useRef<HTMLDivElement>(null)
-  const scoreNumRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const nav = navRef.current
-    if (!nav) return
-    const onScroll = () => nav.classList.toggle(s.navScrolled, window.scrollY > 48)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    const mockup = mockupRef.current
-    if (!mockup) return
-    const onMove = (e: MouseEvent) => {
-      const cx = window.innerWidth / 2, cy = window.innerHeight / 2
-      const dx = (e.clientX - cx) / cx * 4
-      const dy = (e.clientY - cy) / cy * 2
-      mockup.style.transform = `rotateY(${-14 + dx}deg) rotateX(${5 - dy}deg) rotateZ(.5deg)`
-    }
-    document.addEventListener('mousemove', onMove, { passive: true })
-    return () => document.removeEventListener('mousemove', onMove)
-  }, [])
-
-  useEffect(() => {
-    function animateScore() {
-      const el = scoreNumRef.current
-      if (!el) return
-      const dur = 1600, t0 = performance.now()
-      ;(function step(now: number) {
-        const p = Math.min((now - t0) / dur, 1)
-        const e = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p
-        const v = 7 * e
-        el.innerHTML = (v >= 6.95 ? '7.0' : v.toFixed(1)) + '<span>/9</span>'
-        if (p < 1) requestAnimationFrame(step)
-      })(t0)
-      document.querySelectorAll(`.${s.criterionFill}`).forEach(b => {
-        const bar = b as HTMLElement
-        setTimeout(() => { bar.style.width = (bar.dataset.val ?? '0') + '%' }, 300)
-      })
-    }
-    const timer = setTimeout(animateScore, 600)
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(en => {
-        if (!en.isIntersecting) return
-        en.target.classList.add(s.revealIn)
-        en.target.querySelectorAll('[data-count-target]').forEach(c => {
-          const el = c as HTMLElement
-          const target = +(el.dataset.countTarget ?? 0)
-          const t0 = performance.now()
-          ;(function step(now: number) {
-            const p = Math.min((now - t0) / 1800, 1)
-            const e = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p
-            el.textContent = Math.floor(target * e).toLocaleString()
-            if (p < 1) requestAnimationFrame(step)
-          })(t0)
-        })
-        io.unobserve(en.target)
-      })
-    }, { threshold: 0.12 })
-    document.querySelectorAll(`.${s.reveal}`).forEach(el => io.observe(el))
-    return () => io.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const cards = document.querySelectorAll(`.${s.featCard}`)
-    const cleanups: (() => void)[] = []
-    cards.forEach(card => {
-      const el = card as HTMLElement
-      const onMove = (e: MouseEvent) => {
-        const r = el.getBoundingClientRect()
-        const x = (e.clientX - r.left) / r.width - 0.5
-        const y = (e.clientY - r.top) / r.height - 0.5
-        el.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateZ(8px)`
-        el.style.setProperty('--mx', `${(x + 0.5) * 100}%`)
-        el.style.setProperty('--my', `${(y + 0.5) * 100}%`)
-      }
-      const onLeave = () => { el.style.transform = '' }
-      el.addEventListener('mousemove', onMove)
-      el.addEventListener('mouseleave', onLeave)
-      cleanups.push(() => {
-        el.removeEventListener('mousemove', onMove)
-        el.removeEventListener('mouseleave', onLeave)
-      })
-    })
-    return () => cleanups.forEach(fn => fn())
-  }, [])
-
   return (
     <div className={s.lp}>
-      {/* NAV */}
-      <nav ref={navRef} className={s.nav}>
-        <div className={`${s.wrap} ${s.navInner}`}>
-          <Link href="/" className={s.logo}>
-            <svg width="24" height="28" viewBox="0 0 36 42" fill="none">
-              <path d="M2 40 L2 32.5 Q2 29 5.5 29 L8.5 29 Q12 29 12 25.5 L12 21.5 Q12 18 15.5 18 L18.5 18 Q22 18 22 14.5 L22 11.5 Q22 8 25.5 8 L34 8"
-                stroke="#16a344" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* ═══ NAV ═══ */}
+      <nav className={s.nav}>
+        <Link href="/" className={s.navLogo}>
+          <div className={s.navIcon}>
+            <svg width="20" height="23" viewBox="0 0 36 42" fill="none">
+              <path d="M2 40L2 32.5Q2 29 5.5 29L8.5 29Q12 29 12 25.5L12 21.5Q12 18 15.5 18L18.5 18Q22 18 22 14.5L22 11.5Q22 8 25.5 8L34 8" stroke="#fff" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <div className={s.logoText}>
-              <span className={s.logoWord}>Climb</span>
-              <span className={s.logoTag}>IELTS</span>
-            </div>
-          </Link>
-          <ul className={s.navLinks}>
-            <li><a href="#features">Tính năng</a></li>
-            <li><a href="#how">Cách hoạt động</a></li>
-            <li><a href="#testimonials">Đánh giá</a></li>
-            <li><a href="#pricing">Bảng giá</a></li>
-          </ul>
-          <div className={s.navBtns}>
-            <Link href="/login" className={s.btnGhost}>Đăng nhập</Link>
-            <Link href="/register" className={s.btnNav}>Thử miễn phí</Link>
           </div>
-        </div>
+          <span className={s.navName}>Climb <em>IELTS</em></span>
+        </Link>
+        <nav className={s.navLinks}>
+          <a href="#features">Tính năng</a>
+          <a href="#vocab">Từ vựng</a>
+          <a href="#pricing">Học phí</a>
+        </nav>
+        <Link href="/register" className={s.navCta}>Thử miễn phí →</Link>
       </nav>
 
-      {/* HERO */}
+      {/* ═══ HERO ═══ */}
       <section className={s.hero}>
-        <LionCanvas />
-        <div style={{ display: 'contents' }}>
-          <div style={{ paddingLeft: 28 }}>
-            <div className={s.heroEyebrow}>
-              <span className={s.pulse}></span>AI chấm bài IELTS Writing
-            </div>
-            <h1 className={s.h1}>
-              Leo thang band <span id="scoreWord">score</span><br />
-              với <span className={s.acc}>AI thật sự</span>
-            </h1>
-            <p className={s.heroSub}>AI viết lại bài của bạn đạt Band mục tiêu — không chỉ chỉ lỗi. Kho từ vựng 18 topic IELTS Writing và hiểu đúng lỗi đặc thù của học viên Việt.</p>
-            <div className={s.heroCta}>
-              <button className={s.btnPrimary} onClick={() => { location.href = '/register' }}>Bắt đầu miễn phí</button>
-              <button className={s.btnLink} onClick={() => { location.href = '/writing' }}>
-                Xem demo
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-            <div className={s.heroTrust}>
-              <div className={s.stars}>
-                {[0,1,2,3,4].map(i => (
-                  <svg key={i} width="13" height="13" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
-              </div>
-              <span>Hàng trăm học viên đã cải thiện band score Writing</span>
-            </div>
-          </div>
+        <div className={s.heroL}>
+          <span className={s.heroTag}>CLIMBIELTS.COM</span>
+          <h1 className={s.heroH1}>
+            Nền tảng<br/>
+            <span className={s.warm}>Leo thang</span><br/>
+            IELTS Writing
+          </h1>
+          <p className={s.heroSub}>AI viết lại bài của bạn đạt Band mục tiêu — không chỉ chỉ lỗi. Kho từ vựng 18 topic, hiểu đúng lỗi đặc thù học viên Việt.</p>
+          <Link href="/register" className={s.heroBtn}>
+            thử miễn phí ngay hôm nay
+            <span className={s.arrow}>→</span>
+          </Link>
+        </div>
 
-          {/* 3D App Mockup */}
-          <div className={s.heroVisual} style={{ paddingRight: 28 }}>
-            <div className={`${s.chip} ${s.chipA}`}>Band 7.0 đạt rồi 🎯</div>
-            <div className={`${s.chip} ${s.chipB}`}>+1.5 sau 8 tuần</div>
-            <div className={s.mockupScene}>
-              <div className={s.mockup} ref={mockupRef}>
-                <div className={s.browserTop}>
-                  <div className={s.browserDots}>
-                    <span /><span /><span />
-                  </div>
-                  <div className={s.browserBar}>climbielts.com/writing/result</div>
-                </div>
-                <div className={s.appBody}>
-                  <div className={s.appSidebar}>
-                    <div className={s.appLogo}>✦ Climb</div>
-                    <div className={`${s.appNavItem} ${s.appNavItemActive}`}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                      </svg>
-                      Writing
-                    </div>
-                    <div className={s.appNavItem}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-8" />
-                      </svg>
-                      Progress
-                    </div>
-                    <div className={s.appNavItem}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M4 6h16M4 12h16M4 18h10" />
-                      </svg>
-                      History
-                    </div>
-                  </div>
-                  <div className={s.appMain}>
-                    <div className={s.appScoreHeader}>
-                      <div>
-                        <div className={s.overallLabel}>Overall Band Score</div>
-                        <div className={s.overallNum} ref={scoreNumRef}>–<span>/9</span></div>
-                      </div>
-                      <div className={s.scoreBadge}>
-                        <div className={s.scoreBadgeLabel}>Mục tiêu</div>
-                        <div className={s.scoreBadgeVal}>7.5</div>
-                      </div>
-                    </div>
-                    <div className={s.criteria}>
-                      {[
-                        { name: 'TR', val: '77.7', score: '7.0' },
-                        { name: 'CC', val: '72.2', score: '6.5' },
-                        { name: 'LR', val: '77.7', score: '7.0' },
-                        { name: 'GRA', val: '83.3', score: '7.5' },
-                      ].map(c => (
-                        <div key={c.name} className={s.criterion}>
-                          <span className={s.criterionName}>{c.name}</span>
-                          <div className={s.criterionBar}>
-                            <div className={s.criterionFill} data-val={c.val} />
-                          </div>
-                          <span className={s.criterionScore}>{c.score}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className={s.corrections}>
-                      <div className={s.correctionsLabel}>Lỗi phát hiện</div>
-                      <div className={s.corrItem}>do positive impacts → have positive impacts</div>
-                      <div className={s.corrItem}>reductions on → reductions in</div>
-                      <div className={s.corrItem}>make a rise → experience a rise</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className={s.mockupShadow} />
+        <div className={s.heroR}>
+          {/* sparkles */}
+          <div className={s.sp} style={{top:'6%',left:'6%',animationDelay:'0s'}}>✦</div>
+          <div className={s.sp} style={{top:'60%',right:'6%',animationDelay:'.8s',fontSize:'15px'}}>✦</div>
+          <div className={s.sp} style={{bottom:'10%',left:'16%',animationDelay:'1.6s',fontSize:'12px'}}>✦</div>
+          <div className={s.sp} style={{top:'22%',right:'2%',animationDelay:'.4s',fontSize:'11px'}}>✦</div>
+
+          <div className={s.mascotWrap}>
+            {/* chat bubble */}
+            <div className={s.bubble}>
+              Band hôm nay<br/>
+              <strong>↑ 7.0 / 9.0</strong>
             </div>
+
+            {/* Mountain mascot SVG */}
+            <svg width="290" height="270" viewBox="0 0 290 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="145" cy="258" rx="115" ry="12" fill="rgba(0,0,0,0.1)"/>
+              <path d="M18 242 Q18 90 145 48 Q272 90 272 242 Z" fill="#16a344"/>
+              <path d="M18 242 Q18 90 145 48 L145 242Z" fill="rgba(0,0,0,0.07)"/>
+              <ellipse cx="145" cy="66" rx="30" ry="18" fill="rgba(255,255,255,0.22)"/>
+              <path d="M196 148 L216 148 L216 170 L236 170 L236 193" stroke="rgba(255,255,255,0.38)" strokeWidth="4.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="216" cy="148" r="3" fill="rgba(255,255,255,0.5)"/>
+              <circle cx="236" cy="170" r="3" fill="rgba(255,255,255,0.5)"/>
+              <ellipse cx="104" cy="185" rx="13" ry="7" fill="rgba(255,255,255,0.12)"/>
+              <ellipse cx="186" cy="185" rx="13" ry="7" fill="rgba(255,255,255,0.12)"/>
+              <circle cx="118" cy="167" r="14" fill="#0b1e10"/>
+              <circle cx="172" cy="167" r="14" fill="#0b1e10"/>
+              <circle cx="122" cy="163" r="5" fill="white"/>
+              <circle cx="176" cy="163" r="5" fill="white"/>
+              <path d="M110 195 Q145 218 180 195" stroke="#0b1e10" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
+              <line x1="145" y1="48" x2="145" y2="26" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M145 26 L162 33 L145 40Z" fill="#f5aa00"/>
+            </svg>
           </div>
         </div>
       </section>
 
-      {/* STATS */}
-      <div className={s.stats}>
-        <div className={s.wrap}>
-          <div className={s.statsGrid}>
-            <div className={`${s.stat} ${s.reveal}`}>
-              <div className={s.statN}>
-                <span data-count-target="10000">0</span><span className={s.statU}>+</span>
+      {/* ═══ FEATURES ═══ */}
+      <section className={s.features} id="features">
+        <div className={s.sectionTag}>✦ Tính năng độc quyền</div>
+        <h2 className={s.h2}>Không AI nào<br/>làm được những thứ này</h2>
+        <p className={s.sectionSub}>Climb được xây riêng cho học viên IELTS Việt — không phải grammar tool dịch sang tiếng Việt.</p>
+
+        <div className={s.cards}>
+
+          {/* Card 1: Upgraded Essay — periwinkle blue */}
+          <div className={s.fc} style={{background:'linear-gradient(180deg,#7890d8 0%,#4a64b4 100%)'}}>
+            <div className={s.fcTop}>
+              <div className={s.fcIconSm}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <rect x="5" y="3" width="14" height="18" rx="2" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
+                  <line x1="8" y1="8" x2="16" y2="8" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="8" y1="11.5" x2="14" y2="11.5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="8" y1="15" x2="15" y2="15" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </div>
-              <div className={s.statL}>Bài luận đã chấm</div>
+              <div className={s.fcCat}>Writing AI</div>
+              <div className={s.fcTitle}>Bài viết chuẩn band mục tiêu của bạn</div>
+              <div className={s.fcDesc}>AI viết lại toàn bộ bài đạt Band bạn muốn — không chỉ chỉ lỗi.</div>
             </div>
-            <div className={`${s.stat} ${s.reveal} ${s.d1}`}>
-              <div className={s.statN}>4<span className={s.statU}> tiêu chí</span></div>
-              <div className={s.statL}>Đánh giá chuẩn IELTS</div>
+            <div className={s.fcIllus}>
+              <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+                <text x="52" y="44" fontSize="20" fill="rgba(245,192,60,.72)">✦</text>
+                <text x="316" y="50" fontSize="14" fill="rgba(245,192,60,.56)">✦</text>
+                <text x="350" y="28" fontSize="10" fill="rgba(245,192,60,.42)">✦</text>
+                <text x="148" y="24" fontSize="8" fill="rgba(245,192,60,.34)">✦</text>
+                <ellipse cx="200" cy="176" rx="178" ry="88" fill="rgba(0,0,0,0.16)"/>
+                <ellipse cx="165" cy="122" rx="16" ry="19" fill="rgba(5,8,22,0.88)"/>
+                <circle cx="172" cy="116" r="5.5" fill="white"/>
+                <ellipse cx="235" cy="122" rx="16" ry="19" fill="rgba(5,8,22,0.88)"/>
+                <circle cx="242" cy="116" r="5.5" fill="white"/>
+              </svg>
+              <div className={s.fcLabel}>UPGRADED ESSAY · ĐỘC QUYỀN</div>
             </div>
-            <div className={`${s.stat} ${s.reveal} ${s.d2}`}>
-              <div className={s.statN}>24<span className={s.statU}>/7</span></div>
-              <div className={s.statL}>Chấm bài bất cứ lúc nào</div>
+          </div>
+
+          {/* Card 2: Vietnamese AI — forest green */}
+          <div className={s.fc} style={{background:'linear-gradient(180deg,#58a462 0%,#2e7040 100%)'}}>
+            <div className={s.fcTop}>
+              <div className={s.fcIconSm}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="9" r="5" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
+                  <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div className={s.fcCat}>Vietnamese-native AI</div>
+              <div className={s.fcTitle}>Hiểu đúng lỗi của học viên Việt</div>
+              <div className={s.fcDesc}>Không mạo từ, không chia thì — AI hiểu nguyên nhân gốc rễ từ tiếng mẹ đẻ.</div>
             </div>
+            <div className={s.fcIllus}>
+              <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+                <text x="60" y="40" fontSize="18" fill="rgba(245,192,60,.70)">✦</text>
+                <text x="320" y="55" fontSize="13" fill="rgba(245,192,60,.55)">✦</text>
+                <text x="340" y="25" fontSize="9" fill="rgba(245,192,60,.40)">✦</text>
+                <ellipse cx="358" cy="70" rx="18" ry="28" fill="rgba(255,255,255,0.12)" transform="rotate(-30,358,70)"/>
+                <ellipse cx="340" cy="82" rx="14" ry="22" fill="rgba(255,255,255,0.08)" transform="rotate(-50,340,82)"/>
+                <ellipse cx="200" cy="172" rx="155" ry="92" fill="rgba(0,0,0,0.16)"/>
+                <ellipse cx="172" cy="120" rx="15" ry="18" fill="rgba(5,18,8,0.88)"/>
+                <circle cx="179" cy="115" r="5" fill="white"/>
+                <ellipse cx="228" cy="120" rx="15" ry="18" fill="rgba(5,18,8,0.88)"/>
+                <circle cx="235" cy="115" r="5" fill="white"/>
+              </svg>
+              <div className={s.fcLabel}>VIETNAMESE-NATIVE AI</div>
+            </div>
+          </div>
+
+          {/* Card 3: 4 Criteria — terracotta */}
+          <div className={s.fc} style={{background:'linear-gradient(180deg,#cc7248 0%,#9a4c28 100%)'}}>
+            <div className={s.fcTop}>
+              <div className={s.fcIconSm}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 11l3 3L22 4" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div className={s.fcCat}>Examiner-accurate</div>
+              <div className={s.fcTitle}>Band score đủ 4 tiêu chí như examiner thật</div>
+              <div className={s.fcDesc}>TR · CC · LR · GRA — không phải điểm grammar chung chung.</div>
+            </div>
+            <div className={s.fcIllus}>
+              <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+                <text x="48" y="40" fontSize="18" fill="rgba(245,192,60,.70)">✦</text>
+                <text x="322" y="52" fontSize="12" fill="rgba(245,192,60,.55)">✦</text>
+                <text x="352" y="30" fontSize="9" fill="rgba(245,192,60,.40)">✦</text>
+                <rect x="62" y="22" width="56" height="22" rx="11" fill="rgba(255,255,255,0.22)"/>
+                <text x="90" y="37" textAnchor="middle" fontSize="10" fill="white" fontFamily="Nunito,sans-serif" fontWeight="800">TR 7.0</text>
+                <rect x="130" y="14" width="56" height="22" rx="11" fill="rgba(255,255,255,0.18)"/>
+                <text x="158" y="29" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.9)" fontFamily="Nunito,sans-serif" fontWeight="800">CC 6.5</text>
+                <rect x="218" y="18" width="56" height="22" rx="11" fill="rgba(255,255,255,0.18)"/>
+                <text x="246" y="33" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.9)" fontFamily="Nunito,sans-serif" fontWeight="800">LR 7.0</text>
+                <rect x="288" y="24" width="60" height="22" rx="11" fill="rgba(255,255,255,0.22)"/>
+                <text x="318" y="39" textAnchor="middle" fontSize="10" fill="white" fontFamily="Nunito,sans-serif" fontWeight="800">GRA 7.5</text>
+                <ellipse cx="200" cy="174" rx="165" ry="90" fill="rgba(0,0,0,0.16)"/>
+                <ellipse cx="170" cy="121" rx="15" ry="18" fill="rgba(20,8,4,0.88)"/>
+                <circle cx="177" cy="116" r="5" fill="white"/>
+                <ellipse cx="230" cy="121" rx="15" ry="18" fill="rgba(20,8,4,0.88)"/>
+                <circle cx="237" cy="116" r="5" fill="white"/>
+              </svg>
+              <div className={s.fcLabel}>BAND 4.0–9.0</div>
+            </div>
+          </div>
+
+          {/* Card 4: Vocab 18 Topics — dusty mauve */}
+          <div className={s.fc} style={{background:'linear-gradient(180deg,#c06070 0%,#8e4050 100%)'}}>
+            <div className={s.fcTop}>
+              <div className={s.fcIconSm}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8"/>
+                </svg>
+              </div>
+              <div className={s.fcCat}>18 IELTS Topics</div>
+              <div className={s.fcTitle}>Kho từ vựng 18 topic IELTS Writing</div>
+              <div className={s.fcDesc}>Học thuật theo chủ đề: Environment, Technology, Education... Task 1 &amp; 2.</div>
+            </div>
+            <div className={s.fcIllus}>
+              <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+                <text x="55" y="40" fontSize="18" fill="rgba(245,192,60,.68)">✦</text>
+                <text x="318" y="52" fontSize="13" fill="rgba(245,192,60,.52)">✦</text>
+                <text x="344" y="26" fontSize="9" fill="rgba(245,192,60,.38)">✦</text>
+                <ellipse cx="140" cy="155" rx="90" ry="70" fill="rgba(0,0,0,0.14)"/>
+                <ellipse cx="260" cy="160" rx="88" ry="66" fill="rgba(0,0,0,0.14)"/>
+                <ellipse cx="200" cy="170" rx="115" ry="88" fill="rgba(0,0,0,0.16)"/>
+                <ellipse cx="173" cy="118" rx="15" ry="18" fill="rgba(20,5,10,0.88)"/>
+                <circle cx="180" cy="113" r="5" fill="white"/>
+                <ellipse cx="227" cy="118" rx="15" ry="18" fill="rgba(20,5,10,0.88)"/>
+                <circle cx="234" cy="113" r="5" fill="white"/>
+              </svg>
+              <div className={s.fcLabel}>WRITING PHRASES · 18 TOPICS</div>
+            </div>
+          </div>
+
+          {/* Card 5: Progress Tracking — muted purple */}
+          <div className={s.fc} style={{background:'linear-gradient(180deg,#8868c8 0%,#5a40a0 100%)'}}>
+            <div className={s.fcTop}>
+              <div className={s.fcIconSm}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className={s.fcCat}>Progress Tracking</div>
+              <div className={s.fcTitle}>Biểu đồ leo thang band score</div>
+              <div className={s.fcDesc}>Xem lịch sử band score theo bài, theo tuần — biết mình đang leo nhanh hay chậm.</div>
+            </div>
+            <div className={s.fcIllus}>
+              <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+                <text x="50" y="42" fontSize="18" fill="rgba(245,192,60,.68)">✦</text>
+                <text x="320" y="52" fontSize="12" fill="rgba(245,192,60,.52)">✦</text>
+                <text x="348" y="28" fontSize="9" fill="rgba(245,192,60,.38)">✦</text>
+                <path d="M50 155 L50 120 L110 120 L110 90 L170 90 L170 62 L230 62 L230 38 L290 38 L290 18 L350 18 L350 155 Z" fill="rgba(255,255,255,0.07)"/>
+                <ellipse cx="216" cy="172" rx="162" ry="88" fill="rgba(0,0,0,0.18)"/>
+                <ellipse cx="183" cy="120" rx="15" ry="18" fill="rgba(12,5,20,0.88)"/>
+                <circle cx="190" cy="115" r="5" fill="white"/>
+                <ellipse cx="245" cy="116" rx="15" ry="18" fill="rgba(12,5,20,0.88)"/>
+                <circle cx="252" cy="111" r="5" fill="white"/>
+              </svg>
+              <div className={s.fcLabel}>PROGRESS TRACKING</div>
+            </div>
+          </div>
+
+          {/* Card 6: Free — muted seafoam teal */}
+          <div className={s.fc} style={{background:'linear-gradient(180deg,#46a8a4 0%,#287a78 100%)'}}>
+            <div className={s.fcTop}>
+              <div className={s.fcIconSm}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
+                  <path d="M12 8v4l3 3" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div className={s.fcCat}>Bắt đầu ngay</div>
+              <div className={s.fcTitle}>Thử miễn phí — không cần thẻ</div>
+              <div className={s.fcDesc}>Bắt đầu ngay hôm nay, không cần thẻ tín dụng.</div>
+            </div>
+            <div className={s.fcIllus}>
+              <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+                <text x="55" y="42" fontSize="20" fill="rgba(245,192,60,.72)">✦</text>
+                <text x="316" y="50" fontSize="14" fill="rgba(245,192,60,.56)">✦</text>
+                <text x="348" y="26" fontSize="10" fill="rgba(245,192,60,.42)">✦</text>
+                <circle cx="90" cy="30" r="5" fill="rgba(255,255,255,0.3)"/>
+                <circle cx="290" cy="22" r="4" fill="rgba(255,255,255,0.25)"/>
+                <circle cx="362" cy="72" r="5" fill="rgba(255,255,255,0.22)"/>
+                <circle cx="24" cy="80" r="4" fill="rgba(255,255,255,0.22)"/>
+                <circle cx="340" cy="100" r="6" fill="rgba(255,255,255,0.18)"/>
+                <circle cx="60" cy="100" r="5" fill="rgba(255,255,255,0.18)"/>
+                <ellipse cx="200" cy="172" rx="160" ry="86" fill="rgba(0,0,0,0.16)"/>
+                <ellipse cx="168" cy="120" rx="17" ry="20" fill="rgba(4,18,18,0.88)"/>
+                <circle cx="176" cy="114" r="6" fill="white"/>
+                <ellipse cx="232" cy="120" rx="17" ry="20" fill="rgba(4,18,18,0.88)"/>
+                <circle cx="240" cy="114" r="6" fill="white"/>
+              </svg>
+              <div className={s.fcLabel}>FREE · BẮT ĐẦU NGAY</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ═══ ABOUT ═══ */}
+      <div className={s.aboutWrap}>
+        <div>
+          <div className={s.aboutTag}>✦ Về Climb IELTS</div>
+          <h2 className={s.h2}>Xây riêng cho<br/>học viên Việt</h2>
+          <p style={{marginTop:'14px'}}>Grammarly sửa ngữ pháp tiếng Anh chung chung. Các tool IELTS nước ngoài không hiểu tại sao người Việt mắc lỗi đó. Climb được thiết kế từ đầu để hiểu context tiếng Việt — không dịch từ tiếng Anh sang.</p>
+          <p>Mỗi feedback của Climb được viết để bạn vừa sửa được lỗi hiện tại, vừa không mắc lại lần sau.</p>
+          <div className={s.aboutStats}>
+            <div><div className={s.statN}>10k+</div><div className={s.statL}>Bài đã chấm</div></div>
+            <div><div className={s.statN}>4.8★</div><div className={s.statL}>Đánh giá</div></div>
+            <div><div className={s.statN}>18</div><div className={s.statL}>IELTS Topics</div></div>
+          </div>
+          <Link href="/register" className={s.aboutCta}>Tìm hiểu thêm về Climb →</Link>
+        </div>
+        <div className={s.aboutMascot}>
+          <div className={s.sp} style={{position:'absolute',top:'-5px',left:'8%',animationDelay:'.4s',color:'var(--accent)'}}>✦</div>
+          <div className={s.sp} style={{position:'absolute',bottom:'0',right:'6%',animationDelay:'1.3s',fontSize:'14px',color:'var(--accent)'}}>✦</div>
+
+          <div className={s.moonWrap}>
+            {/* Score-meter moon mascot */}
+            <svg width="260" height="260" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="130" cy="130" r="118" fill="rgba(22,163,68,.06)"/>
+              <circle cx="130" cy="130" r="105" fill="#fdf0c0"/>
+              <circle cx="88" cy="108" r="13" fill="rgba(180,145,60,.17)"/>
+              <circle cx="163" cy="88" r="9" fill="rgba(180,145,60,.13)"/>
+              <circle cx="158" cy="158" r="16" fill="rgba(180,145,60,.15)"/>
+              <path d="M52 168 A 90 90 0 1 1 208 168" stroke="rgba(180,145,60,.22)" strokeWidth="10" fill="none" strokeLinecap="round"/>
+              <path d="M52 168 A 90 90 0 0 1 197 95" stroke="#16a344" strokeWidth="10" fill="none" strokeLinecap="round"/>
+              <text x="130" y="106" textAnchor="middle" fontSize="22" fontWeight="900" fill="#16a344" fontFamily="Nunito,sans-serif">7.5</text>
+              <circle cx="107" cy="132" r="13" fill="#4a3210"/>
+              <circle cx="153" cy="132" r="13" fill="#4a3210"/>
+              <circle cx="111" cy="128" r="4.5" fill="white"/>
+              <circle cx="157" cy="128" r="4.5" fill="white"/>
+              <ellipse cx="90" cy="150" rx="11" ry="5.5" fill="rgba(210,140,90,.22)"/>
+              <ellipse cx="170" cy="150" rx="11" ry="5.5" fill="rgba(210,140,90,.22)"/>
+              <path d="M100 162 Q130 182 160 162" stroke="#4a3210" strokeWidth="5" fill="none" strokeLinecap="round"/>
+            </svg>
           </div>
         </div>
       </div>
 
-      {/* FEATURES */}
-      <section className={s.features} id="features">
-        <div className={s.wrap}>
-          <div className={`${s.sectionHead} ${s.reveal}`}>
-            <p className={s.eyebrow}>Tính năng</p>
-            <h2 className={s.h2}>Không AI nào làm được<br />những thứ này</h2>
-            <p className={s.sub}>Climb được xây riêng cho học viên IELTS Việt — không phải grammar tool dịch sang tiếng Việt.</p>
-          </div>
-          <div className={s.featGrid}>
-            <div className={`${s.featCard} ${s.reveal}`}>
-              <div className={s.featIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
-              </div>
-              <h3 className={s.featTitle}>Bài viết chuẩn band mục tiêu của bạn</h3>
-              <p className={s.featDesc}>AI không chỉ chỉ lỗi — còn viết lại toàn bộ bài của bạn ở Band 7.0, 7.5 hoặc 8.0. Đây là cách học nhanh nhất để nội hoá cấu trúc câu học thuật.</p>
-              <span className={s.featPill}>Upgraded Essay</span>
-            </div>
-            <div className={`${s.featCard} ${s.reveal} ${s.d1}`}>
-              <div className={s.featIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <path d="M9 12h6M9 16h6M9 8h6M5 20h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
-                </svg>
-              </div>
-              <h3 className={s.featTitle}>Hiểu đúng lỗi của học viên Việt</h3>
-              <p className={s.featDesc}>Tiếng Việt không có mạo từ, không chia thì, không biến đổi số nhiều. Climb biết chính xác những lỗi cấu trúc mà học sinh Việt hay mắc — không phải feedback kiểu generic.</p>
-              <span className={s.featPill}>Vietnamese-native AI</span>
-            </div>
-            <div className={`${s.featCard} ${s.reveal} ${s.d2}`}>
-              <div className={s.featIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-8" />
-                </svg>
-              </div>
-              <h3 className={s.featTitle}>Band score đủ 4 tiêu chí như examiner thật</h3>
-              <p className={s.featDesc}>TR · CC · LR · GRA — đúng rubric IELTS Writing band descriptors, không phải "grammar + vocabulary" chung chung. Band score có thể so với kết quả thi thật.</p>
-              <span className={s.featPill}>Examiner-accurate · Band 4.0–9.0</span>
-            </div>
-            <div className={`${s.featCard} ${s.reveal} ${s.d3}`}>
-              <div className={s.featIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>
-              </div>
-              <h3 className={s.featTitle}>Biểu đồ leo thang band score</h3>
-              <p className={s.featDesc}>Mỗi bài nộp là một điểm trên biểu đồ tiến độ. Thấy ngay đường band score thay đổi theo thời gian, biết mình yếu nhất tiêu chí nào để tập trung đúng chỗ.</p>
-              <span className={s.featPill}>Progress Tracking</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className={s.hiw} id="how">
-        <div className={s.wrap}>
-          <div className={`${s.sectionHead} ${s.reveal}`}>
-            <p className={s.eyebrow}>Cách hoạt động</p>
-            <h2 className={s.hiwH2}>Ba bước để nhận<br />phản hồi chi tiết</h2>
-            <p className={s.hiwSub}>Đơn giản như nộp bài — phức tạp ở phía AI.</p>
-          </div>
-          <div className={s.hiwGrid}>
-            <div className={`${s.hiwStep} ${s.reveal}`}>
-              <div className={s.stepNum}>1</div>
-              <h3 className={s.stepTitle}>Nộp bài luận</h3>
-              <p className={s.stepDesc}>Dán bài viết vào, chọn Task 1 hoặc Task 2, thêm đề bài hoặc upload ảnh biểu đồ nếu có.</p>
-            </div>
-            <div className={`${s.hiwStep} ${s.reveal} ${s.d1}`}>
-              <div className={s.stepNum}>2</div>
-              <h3 className={s.stepTitle}>AI phân tích song song</h3>
-              <p className={s.stepDesc}>Hai mô hình AI chạy song song — một chấm điểm 4 tiêu chí, một tìm lỗi ngữ pháp — để cho ra kết quả nhanh nhất có thể.</p>
-            </div>
-            <div className={`${s.hiwStep} ${s.reveal} ${s.d2}`}>
-              <div className={s.stepNum}>3</div>
-              <h3 className={s.stepTitle}>Nhận kết quả đầy đủ</h3>
-              <p className={s.stepDesc}>Band score chi tiết, danh sách lỗi sai, gợi ý từ vựng và bài tập cải thiện — tất cả trong một trang kết quả.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className={s.testimonials} id="testimonials">
-        <div className={s.wrap}>
-          <div className={`${s.sectionHead} ${s.reveal}`}>
-            <p className={s.eyebrow}>Đánh giá</p>
-            <h2 className={s.h2}>Học viên nói gì<br />về Climb?</h2>
-            <p className={s.sub}>Những câu chuyện thật từ những người đã cải thiện band score.</p>
-          </div>
-          <div className={s.testGrid}>
-            <div className={`${s.testCard} ${s.reveal}`}>
-              <div className={s.testScore}>
-                <span className={s.scoreFrom}>5.5</span>
-                <span className={s.scoreArr}>→</span>
-                <span className={s.scoreTo}>7.0</span>
-              </div>
-              <p className={s.testQuote}>&ldquo;Climb giúp tôi hiểu rõ từng lỗi sai hơn cả giám khảo. Không còn bị điểm thấp vì collocation sai nữa.&rdquo;</p>
-              <div className={s.testPerson}>
-                <div className={s.testAv}>TN</div>
-                <div>
-                  <div className={s.testName}>Trần Nhật</div>
-                  <div className={s.testMeta}>Sau 3 tháng luyện tập</div>
-                </div>
-              </div>
-            </div>
-            <div className={`${s.testCard} ${s.reveal} ${s.d1}`}>
-              <div className={s.testScore}>
-                <span className={s.scoreFrom}>6.0</span>
-                <span className={s.scoreArr}>→</span>
-                <span className={s.scoreTo}>7.5</span>
-              </div>
-              <p className={s.testQuote}>&ldquo;Task 1 Academic luôn là điểm yếu của tôi. Nhờ Climb phát hiện đúng lỗi mô tả dữ liệu, tôi tăng 1.5 band chỉ trong 8 tuần.&rdquo;</p>
-              <div className={s.testPerson}>
-                <div className={s.testAv}>MA</div>
-                <div>
-                  <div className={s.testName}>Minh Anh</div>
-                  <div className={s.testMeta}>Mục tiêu du học Úc</div>
-                </div>
-              </div>
-            </div>
-            <div className={`${s.testCard} ${s.reveal} ${s.d2}`}>
-              <div className={s.testScore}>
-                <span className={s.scoreFrom}>6.5</span>
-                <span className={s.scoreArr}>→</span>
-                <span className={s.scoreTo}>7.5</span>
-              </div>
-              <p className={s.testQuote}>&ldquo;Chấm bài nhanh và rẻ hơn gia sư nhiều. Quan trọng nhất là giải thích rõ tại sao bị điểm thấp, không phải chỉ nói &apos;cần cải thiện&apos;.&rdquo;</p>
-              <div className={s.testPerson}>
-                <div className={s.testAv}>PH</div>
-                <div>
-                  <div className={s.testName}>Phương Hà</div>
-                  <div className={s.testMeta}>Luyện thi 6 tháng</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
+      {/* ═══ PRICING ═══ */}
       <section className={s.pricing} id="pricing">
-        <div className={s.wrap}>
-          <div className={`${s.sectionHead} ${s.reveal}`}>
-            <p className={s.eyebrow}>Bảng giá</p>
-            <h2 className={s.h2}>Đầu tư nhỏ,<br />tăng band score lớn</h2>
-            <p className={s.sub}>Bắt đầu miễn phí — nâng cấp bất cứ lúc nào khi bạn sẵn sàng luyện nghiêm túc hơn.</p>
+        <div className={s.sectionTag}>✦ Học phí</div>
+        <h2 className={s.h2}>Đầu tư vào band score<br/>không phải vào thầy cô</h2>
+        <p className={s.sectionSub}>Học phí thầy 1-1: 300–500k/giờ. Climb Pro: 99.000đ/tháng, luyện không giới hạn.</p>
+
+        <div className={s.pg}>
+          <div className={s.pc}>
+            <div className={s.pcName}>Free</div>
+            <div className={s.pcPrice}>0<span className={s.unit}>đ</span></div>
+            <div className={s.pcPer}>mãi mãi · 3 bài / tháng</div>
+            <ul className={s.pcFeats}>
+              <li>3 bài chấm / tháng</li>
+              <li>Band score 4 tiêu chí</li>
+              <li>Giải thích lỗi cơ bản</li>
+              <li className={s.off}>Upgraded Essay</li>
+              <li className={s.off}>Kho từ vựng 18 topic</li>
+              <li className={s.off}>Progress tracking</li>
+            </ul>
+            <Link href="/register" className={s.pcBtn} style={{display:'block',textAlign:'center',textDecoration:'none'}}>Bắt đầu miễn phí</Link>
           </div>
 
-          <div className={`${s.pricingGrid} ${s.reveal}`}>
-            {/* FREE */}
-            <div className={s.planCard}>
-              <p className={s.planName}>Free</p>
-              <div className={`${s.planPrice} ${s.planPriceFree}`}>0đ</div>
-              <p className={s.planPriceSub}>Mãi mãi miễn phí</p>
-              <p className={`${s.planPriceDay} ${s.planPriceDayMuted}`}>Không cần thẻ tín dụng</p>
-              <p className={s.planDesc}>Làm quen với Climb trước khi cam kết.</p>
-              <div className={s.planDivider} />
-              <ul className={s.planFeatures}>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>2 lượt Writing AI/tháng</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>3 topic Vocabulary</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Xem lịch sử bài nộp</li>
-                <li className={`${s.planFeat} ${s.planFeatLocked}`}><span className={s.lockIcon}>✗</span>18 topic Vocabulary</li>
-                <li className={`${s.planFeat} ${s.planFeatLocked}`}><span className={s.lockIcon}>✗</span>Speaking AI</li>
-              </ul>
-              <button className={`${s.planCta} ${s.planCtaGhost}`} onClick={() => { location.href = '/register' }}>
-                Bắt đầu miễn phí
-              </button>
-            </div>
-
-            {/* STARTER */}
-            <div className={s.planCard}>
-              <p className={s.planName}>Starter</p>
-              <div className={s.planPrice}>99.000<span style={{ fontSize: 22, fontWeight: 700 }}>đ</span></div>
-              <p className={s.planPriceSub}>/tháng</p>
-              <p className={s.planPriceDay}>~3.300đ/ngày</p>
-              <p className={s.planDesc}>Học từ vựng bài bản, luyện Writing đều đặn mỗi tuần.</p>
-              <div className={s.planDivider} />
-              <ul className={s.planFeatures}>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>10 lượt Writing AI/tháng</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>18 topic Vocabulary đầy đủ</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Lưu từ & theo dõi tiến độ</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Lịch sử bài nộp đầy đủ</li>
-                <li className={`${s.planFeat} ${s.planFeatLocked}`}><span className={s.lockIcon}>✗</span>Speaking AI</li>
-              </ul>
-              <button className={`${s.planCta} ${s.planCtaSecondary}`} onClick={() => { location.href = '/register' }}>
-                Chọn Starter
-              </button>
-            </div>
-
-            {/* PRO */}
-            <div className={`${s.planCard} ${s.planCardPro}`}>
-              <div className={`${s.planBadge} ${s.planBadgePop}`}>🔥 Phổ biến nhất</div>
-              <p className={`${s.planName} ${s.planNameLight}`}>Pro</p>
-              <div className={`${s.planPrice} ${s.planPriceLight}`}>199.000<span style={{ fontSize: 22, fontWeight: 700 }}>đ</span></div>
-              <p className={`${s.planPriceSub} ${s.planPriceSubLight}`}>/tháng</p>
-              <p className={s.planPriceDay}>~6.600đ/ngày — đổi lấy 1 band score</p>
-              <p className={`${s.planDesc} ${s.planDescLight}`}>Luyện không giới hạn, tăng band nhanh nhất có thể.</p>
-              <div className={`${s.planDivider} ${s.planDividerLight}`} />
-              <ul className={s.planFeatures}>
-                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Writing AI <strong>không giới hạn</strong></li>
-                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Speaking AI 15 lượt/tháng</li>
-                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>18 topic Vocabulary đầy đủ</li>
-                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Lưu từ & theo dõi tiến độ</li>
-                <li className={`${s.planFeat} ${s.planFeatLight}`}><span className={s.checkIcon}>✓</span>Ưu tiên xử lý nhanh hơn</li>
-              </ul>
-              <button className={`${s.planCta} ${s.planCtaPrimary}`} onClick={() => { location.href = '/register' }}>
-                Chọn Pro ngay
-              </button>
-            </div>
-
-            {/* PRO YEARLY */}
-            <div className={`${s.planCard} ${s.planCardYearly}`}>
-              <div className={`${s.planBadge} ${s.planBadgeSaveGreen}`}>✦ Tiết kiệm nhất</div>
-              <p className={s.planName}>Pro · 1 năm</p>
-              <div className={s.planPrice}>1.490.000<span style={{ fontSize: 22, fontWeight: 700 }}>đ</span></div>
-              <p className={s.planPriceSub}>/năm · ~124.000đ/tháng</p>
-              <p className={s.planPriceDay}>~4.100đ/ngày</p>
-              <p className={s.planDesc}>Cam kết cả lộ trình — tiết kiệm gần 1 triệu mỗi năm.</p>
-              <div className={s.planDivider} />
-              <ul className={s.planFeatures}>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Mọi thứ trong Pro</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Tiết kiệm 998.000đ/năm</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Tương đương 2 tháng miễn phí</li>
-                <li className={s.planFeat}><span className={s.checkIcon}>✓</span>Ưu tiên hỗ trợ</li>
-              </ul>
-              <button className={`${s.planCta} ${s.planCtaYearly}`} onClick={() => { location.href = '/register' }}>
-                Chọn Pro Yearly
-              </button>
-              <p className={s.planSaving}>Tiết kiệm 998.000đ so với mua tháng</p>
-            </div>
+          <div className={`${s.pc} ${s.best}`}>
+            <div className={s.pcBadge}>PHỔ BIẾN NHẤT</div>
+            <div className={s.pcName}>Pro</div>
+            <div className={s.pcPrice}>99.000<span className={s.unit}>đ</span></div>
+            <div className={s.pcPer}>/tháng · bài không giới hạn</div>
+            <ul className={s.pcFeats}>
+              <li>Bài không giới hạn</li>
+              <li>Band score 4 tiêu chí</li>
+              <li>Giải thích lỗi chi tiết</li>
+              <li>Upgraded Essay</li>
+              <li>Kho từ vựng 18 topic</li>
+              <li className={s.off}>Progress tracking</li>
+            </ul>
+            <Link href="/register" className={s.pcBtn} style={{display:'block',textAlign:'center',textDecoration:'none'}}>Nâng lên Pro</Link>
           </div>
 
-          <p className={s.pricingFootnote}>Tất cả gói đều có thể hủy bất cứ lúc nào · Thanh toán an toàn</p>
+          <div className={s.pc}>
+            <div className={s.pcName}>Yearly</div>
+            <div className={s.pcPrice}>1.490.000<span className={s.unit}>đ</span></div>
+            <div className={s.pcPer}>/năm · ~124.000đ/tháng</div>
+            <ul className={s.pcFeats}>
+              <li>Bài không giới hạn</li>
+              <li>Band score 4 tiêu chí</li>
+              <li>Giải thích lỗi chi tiết</li>
+              <li>Upgraded Essay</li>
+              <li>Kho từ vựng 18 topic</li>
+              <li>Progress tracking</li>
+            </ul>
+            <Link href="/register" className={s.pcBtn} style={{display:'block',textAlign:'center',textDecoration:'none'}}>Đăng ký Yearly</Link>
+          </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className={s.ctaWrap}>
-        <div className={s.wrap}>
-          <h2 className={s.ctaH2}>
-            Bạn đã sẵn sàng<br /><span className={s.ctaBk}>Climb</span> chưa?
-          </h2>
-          <p className={s.ctaP}>Nộp bài luận đầu tiên miễn phí — kết quả chi tiết, không chờ đợi.</p>
-          <Link href="/register" className={s.btnCta}>Tạo tài khoản miễn phí</Link>
-          <p className={s.ctaNote}>Đã có tài khoản? <Link href="/login">Đăng nhập</Link></p>
-        </div>
-      </section>
-
-      {/* FAQ Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: [
-              {
-                '@type': 'Question',
-                name: 'Climb IELTS chấm bài theo tiêu chí nào?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Climb IELTS chấm theo 4 tiêu chí chuẩn của Cambridge: Task Response (TR), Coherence & Cohesion (CC), Lexical Resource (LR), và Grammatical Range & Accuracy (GRA). Mỗi tiêu chí được chấm riêng và tổng hợp thành band score từ 4.0 đến 9.0.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: 'Climb IELTS có hỗ trợ Task 1 và Task 2 không?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Có. Climb IELTS hỗ trợ cả Task 1 Academic (có thể upload ảnh biểu đồ), Task 1 General Training, và Task 2 cho cả Academic lẫn General. AI sẽ đánh giá đúng tiêu chí Task Achievement tương ứng với từng dạng bài.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: 'Kết quả chấm bài mất bao lâu?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Thông thường từ 30 đến 90 giây. Hệ thống chạy song song hai mô hình AI để cho kết quả nhanh nhất có thể.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: 'Gói miễn phí có những gì?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Gói Free cho phép bạn chấm 2 bài Writing AI mỗi tháng, truy cập 3 topic từ vựng Writing, và xem lịch sử bài nộp. Không cần thẻ tín dụng, miễn phí mãi mãi.',
-                },
-              },
-              {
-                '@type': 'Question',
-                name: 'Climb IELTS có chính xác như giám khảo thật không?',
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: 'Climb IELTS được thiết kế để phản ánh tiêu chí chấm thi IELTS chính thức và cho kết quả tham khảo có độ chính xác cao. Tuy nhiên điểm số AI là điểm ước lượng và không thay thế điểm thi IELTS chính thức.',
-                },
-              },
-            ],
-          }),
-        }}
-      />
-
-      {/* FOOTER */}
+      {/* ═══ FOOTER ═══ */}
       <footer className={s.footer}>
-        <div className={`${s.wrap} ${s.footInner}`}>
-          <span className={s.footCopy}>© 2025 Climb IELTS. All rights reserved.</span>
-          <nav className={s.footLinks} aria-label="Footer">
-            <Link href="/privacy">Chính sách bảo mật</Link>
-            <Link href="/terms">Điều khoản sử dụng</Link>
-            <a href="mailto:support@climbielts.com">Liên hệ</a>
-          </nav>
+        <div className={s.footerTop}>
+          <div className={s.footerBrand}>
+            <div className={s.footerLogo}>Climb <em>IELTS</em></div>
+            <p>Nền tảng luyện IELTS Writing với AI — được xây riêng cho học viên Việt Nam. Hiểu đúng lỗi người Việt, viết lại bài đạt Band mục tiêu.</p>
+          </div>
+          <div className={s.footerLinks}>
+            <div className={s.footerCol}>
+              <h4>Tính năng</h4>
+              <Link href="/writing">Chấm bài Writing</Link>
+              <Link href="/writing">Upgraded Essay</Link>
+              <Link href="/vocabulary">Kho từ vựng</Link>
+              <Link href="/progress">Progress Tracking</Link>
+            </div>
+            <div className={s.footerCol}>
+              <h4>Hỗ trợ</h4>
+              <Link href="/terms">Điều khoản</Link>
+              <Link href="/privacy">Chính sách BM</Link>
+              <a href="mailto:support@climbielts.com">Liên hệ</a>
+              <Link href="/register">FAQ</Link>
+            </div>
+          </div>
+        </div>
+        <div className={s.footerBottom}>
+          <span>© 2025 Climb IELTS. All rights reserved.</span>
+          <span>www.climbielts.com</span>
         </div>
       </footer>
+
     </div>
   )
 }
