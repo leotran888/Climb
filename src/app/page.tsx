@@ -53,7 +53,7 @@ export default function LandingPage() {
             </div>
 
             {/* Mountain mascot SVG */}
-            <svg width="380" height="355" viewBox="0 0 290 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="290" height="270" viewBox="0 0 290 270" fill="none" xmlns="http://www.w3.org/2000/svg" className={s.heroMascotSvg}>
               <ellipse cx="145" cy="258" rx="115" ry="12" fill="rgba(0,0,0,0.1)"/>
               <path d="M18 242 Q18 90 145 48 Q272 90 272 242 Z" fill="#16a344"/>
               <path d="M18 242 Q18 90 145 48 L145 242Z" fill="rgba(0,0,0,0.07)"/>

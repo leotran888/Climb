@@ -165,6 +165,11 @@
   50%       { opacity: .25; transform: scale(.55); }
 }
 
+/* desktop-only: scale up hero mascot */
+@media (min-width: 801px) {
+  .heroMascotSvg { width: 380px; height: 355px; }
+}
+
 /* ── FEATURES ── */
 .features { padding: 80px 64px; }
 .sectionTag {
