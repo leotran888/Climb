@@ -242,8 +242,8 @@
 }
 @media (min-width: 801px) {
   .aboutWrap {
-    background: #f5edda;
-    box-shadow: 0 0 0 1.5px rgba(180,145,60,.18), 0 12px 40px rgba(0,0,0,.06);
+    background: #ead9a8;
+    box-shadow: 0 0 0 1.5px rgba(180,145,60,.25), 0 12px 40px rgba(0,0,0,.07);
   }
 }
 .aboutTag {
