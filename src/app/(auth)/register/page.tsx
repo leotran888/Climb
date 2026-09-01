@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   async function handleGoogle() {
     const supabase = createClient()
@@ -49,13 +50,48 @@ export default function RegisterPage() {
 
     // If no session yet, email confirmation is required
     if (!data.session) {
-      setError('Please check your email and click the confirmation link to continue.')
+      setEmailSent(true)
       setLoading(false)
       return
     }
 
     router.push('/dashboard')
     router.refresh()
+  }
+
+  if (emailSent) {
+    return (
+      <div className="w-full max-w-md">
+        <div className="flex justify-center relative z-10 -mb-6">
+          <svg width="110" height="100" viewBox="0 0 290 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="145" cy="258" rx="115" ry="12" fill="rgba(0,0,0,0.08)"/>
+            <path d="M18 242 Q18 90 145 48 Q272 90 272 242 Z" fill="#16a344"/>
+            <path d="M18 242 Q18 90 145 48 L145 242Z" fill="rgba(0,0,0,0.07)"/>
+            <ellipse cx="145" cy="66" rx="30" ry="18" fill="rgba(255,255,255,0.22)"/>
+            <circle cx="118" cy="167" r="14" fill="#0b1e10"/>
+            <circle cx="172" cy="167" r="14" fill="#0b1e10"/>
+            <circle cx="122" cy="163" r="5" fill="white"/>
+            <circle cx="176" cy="163" r="5" fill="white"/>
+            <path d="M110 195 Q145 218 180 195" stroke="#0b1e10" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
+          </svg>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 pt-10 text-center">
+          <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2z" stroke="#16a344" strokeWidth="1.8"/>
+              <path d="M2 6l10 7 10-7" stroke="#16a344" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Kiểm tra email của bạn</h1>
+          <p className="text-slate-500 mb-2">Chúng tôi đã gửi link xác nhận đến</p>
+          <p className="font-semibold text-slate-800 mb-6">{email}</p>
+          <p className="text-sm text-slate-400">Click vào link trong email để kích hoạt tài khoản. Kiểm tra cả hộp thư Spam nếu không thấy.</p>
+          <Link href="/login" className="inline-block mt-6 text-emerald-700 font-semibold text-sm hover:underline">
+            Quay về đăng nhập
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
