@@ -405,5 +405,5 @@
   .navLinks { display: none; }
 }
 @media (max-width: 500px) {
-  .cards { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: 1fr 1fr; }
 }
