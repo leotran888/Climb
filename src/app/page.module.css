@@ -405,5 +405,12 @@
   .navLinks { display: none; }
 }
 @media (max-width: 500px) {
-  .cards { grid-template-columns: 1fr 1fr; }
+  .cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fcTop { padding: 16px 14px 10px; }
+  .fcTitle { font-size: 14px; }
+  .fcDesc { font-size: 11px; margin-top: 5px; }
+  .fcCat { font-size: 9px; margin-bottom: 6px; }
+  .fcIconSm { width: 34px; height: 34px; border-radius: 10px; margin-bottom: 10px; }
+  .fcIllus { min-height: 80px; }
+  .fcLabel { font-size: 8px; padding: 5px 10px; bottom: 8px; }
 }
