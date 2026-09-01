@@ -296,7 +296,7 @@ export default function LandingPage() {
           <div className={s.moonWrap}>
             {/* Score-meter moon mascot */}
             <svg width="260" height="260" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="130" cy="130" r="118" fill="rgba(22,163,68,.06)"/>
+              <circle cx="130" cy="130" r="118" fill="rgba(130,200,230,.22)"/>
               <circle cx="130" cy="130" r="105" fill="#f0c040"/>
               <circle cx="88" cy="108" r="13" fill="rgba(180,145,60,.17)"/>
               <circle cx="163" cy="88" r="9" fill="rgba(180,145,60,.13)"/>
