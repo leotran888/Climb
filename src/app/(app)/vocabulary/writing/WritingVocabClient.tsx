@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import {
   ALL_VOCABULARY,
   ALL_COLLOCATIONS,
@@ -43,6 +44,155 @@ const STAT_CARD: React.CSSProperties = {
   border: '1.5px solid rgba(22,163,68,.13)',
   borderRadius: 16,
   padding: '16px 18px',
+}
+
+// ─── Folder accent colors (matches VocabFoldersClient) ───────────────────────
+const FOLDER_ACCENT: Record<string, string> = {
+  green:  '#16a344',
+  amber:  '#d4900a',
+  blue:   '#4444cc',
+  pink:   '#cc3366',
+  purple: '#7a3ccc',
+}
+
+// ─── Save-to-folder button ────────────────────────────────────────────────────
+
+function FolderSaveButton({
+  term, definition, example, userId,
+}: {
+  term: string
+  definition: string | null
+  example: string | null
+  userId: string
+}) {
+  const btnRef  = useRef<HTMLButtonElement>(null)
+  const [open,    setOpen]    = useState(false)
+  const [pos,     setPos]     = useState({ top: 0, right: 0 })
+  const [folders, setFolders] = useState<Array<{ id: string; name: string; color: string }> | null>(null)
+  const [savedIn, setSavedIn] = useState<Set<string>>(new Set())
+  const [saving,  setSaving]  = useState<string | null>(null)
+  const [newName, setNewName] = useState('')
+  const [creating, setCreating] = useState(false)
+
+  async function loadFolders() {
+    const supabase = createClient()
+    const { data: fs } = await supabase
+      .from('vocab_folders').select('id, name, color')
+      .eq('user_id', userId).order('created_at', { ascending: false })
+    const list = fs ?? []
+    setFolders(list)
+    if (list.length > 0) {
+      const { data: existing } = await supabase
+        .from('vocab_words').select('folder_id')
+        .eq('user_id', userId).eq('word', term)
+        .in('folder_id', list.map(f => f.id))
+      setSavedIn(new Set((existing ?? []).map((w: { folder_id: string }) => w.folder_id)))
+    }
+  }
+
+  function handleOpen() {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      setPos({ top: r.bottom + 6, right: window.innerWidth - r.right })
+    }
+    setOpen(true)
+    if (folders === null) loadFolders()
+  }
+
+  async function saveToFolder(folderId: string) {
+    if (savedIn.has(folderId) || saving) return
+    setSaving(folderId)
+    const supabase = createClient()
+    await supabase.from('vocab_words').insert({
+      user_id: userId, folder_id: folderId,
+      word: term, definition: definition || null, example: example || null,
+    })
+    setSavedIn(prev => new Set([...prev, folderId]))
+    setSaving(null)
+  }
+
+  async function createAndSave() {
+    if (!newName.trim() || creating) return
+    setCreating(true)
+    const supabase = createClient()
+    const { data: nf } = await supabase
+      .from('vocab_folders')
+      .insert({ user_id: userId, name: newName.trim(), color: 'green' })
+      .select('id, name, color').single()
+    if (nf) {
+      setFolders(prev => prev ? [nf, ...prev] : [nf])
+      await saveToFolder(nf.id)
+    }
+    setNewName('')
+    setCreating(false)
+  }
+
+  const hasSaved = savedIn.size > 0
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={handleOpen}
+        title="Lưu vào thư mục"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, lineHeight: 0, flexShrink: 0, color: hasSaved ? '#16a344' : '#ddd', transition: 'color .15s' }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill={hasSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+
+      {open && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setOpen(false)} />
+          <div style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 50, background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 16, boxShadow: '0 8px 32px rgba(22,163,68,.15)', minWidth: 220, maxHeight: 300, overflowY: 'auto', paddingBottom: 6 }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', padding: '10px 14px 6px' }}>Lưu vào thư mục</p>
+
+            {folders === null ? (
+              <p style={{ fontSize: 13, color: '#5a7864', padding: '6px 14px', fontWeight: 600 }}>Đang tải…</p>
+            ) : folders.length === 0 ? (
+              <p style={{ fontSize: 13, color: '#5a7864', padding: '4px 14px 8px', fontWeight: 600 }}>Chưa có thư mục nào</p>
+            ) : (
+              folders.map(f => {
+                const isSaved  = savedIn.has(f.id)
+                const isSaving = saving === f.id
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => saveToFolder(f.id)}
+                    disabled={isSaved}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 14px', border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: isSaved ? '#16a344' : '#192e1e', cursor: isSaved ? 'default' : 'pointer', textAlign: 'left' }}
+                  >
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: FOLDER_ACCENT[f.color] ?? '#16a344', flexShrink: 0 }} />
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                    {isSaving ? <span style={{ fontSize: 11, color: '#5a7864' }}>…</span> : isSaved ? <span style={{ fontSize: 12, color: '#16a344' }}>✓</span> : null}
+                  </button>
+                )
+              })
+            )}
+
+            <div style={{ height: 1, background: 'rgba(22,163,68,.1)', margin: '4px 0' }} />
+            <div style={{ padding: '4px 10px 2px', display: 'flex', gap: 6 }}>
+              <input
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && createAndSave()}
+                placeholder="Thư mục mới…"
+                style={{ flex: 1, border: '1.5px solid rgba(22,163,68,.2)', borderRadius: 8, padding: '5px 8px', fontSize: 12, fontFamily: 'inherit', outline: 'none', color: '#192e1e' }}
+              />
+              <button
+                onClick={createAndSave}
+                disabled={!newName.trim() || creating}
+                style={{ background: '#16a344', color: '#fff', border: 'none', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 800, cursor: newName.trim() && !creating ? 'pointer' : 'not-allowed', opacity: (!newName.trim() || creating) ? .5 : 1, fontFamily: 'inherit', flexShrink: 0 }}
+              >
+                {creating ? '…' : 'Tạo'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  )
 }
 
 // ─── Tag helpers ──────────────────────────────────────────────────────────────
@@ -197,7 +347,7 @@ function PracticeModal({ item, onClose }: { item: StudyItem; onClose: () => void
 // ─── Study card ───────────────────────────────────────────────────────────────
 
 function StudyCard({
-  item, saved, status, onToggleSave, onSetStatus, onPractice,
+  item, saved, status, onToggleSave, onSetStatus, onPractice, userId,
 }: {
   item: StudyItem
   saved: boolean
@@ -205,6 +355,7 @@ function StudyCard({
   onToggleSave: (id: string) => void
   onSetStatus: (id: string, s: 'learning' | 'learned') => void
   onPractice: (item: StudyItem) => void
+  userId: string
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -270,13 +421,16 @@ function StudyCard({
             </div>
           )}
         </div>
-        <button
-          onClick={() => onToggleSave(item.id)}
-          title={saved ? 'Unsave' : 'Save'}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
-        >
-          {saved ? '♥' : '♡'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <FolderSaveButton term={item.term} definition={item.definition} example={item.example} userId={userId} />
+          <button
+            onClick={() => onToggleSave(item.id)}
+            title={saved ? 'Unsave' : 'Save'}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
+          >
+            {saved ? '♥' : '♡'}
+          </button>
+        </div>
       </div>
 
       {/* Tag row */}
@@ -369,23 +523,27 @@ function StudyCard({
 // ─── Writing phrase card ──────────────────────────────────────────────────────
 
 function PhraseCard({
-  item, saved, onToggleSave,
+  item, saved, onToggleSave, userId,
 }: {
   item: WritingPhraseItem
   saved: boolean
   onToggleSave: (id: string) => void
+  userId: string
 }) {
   return (
     <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', lineHeight: 1.4, flex: 1 }}>{item.term}</p>
-        <button
-          onClick={() => onToggleSave(item.id)}
-          title={saved ? 'Unsave' : 'Save'}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
-        >
-          {saved ? '♥' : '♡'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <FolderSaveButton term={item.term} definition={item.vietnameseMeaning} example={item.example} userId={userId} />
+          <button
+            onClick={() => onToggleSave(item.id)}
+            title={saved ? 'Unsave' : 'Save'}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
+          >
+            {saved ? '♥' : '♡'}
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -408,12 +566,15 @@ function PhraseCard({
 
 // ─── Common mistake card ──────────────────────────────────────────────────────
 
-function MistakeCard({ item }: { item: CommonMistakeItem }) {
+function MistakeCard({ item, userId }: { item: CommonMistakeItem; userId: string }) {
   return (
     <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-        <TopicPill topic={item.topic} />
-        <PriorityPill p={item.priority} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+          <TopicPill topic={item.topic} />
+          <PriorityPill p={item.priority} />
+        </div>
+        <FolderSaveButton term={item.correct} definition={item.explanation} example={null} userId={userId} />
       </div>
 
       <div style={{ background: 'rgba(220,60,60,.06)', border: '1.5px solid rgba(220,60,60,.2)', borderRadius: 10, padding: '10px 14px' }}>
@@ -779,12 +940,13 @@ export default function WritingVocabClient({
                 key={item.id} item={item}
                 saved={savedIds.has(item.id)} status={statusMap[item.id]}
                 onToggleSave={toggleSave} onSetStatus={setStatus} onPractice={setPracticeItem}
+                userId={userId}
               />
             ))}
             {isPhraseTab && filteredPhrases.map(item => (
-              <PhraseCard key={item.id} item={item} saved={savedIds.has(item.id)} onToggleSave={toggleSave} />
+              <PhraseCard key={item.id} item={item} saved={savedIds.has(item.id)} onToggleSave={toggleSave} userId={userId} />
             ))}
-            {isMistakeTab && filteredMistakes.map(item => <MistakeCard key={item.id} item={item} />)}
+            {isMistakeTab && filteredMistakes.map(item => <MistakeCard key={item.id} item={item} userId={userId} />)}
           </div>
         )}
       </div>
