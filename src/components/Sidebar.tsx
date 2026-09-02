@@ -115,7 +115,6 @@ export default function Sidebar({
         }`}
         style={active ? {
           background: '#16a344',
-          border: '1.5px solid #f5aa00',
           boxShadow: '0 2px 8px rgba(22,163,68,0.35)',
         } : undefined}
       >
