@@ -13,9 +13,11 @@ function formatDate(dateStr: string | null) {
 export default function GoalsForm({
   userId,
   initial,
+  avgWritingBand,
 }: {
   userId: string
   initial: { target_band: number | null; target_writing: number | null; target_speaking: number | null; exam_date: string | null }
+  avgWritingBand?: number | null
 }) {
   const [editing, setEditing] = useState(false)
   const [overall, setOverall]   = useState(initial.target_band?.toString() ?? '')
@@ -56,11 +58,26 @@ export default function GoalsForm({
             <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Ngày thi dự kiến</p>
             <p style={{ fontSize: 16, fontWeight: 900, color: '#192e1e' }}>{formatDate(examDate)}</p>
           </div>
-          {/* Band mục tiêu tổng — warm yellow */}
-          <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Band mục tiêu</p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: overall ? '#f5aa00' : '#192e1e' }}>{overall || '—'}</p>
-          </div>
+          {/* Khoảng cách tới mục tiêu */}
+          {(() => {
+            const target = writing ? parseFloat(writing) : null
+            const gap = target != null && avgWritingBand != null
+              ? Math.round((target - avgWritingBand) * 10) / 10
+              : null
+            const achieved = gap !== null && gap <= 0
+            const gapColor = achieved ? '#16a344' : gap !== null && gap <= 0.5 ? '#f5aa00' : '#192e1e'
+            return (
+              <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
+                <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Khoảng cách</p>
+                <p style={{ fontSize: 20, fontWeight: 900, color: gapColor }}>
+                  {achieved ? 'Đã đạt ✓' : gap !== null ? `+${gap}` : avgWritingBand != null ? `—` : '—'}
+                </p>
+                {gap !== null && !achieved && (
+                  <p style={{ fontSize: 10, color: '#5a7864', fontWeight: 600, marginTop: 2 }}>band còn thiếu</p>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         <div style={{ marginTop: 16 }}>

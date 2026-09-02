@@ -153,6 +153,7 @@ export default async function ProfilePage() {
             target_speaking: profile.target_speaking,
             exam_date:       profile.exam_date,
           }}
+          avgWritingBand={avgWritingBand}
         />
       </div>
 
