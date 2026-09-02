@@ -161,7 +161,7 @@ export default function WritingCheckerForm() {
     : 'Dán đề bài IELTS vào đây…\n\nVí dụ: You recently bought a product from an online shop. Write a letter to the company. In your letter: describe what you bought, explain the problem, say what you would like them to do.'
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 12 }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 12, minHeight: 0, overflow: 'hidden' }}>
       <style>{`
         .wc-textarea:focus, .wc-input:focus {
           border-color: #16a344 !important;
@@ -244,7 +244,7 @@ export default function WritingCheckerForm() {
           onPaste={handleQuestionPaste}
           disabled={loading}
           placeholder={questionPlaceholder}
-          style={{ ...TEXTAREA, flex: 1, minHeight: 90 }}
+          style={{ ...TEXTAREA, flex: 1, minHeight: 40 }}
         />
 
         {questionImage && (
@@ -300,7 +300,7 @@ export default function WritingCheckerForm() {
           disabled={loading}
           required
           placeholder="Viết hoặc dán bài viết của bạn vào đây…"
-          style={{ ...TEXTAREA, flex: 1, minHeight: 260 }}
+          style={{ ...TEXTAREA, flex: 1, minHeight: 80 }}
         />
         <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 4 }}>
           Tối thiểu {minWords} từ cho {taskType === 'task2' ? 'Task 2' : 'Task 1'}.
