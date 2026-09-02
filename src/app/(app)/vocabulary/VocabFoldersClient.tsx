@@ -88,6 +88,115 @@ export function CreateFolderButton({ userId }: { userId: string }) {
   )
 }
 
+const FOLDER_BG: Record<string, string> = {
+  green:  'rgba(22,163,68,.06)',
+  amber:  'rgba(245,170,0,.06)',
+  blue:   'rgba(80,80,220,.04)',
+  pink:   'rgba(220,80,80,.04)',
+  purple: 'rgba(120,80,220,.04)',
+}
+
+export function FolderCard({
+  folder,
+}: {
+  folder: { id: string; name: string; color: string; vocab_words: { status: string }[] }
+}) {
+  const router = useRouter()
+  const [editOpen,  setEditOpen]  = useState(false)
+  const [editName,  setEditName]  = useState(folder.name)
+  const [saving,    setSaving]    = useState(false)
+  const [deleting,  setDeleting]  = useState(false)
+
+  const words   = folder.vocab_words ?? []
+  const known   = words.filter(w => w.status === 'known').length
+  const pct     = words.length ? Math.round((known / words.length) * 100) : 0
+  const bgColor = FOLDER_BG[folder.color] ?? FOLDER_BG.green
+
+  async function saveEdit() {
+    if (!editName.trim()) return
+    setSaving(true)
+    const supabase = createClient()
+    await supabase.from('vocab_folders').update({ name: editName.trim() }).eq('id', folder.id)
+    setSaving(false)
+    setEditOpen(false)
+    router.refresh()
+  }
+
+  async function deleteFolder() {
+    if (!confirm(`Xóa thư mục "${folder.name}" và toàn bộ từ bên trong?`)) return
+    setDeleting(true)
+    const supabase = createClient()
+    await supabase.from('vocab_words').delete().eq('folder_id', folder.id)
+    await supabase.from('vocab_folders').delete().eq('id', folder.id)
+    router.refresh()
+  }
+
+  return (
+    <>
+      <div style={{ position: 'relative' }} className="group">
+        <a href={`/vocabulary/${folder.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+          <div style={{ background: bgColor, border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: 20, cursor: 'pointer' }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', marginBottom: 4 }}>{folder.name}</p>
+            <p style={{ fontSize: 12, color: '#5a7864', fontWeight: 600, marginBottom: 14 }}>{words.length} từ</p>
+            <div style={{ background: 'rgba(22,163,68,.1)', borderRadius: 50, height: 6 }}>
+              <div style={{ height: '100%', borderRadius: 50, background: '#16a344', width: `${pct}%` }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10, fontWeight: 700, color: '#5a7864' }}>
+              <span>{known} đã thuộc</span>
+              <span>{pct}%</span>
+            </div>
+          </div>
+        </a>
+
+        {/* Edit / Delete — hiện khi hover */}
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={e => { e.preventDefault(); setEditName(folder.name); setEditOpen(true) }}
+            style={{ background: 'rgba(255,255,255,.9)', border: '1px solid rgba(22,163,68,.2)', borderRadius: 8, padding: '4px 6px', cursor: 'pointer', color: '#5a7864', lineHeight: 0 }}
+            title="Đổi tên"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button
+            onClick={e => { e.preventDefault(); deleteFolder() }}
+            disabled={deleting}
+            style={{ background: 'rgba(255,255,255,.9)', border: '1px solid rgba(220,80,80,.2)', borderRadius: 8, padding: '4px 6px', cursor: 'pointer', color: '#e05050', lineHeight: 0 }}
+            title="Xóa thư mục"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {editOpen && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setEditOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-slate-900 text-lg">Đổi tên thư mục</h3>
+            <input
+              autoFocus
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && saveEdit()}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <div className="flex gap-2 pt-1">
+              <button onClick={saveEdit} disabled={saving || !editName.trim()}
+                style={{ flex: 1, background: '#16a344', color: '#fff', border: 'none', borderRadius: 12, padding: '10px', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: saving ? 'not-allowed' : 'pointer', opacity: (saving || !editName.trim()) ? .5 : 1 }}>
+                {saving ? 'Đang lưu…' : 'Lưu'}
+              </button>
+              <button onClick={() => setEditOpen(false)} className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors">Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 export function CreateFolderCard({ userId }: { userId: string }) {
   const router = useRouter()
   const [open, setOpen]       = useState(false)

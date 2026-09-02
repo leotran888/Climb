@@ -1,14 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { CreateFolderCard } from './VocabFoldersClient'
+import { FolderCard, CreateFolderCard } from './VocabFoldersClient'
 
-const FOLDER_BG: Record<string, string> = {
-  green:  'rgba(22,163,68,.06)',
-  amber:  'rgba(245,170,0,.06)',
-  blue:   'rgba(80,80,220,.04)',
-  pink:   'rgba(220,80,80,.04)',
-  purple: 'rgba(120,80,220,.04)',
-}
 
 export default async function VocabularyPage() {
   const supabase = await createClient()
@@ -84,27 +77,9 @@ export default async function VocabularyPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
-          {(folders ?? []).map((folder: { id: string; name: string; color: string; vocab_words: { status: string }[] }) => {
-            const words   = folder.vocab_words ?? []
-            const known   = words.filter((w: { status: string }) => w.status === 'known').length
-            const pct     = words.length ? Math.round((known / words.length) * 100) : 0
-            const bgColor = FOLDER_BG[folder.color] ?? FOLDER_BG.green
-            return (
-              <Link key={folder.id} href={`/vocabulary/${folder.id}`} style={{ textDecoration: 'none' }}>
-                <div style={{ background: bgColor, border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: 20, cursor: 'pointer' }}>
-                  <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', marginBottom: 4 }}>{folder.name}</p>
-                  <p style={{ fontSize: 12, color: '#5a7864', fontWeight: 600, marginBottom: 14 }}>{words.length} từ</p>
-                  <div style={{ background: 'rgba(22,163,68,.1)', borderRadius: 50, height: 6 }}>
-                    <div style={{ height: '100%', borderRadius: 50, background: '#16a344', width: `${pct}%` }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10, fontWeight: 700, color: '#5a7864' }}>
-                    <span>{known} đã thuộc</span>
-                    <span>{pct}%</span>
-                  </div>
-                </div>
-              </Link>
-            )
-          })}
+          {(folders ?? []).map((folder: { id: string; name: string; color: string; vocab_words: { status: string }[] }) => (
+            <FolderCard key={folder.id} folder={folder} />
+          ))}
           <CreateFolderCard userId={user!.id} />
         </div>
       )}
