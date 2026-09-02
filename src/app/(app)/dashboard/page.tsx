@@ -133,7 +133,7 @@ export default async function DashboardPage() {
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
               <div style={{ background: 'rgba(245,170,0,.1)', border: '1.5px solid rgba(245,170,0,.3)', borderRadius: 14, padding: '8px 16px', textAlign: 'right' }}>
-                <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#b87d00', marginBottom: 2 }}>Writing mục tiêu</p>
+                <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#b87d00', marginBottom: 2 }}>Mục tiêu</p>
                 <p style={{ fontSize: 17, fontWeight: 900, color: '#8a5e00', lineHeight: 1 }}>Band {targetVal}</p>
               </div>
               {daysLeft !== null && daysLeft > 0 && (
