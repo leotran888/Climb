@@ -244,7 +244,7 @@ export default function WritingCheckerForm() {
           onPaste={handleQuestionPaste}
           disabled={loading}
           placeholder={questionPlaceholder}
-          style={{ ...TEXTAREA, flex: 1, minHeight: 0 }}
+          style={{ ...TEXTAREA, flex: 1, minHeight: 90 }}
         />
 
         {questionImage && (
@@ -300,7 +300,7 @@ export default function WritingCheckerForm() {
           disabled={loading}
           required
           placeholder="Viết hoặc dán bài viết của bạn vào đây…"
-          style={{ ...TEXTAREA, flex: 1, minHeight: 0 }}
+          style={{ ...TEXTAREA, flex: 1, minHeight: 260 }}
         />
         <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 4 }}>
           Tối thiểu {minWords} từ cho {taskType === 'task2' ? 'Task 2' : 'Task 1'}.
