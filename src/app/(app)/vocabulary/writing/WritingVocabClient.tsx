@@ -118,15 +118,22 @@ function FolderSaveButton({
     if (folders === null) loadFolders()
   }
 
-  async function saveToFolder(folderId: string) {
-    if (savedIn.has(folderId) || saving) return
+  async function toggleFolder(folderId: string) {
+    if (saving) return
     setSaving(folderId)
     const supabase = createClient()
-    await supabase.from('vocab_words').insert({
-      user_id: userId, folder_id: folderId,
-      word: term, definition: definition || null, example: example || null,
-    })
-    setSavedIn(prev => new Set([...prev, folderId]))
+    if (savedIn.has(folderId)) {
+      await supabase.from('vocab_words')
+        .delete()
+        .eq('user_id', userId).eq('folder_id', folderId).eq('word', term)
+      setSavedIn(prev => { const n = new Set(prev); n.delete(folderId); return n })
+    } else {
+      await supabase.from('vocab_words').insert({
+        user_id: userId, folder_id: folderId,
+        word: term, definition: definition || null, example: example || null,
+      })
+      setSavedIn(prev => new Set([...prev, folderId]))
+    }
     setSaving(null)
   }
 
@@ -176,13 +183,18 @@ function FolderSaveButton({
                 return (
                   <button
                     key={f.id}
-                    onClick={() => saveToFolder(f.id)}
-                    disabled={isSaved}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 14px', border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: isSaved ? '#16a344' : '#192e1e', cursor: isSaved ? 'default' : 'pointer', textAlign: 'left' }}
+                    onClick={() => toggleFolder(f.id)}
+                    disabled={isSaving}
+                    title={isSaved ? 'Bỏ lưu khỏi thư mục này' : 'Lưu vào thư mục này'}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 14px', border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: isSaved ? '#16a344' : '#192e1e', cursor: isSaving ? 'not-allowed' : 'pointer', textAlign: 'left' }}
                   >
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: FOLDER_ACCENT[f.color] ?? '#16a344', flexShrink: 0 }} />
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
-                    {isSaving ? <span style={{ fontSize: 11, color: '#5a7864' }}>…</span> : isSaved ? <span style={{ fontSize: 12, color: '#16a344' }}>✓</span> : null}
+                    {isSaving
+                      ? <span style={{ fontSize: 11, color: '#5a7864' }}>…</span>
+                      : isSaved
+                      ? <span style={{ fontSize: 12, color: '#16a344', fontWeight: 900 }}>✓</span>
+                      : <span style={{ fontSize: 12, color: '#b0c4b8' }}>+</span>}
                   </button>
                 )
               })
