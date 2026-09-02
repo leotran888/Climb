@@ -124,8 +124,8 @@ export default async function HistoryPage() {
 
                 <div style={{ flexShrink: 0 }}>
                   {bc ? (
-                    <span style={{ background: bc.bg, color: bc.color, fontWeight: 800, fontSize: 12, padding: '4px 12px', borderRadius: 50, whiteSpace: 'nowrap' }}>
-                      Band {band}
+                    <span style={{ background: bc.bg, color: bc.color, fontWeight: 800, fontSize: 13, padding: '4px 14px', borderRadius: 50, whiteSpace: 'nowrap' }}>
+                      {band}
                     </span>
                   ) : (
                     <span style={{ color: C.hint, fontSize: 12, fontWeight: 600 }}>—</span>
