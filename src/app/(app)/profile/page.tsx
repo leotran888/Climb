@@ -81,7 +81,7 @@ export default async function ProfilePage() {
   const initial = profile.full_name?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <div style={{ maxWidth: 720, paddingBottom: 48 }} className="space-y-5">
+    <div style={{ paddingBottom: 48 }} className="space-y-5">
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
