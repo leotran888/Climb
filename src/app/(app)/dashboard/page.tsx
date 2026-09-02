@@ -53,17 +53,18 @@ export default async function DashboardPage() {
       .gte('submitted_at', ninetyDaysAgo)
       .order('submitted_at', { ascending: false }),
     supabase
-      .from('vocab_folders')
-      .select('vocab_words(status)')
+      .from('writing_vocab_progress')
+      .select('status')
       .eq('user_id', user!.id),
   ])
 
-  // Vocab counts
+  // Vocab counts (Writing Vocabulary learned only — folder words excluded)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allWords = (vocabFolders ?? []).flatMap((f: any) => f.vocab_words ?? [])
-  const totalWords = allWords.length
+  const learnedCount  = (vocabFolders ?? []).filter((r: any) => r.status === 'learned').length
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const knownCount = allWords.filter((w: any) => w.status === 'known').length
+  const learningCount2 = (vocabFolders ?? []).filter((r: any) => r.status === 'learning').length
+  const totalWords  = learnedCount + learningCount2
+  const knownCount  = learnedCount
 
   // Streak
   function toVnDate(iso: string) {
@@ -182,9 +183,9 @@ export default async function DashboardPage() {
         {/* Từ vựng */}
         <div style={STAT_CARD}>
           <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Từ vựng</p>
-          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: '#16a344' }}>{totalWords || '—'}</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: '#16a344' }}>{knownCount || '—'}</p>
           <p style={{ fontSize: 11, color: '#5a7864', fontWeight: 600, marginTop: 4 }}>
-            {totalWords ? `${knownCount} đã thuộc` : 'Chưa có từ nào'}
+            {totalWords ? `+${learningCount2} đang học` : 'Chưa có từ nào'}
           </p>
         </div>
       </div>

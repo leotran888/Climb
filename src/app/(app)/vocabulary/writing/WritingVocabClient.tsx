@@ -658,28 +658,29 @@ export default function WritingVocabClient({
       const raw = localStorage.getItem(LS_SAVED)
       if (raw) setSavedIds(new Set(JSON.parse(raw) as string[]))
     } catch { /* ignore */ }
-    try {
-      const raw = localStorage.getItem(LS_STATUS)
-      if (raw) setStatusMap(JSON.parse(raw) as StatusMap)
-    } catch { /* ignore */ }
     setHydrated(true)
   }, [])
 
   useEffect(() => {
-    async function fetchSavedWords() {
+    async function fetchProgress() {
       const supabase = createClient()
-      const { data } = await supabase
-        .from('vocab_words').select('word').eq('user_id', userId)
-      if (data) setSavedWordSet(new Set(data.map((w: { word: string }) => w.word)))
+      const [{ data: progData }, { data: savedData }] = await Promise.all([
+        supabase.from('writing_vocab_progress').select('item_id, status').eq('user_id', userId),
+        supabase.from('vocab_words').select('word').eq('user_id', userId),
+      ])
+      if (progData) {
+        const map: StatusMap = {}
+        for (const row of progData) map[row.item_id] = row.status as 'learning' | 'learned'
+        setStatusMap(map)
+        try { localStorage.setItem(LS_STATUS, JSON.stringify(map)) } catch { /* ignore */ }
+      }
+      if (savedData) setSavedWordSet(new Set(savedData.map((w: { word: string }) => w.word)))
     }
-    fetchSavedWords()
+    fetchProgress()
   }, [userId])
 
-  const persistSaved  = useCallback((next: Set<string>) => {
+  const persistSaved = useCallback((next: Set<string>) => {
     try { localStorage.setItem(LS_SAVED, JSON.stringify([...next])) } catch { /* ignore */ }
-  }, [])
-  const persistStatus = useCallback((next: StatusMap) => {
-    try { localStorage.setItem(LS_STATUS, JSON.stringify(next)) } catch { /* ignore */ }
   }, [])
 
   const toggleSave = useCallback((id: string) => {
@@ -694,11 +695,18 @@ export default function WritingVocabClient({
   const setStatus = useCallback((id: string, s: 'learning' | 'learned') => {
     setStatusMap(prev => {
       const next = { ...prev }
-      if (prev[id] === s) delete next[id]; else next[id] = s
-      persistStatus(next)
+      const removing = prev[id] === s
+      if (removing) delete next[id]; else next[id] = s
+      try { localStorage.setItem(LS_STATUS, JSON.stringify(next)) } catch { /* ignore */ }
+      const supabase = createClient()
+      if (removing) {
+        supabase.from('writing_vocab_progress').delete().eq('user_id', userId).eq('item_id', id).then(() => {})
+      } else {
+        supabase.from('writing_vocab_progress').upsert({ user_id: userId, item_id: id, status: s, updated_at: new Date().toISOString() }, { onConflict: 'user_id,item_id' }).then(() => {})
+      }
       return next
     })
-  }, [persistStatus])
+  }, [userId])
 
   const q = search.toLowerCase().trim()
 
