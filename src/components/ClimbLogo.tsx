@@ -1,4 +1,4 @@
-export default function ClimbLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
+export default function ClimbLogo({ size = 'md', dark = false }: { size?: 'sm' | 'md'; dark?: boolean }) {
   const box = size === 'sm' ? 30 : 38
   const radius = size === 'sm' ? 8 : 11
   const iconW = size === 'sm' ? 16 : 20
@@ -18,7 +18,7 @@ export default function ClimbLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
           />
         </svg>
       </span>
-      <span className={`font-black ${textSize} text-[#192e1e] tracking-tight leading-none`}>
+      <span className={`font-black ${textSize} ${dark ? 'text-white' : 'text-[#192e1e]'} tracking-tight leading-none`}>
         Climb <em className="not-italic text-[#16a344]">IELTS</em>
       </span>
     </span>

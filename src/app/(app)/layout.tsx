@@ -12,15 +12,29 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, role')
-    .eq('user_id', user.id)
-    .single()
+  const [profileResult, subResult] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('full_name, target_band')
+      .eq('user_id', user.id)
+      .single(),
+    supabase
+      .from('subscriptions')
+      .select('plans(name)')
+      .eq('user_id', user.id)
+      .single(),
+  ])
+
+  const profile = profileResult.data
+  const planName = (subResult.data as { plans?: { name?: string } } | null)?.plans?.name ?? null
 
   return (
     <div className="flex h-screen bg-[#d8dce0]" style={{ fontFamily: "'Nunito', sans-serif" }}>
-      <Sidebar name={profile?.full_name ?? ''} />
+      <Sidebar
+        name={profile?.full_name ?? ''}
+        plan={planName ?? undefined}
+        band={profile?.target_band ?? null}
+      />
       <main className="flex-1 overflow-y-auto flex flex-col">
         <div className="max-w-7xl w-full mx-auto px-4 md:px-8 py-4 pt-16 md:pt-4 flex-1 flex flex-col">
           {children}
