@@ -125,12 +125,27 @@ export default async function DashboardPage() {
             {dayNameVi}, {dateStrVi} · Hãy luyện tập đều đặn mỗi ngày
           </p>
         </div>
-        {profile?.target_band && (
-          <div style={{ background: 'rgba(245,170,0,.1)', border: '1.5px solid rgba(245,170,0,.3)', borderRadius: 14, padding: '8px 16px', textAlign: 'right', flexShrink: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#b87d00', marginBottom: 2 }}>Mục tiêu</p>
-            <p style={{ fontSize: 17, fontWeight: 900, color: '#8a5e00', lineHeight: 1 }}>Band {profile.target_band}</p>
-          </div>
-        )}
+        {profile?.target_band && (() => {
+          const daysLeft = profile.exam_date
+            ? Math.ceil((new Date(profile.exam_date).getTime() - Date.now()) / 86400000)
+            : null
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+              <div style={{ background: 'rgba(245,170,0,.1)', border: '1.5px solid rgba(245,170,0,.3)', borderRadius: 14, padding: '8px 16px', textAlign: 'right' }}>
+                <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#b87d00', marginBottom: 2 }}>Mục tiêu</p>
+                <p style={{ fontSize: 17, fontWeight: 900, color: '#8a5e00', lineHeight: 1 }}>Band {profile.target_band}</p>
+              </div>
+              {daysLeft !== null && daysLeft > 0 && (
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#5a7864' }}>
+                  còn <span style={{ fontWeight: 900, color: '#192e1e' }}>{daysLeft}</span> ngày tới ngày thi
+                </p>
+              )}
+              {daysLeft !== null && daysLeft <= 0 && (
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#b87d00' }}>Đã tới ngày thi rồi!</p>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* ── 4-stat grid ── */}
