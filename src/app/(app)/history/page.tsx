@@ -5,7 +5,6 @@ import { WritingSubmission, TASK_TYPE_LABELS } from '@/lib/types'
 const C = {
   green: '#16a344',
   greenBorder: 'rgba(22,163,68,.13)',
-  greenBg: 'rgba(22,163,68,.07)',
   text: '#192e1e',
   muted: '#3d5a47',
   hint: '#7a9e87',
@@ -60,6 +59,15 @@ export default async function HistoryPage() {
 
   const count = typedSubmissions.length
 
+  // Subtitle: "12 bài · Task 1 và Task 2"
+  const taskGroups = [...new Set(typedSubmissions.map(s => {
+    const type = s.task_type ?? s.writing_prompts?.task_type
+    if (!type) return null
+    return type === 'task2' ? 'Task 2' : 'Task 1'
+  }).filter(Boolean))] as string[]
+  const taskStr = taskGroups.sort().join(' và ')
+  const subtitle = count > 0 ? `${count} bài · ${taskStr}` : 'Chưa có bài nộp nào'
+
   return (
     <div style={{ paddingTop: 20, paddingBottom: 20 }}>
       <div style={{ marginBottom: 20 }}>
@@ -70,12 +78,12 @@ export default async function HistoryPage() {
           Tất cả bài viết
         </h1>
         <p style={{ fontSize: 14, fontWeight: 600, color: C.muted }}>
-          {count > 0 ? `${count} bài nộp` : 'Chưa có bài nộp nào'}
+          {subtitle}
         </p>
       </div>
 
       {count === 0 ? (
-        <div style={{ background: '#fff', border: `1.5px solid ${C.greenBorder}`, borderRadius: 20, padding: '48px 24px', textAlign: 'center' }}>
+        <div style={{ background: '#fff', border: `1.5px solid ${C.greenBorder}`, borderRadius: 16, padding: '48px 24px', textAlign: 'center' }}>
           <p style={{ fontSize: 36, marginBottom: 12 }}>📂</p>
           <p style={{ fontWeight: 700, fontSize: 15, color: C.text, marginBottom: 6 }}>Chưa có bài nào được chấm</p>
           <p style={{ fontSize: 13, fontWeight: 600, color: C.hint, marginBottom: 20 }}>Các bài viết đã nộp sẽ xuất hiện ở đây.</p>
@@ -84,8 +92,8 @@ export default async function HistoryPage() {
           </Link>
         </div>
       ) : (
-        <div style={{ background: '#fff', border: `1.5px solid ${C.greenBorder}`, borderRadius: 20, overflow: 'hidden' }}>
-          {typedSubmissions.map((sub, i) => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {typedSubmissions.map((sub) => {
             const band = sub.writing_results?.overall_band
             const bc = band ? bandColor(band) : null
             const taskLabel = getTaskLabel(sub)
@@ -99,13 +107,15 @@ export default async function HistoryPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 14,
-                  padding: '14px 20px',
+                  padding: '16px 20px',
+                  background: '#fff',
+                  border: `1.5px solid ${C.greenBorder}`,
+                  borderRadius: 14,
                   textDecoration: 'none',
-                  borderTop: i > 0 ? `1px solid ${C.greenBorder}` : undefined,
                 }}
               >
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(22,163,68,.11)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: C.green }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" style={{ fill: 'none', stroke: C.green, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 11, background: 'rgba(22,163,68,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" style={{ fill: 'none', stroke: C.green, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' } as React.CSSProperties}>
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -114,18 +124,18 @@ export default async function HistoryPage() {
                 </div>
 
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{ fontWeight: 700, fontSize: 13, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 3 }}>
                     {getTitle(sub)}
                   </p>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: C.hint }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: C.hint }}>
                     {meta}
                   </p>
                 </div>
 
                 <div style={{ flexShrink: 0 }}>
                   {bc ? (
-                    <span style={{ background: bc.bg, color: bc.color, fontWeight: 800, fontSize: 13, padding: '4px 14px', borderRadius: 50, whiteSpace: 'nowrap' }}>
-                      {band}
+                    <span style={{ background: bc.bg, color: bc.color, fontWeight: 800, fontSize: 13, padding: '5px 14px', borderRadius: 50, whiteSpace: 'nowrap' }}>
+                      {Number(band).toFixed(1)}
                     </span>
                   ) : (
                     <span style={{ color: C.hint, fontSize: 12, fontWeight: 600 }}>—</span>
@@ -137,7 +147,7 @@ export default async function HistoryPage() {
         </div>
       )}
 
-      <style>{`.history-row:hover { background: rgba(22,163,68,.04) !important; }`}</style>
+      <style>{`.history-row:hover { background: rgba(22,163,68,.03) !important; }`}</style>
     </div>
   )
 }
