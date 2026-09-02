@@ -161,7 +161,7 @@ export default function WritingCheckerForm() {
     : 'Dán đề bài IELTS vào đây…\n\nVí dụ: You recently bought a product from an online shop. Write a letter to the company. In your letter: describe what you bought, explain the problem, say what you would like them to do.'
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 12, minHeight: 0, overflow: 'hidden' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 8, minHeight: 0, overflow: 'hidden' }}>
       <style>{`
         .wc-textarea:focus, .wc-input:focus {
           border-color: #16a344 !important;
@@ -174,7 +174,7 @@ export default function WritingCheckerForm() {
 
       {/* Loại bài */}
       <div>
-        <span style={{ ...LABEL, marginBottom: 7, display: 'block' }}>Loại bài</span>
+        <span style={{ ...LABEL, marginBottom: 5, display: 'block' }}>Loại bài</span>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {TASKS.map(t => (
             <button
@@ -197,7 +197,7 @@ export default function WritingCheckerForm() {
             </button>
           ))}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginTop: 7, padding: '7px 12px', background: C.greenBg, borderRadius: 10, lineHeight: 1.45 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginTop: 5, padding: '5px 12px', background: C.greenBg, borderRadius: 10, lineHeight: 1.4 }}>
           {task.desc} <span style={{ color: C.green, fontWeight: 800 }}>{task.minStr}</span>
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function WritingCheckerForm() {
         onDrop={isAcademic ? handleDrop : undefined}
         onDragOver={isAcademic ? e => e.preventDefault() : undefined}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
           <span style={LABEL}>Đề bài</span>
           {isAcademic && (
             <label
@@ -274,7 +274,7 @@ export default function WritingCheckerForm() {
           </div>
         )}
 
-        <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 4 }}>
+        <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 3 }}>
           Không bắt buộc — nhưng giúp AI chấm Task Response chính xác hơn.
           {isAcademic && ' Có thể dán ảnh (Ctrl+V) hoặc browse.'}
         </p>
@@ -282,7 +282,7 @@ export default function WritingCheckerForm() {
 
       {/* Bài viết */}
       <div style={{ flex: 7, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
           <span style={LABEL}>Bài viết của bạn</span>
           <span style={{
             display: 'inline-flex', alignItems: 'center',
@@ -302,7 +302,7 @@ export default function WritingCheckerForm() {
           placeholder="Viết hoặc dán bài viết của bạn vào đây…"
           style={{ ...TEXTAREA, flex: 1, minHeight: 80 }}
         />
-        <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 4 }}>
+        <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 3 }}>
           Tối thiểu {minWords} từ cho {taskType === 'task2' ? 'Task 2' : 'Task 1'}.
           {wordCount > 0 && !wordCountOk && (
             <span style={{ color: '#d4900a' }}> Cần thêm {minWords - wordCount} từ.</span>
