@@ -1,4 +1,4 @@
-﻿import WritingCheckerForm from '@/components/WritingCheckerForm'
+import WritingCheckerForm from '@/components/WritingCheckerForm'
 
 export default function WritingPage() {
   return (
@@ -18,7 +18,7 @@ export default function WritingPage() {
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-2xl border-2 border-emerald-600 p-3 shadow-2xl flex-1 flex flex-col">
+      <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-3 flex-1 flex flex-col">
         <WritingCheckerForm />
       </div>
     </div>

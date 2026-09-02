@@ -80,7 +80,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
       </div>
 
       {/* ── Section 1: Overall Band Score ── */}
-      <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+      <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
         <SectionTitle n={sectionN++} title={`Estimated Overall Band Score: ${result.overall_band}`} />
         <div className="flex items-center gap-5 mb-5">
           <div className="shrink-0 w-20 h-20 rounded-2xl bg-emerald-600 flex items-center justify-center">
@@ -97,7 +97,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
       </section>
 
       {/* ── Section 2: Criteria Scores ── */}
-      <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+      <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
         <SectionTitle n={sectionN++} title="Criteria Scores" />
         <div className="space-y-0">
           {CRITERIA.map(c => (
@@ -116,7 +116,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
       </section>
 
       {/* ── Section 3: Detailed Evaluation ── */}
-      <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+      <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
         <SectionTitle n={sectionN++} title="Detailed Evaluation by Criteria" />
         <div className="space-y-4">
           {CRITERIA.map(c => {
@@ -179,7 +179,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
                     </p>
 
                     {detail?.evidence && detail.evidence.length > 0 && (
-                      <div className="mb-4 bg-slate-100/70 border-2 border-emerald-600 rounded-lg p-3">
+                      <div className="mb-4 bg-slate-100/70 border border-[rgba(22,163,68,.13)] rounded-lg p-3">
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Evidence from your essay</p>
                         <ul className="space-y-1">
                           {detail.evidence.map((e: string, i: number) => (
@@ -248,7 +248,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
 
       {/* ── Section 4: Error Corrections ── */}
       {corrections.length > 0 && (
-        <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+        <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
           <SectionTitle n={sectionN++} title={`Error Identification & Correction (${corrections.length} found)`} />
           <CorrectionsSection corrections={corrections} />
         </section>
@@ -256,7 +256,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
 
       {/* ── Priority Improvements ── */}
       {priorityImprovements.length > 0 && (
-        <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+        <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
           <SectionTitle n={sectionN++} title="Priority Action Plan" />
           <div className="space-y-3">
             {priorityImprovements.map((item: string, i: number) => (
@@ -273,7 +273,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
 
       {/* ── Section 5: Vocabulary Improvements ── */}
       {vocabImprovements.length > 0 && (
-        <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+        <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
           <SectionTitle n={sectionN++} title="Vocabulary Improvements" />
           <div className="space-y-3">
             {vocabImprovements.map((v: VocabularyImprovement, i: number) => (
@@ -290,11 +290,11 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
 
       {/* ── Section 6: Sentence Improvements ── */}
       {sentenceImprovements.length > 0 && (
-        <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+        <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
           <SectionTitle n={sectionN++} title="Sentence Improvements" />
           <div className="space-y-4">
             {sentenceImprovements.map((s: SentenceImprovement, i: number) => (
-              <div key={i} className="border-2 border-emerald-600 rounded-xl overflow-hidden">
+              <div key={i} className="border border-[rgba(22,163,68,.13)] rounded-xl overflow-hidden">
                 <div className="bg-red-50 px-4 py-3 border-b border-red-100">
                   <p className="text-xs font-bold text-red-500 uppercase tracking-wide mb-1">Original</p>
                   <p className="text-sm italic text-slate-600">&ldquo;{s.original}&rdquo;</p>
@@ -320,7 +320,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
 
       {/* ── Teacher feedback (if any) ── */}
       {result.teacher_feedback && (
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md text-sm">
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md text-sm">
           <p className="font-semibold text-emerald-900 mb-1">Teacher Feedback</p>
           {result.teacher_score && (
             <p className="text-emerald-700 mb-2 text-xs">Teacher score: <strong>Band {result.teacher_score}</strong></p>
@@ -330,12 +330,12 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
       )}
 
       {/* ── Original Submission ── */}
-      <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-md">
+      <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6 shadow-md">
         <SectionTitle n={sectionN} title="Your Submission" />
         {submission.question && (
           <div className="mb-5">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Question</p>
-            <p className="text-slate-700 leading-7 whitespace-pre-wrap bg-slate-50 rounded-xl p-4 border-2 border-emerald-600">
+            <p className="text-slate-700 leading-7 whitespace-pre-wrap bg-slate-50 rounded-xl p-4 border border-[rgba(22,163,68,.13)]">
               {submission.question}
             </p>
           </div>
@@ -343,7 +343,7 @@ export default async function ResultPage({ params }: { params: Promise<{ submiss
         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
           Essay · {submission.word_count} words
         </p>
-        <div className="text-slate-700 leading-7 whitespace-pre-wrap bg-slate-50 rounded-xl p-4 border-2 border-emerald-600 font-mono text-[13px]">
+        <div className="text-slate-700 leading-7 whitespace-pre-wrap bg-slate-50 rounded-xl p-4 border border-[rgba(22,163,68,.13)] font-mono text-[13px]">
           {submission.response_text}
         </div>
       </section>

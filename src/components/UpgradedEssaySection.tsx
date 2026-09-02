@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 
@@ -34,7 +34,7 @@ export default function UpgradedEssaySection({ submissionId, existingEssay, targ
   }
 
   return (
-    <section className="bg-white rounded-2xl border-2 border-emerald-600 p-6 shadow-2xl">
+    <section className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-6">
       <div className="pb-3 border-b border-slate-400 mb-5">
         <h2 className="text-[15px] font-bold text-slate-900">
           <span className="text-slate-400 mr-1">{sectionN}.</span>

@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import BandChart, { ChartPoint } from '@/components/BandChart'
@@ -193,7 +193,7 @@ export default async function ProgressPage() {
   if (totalChecked === 0) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] p-6">
-        <div className="bg-white rounded-2xl shadow-2xl border-2 border-emerald-600 p-12 max-w-md w-full text-center">
+        <div className="bg-white rounded-2xl border border-[rgba(22,163,68,.13)] p-12 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -380,7 +380,7 @@ export default async function ProgressPage() {
           ].map(card => (
             <div
               key={card.label}
-              className="bg-white rounded-2xl border-2 border-emerald-600 p-4 flex flex-col gap-1 shadow-2xl"
+              className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4 flex flex-col gap-1"
             >
               <span className="text-xs text-slate-500 font-medium leading-tight">{card.label}</span>
               <span className={`text-2xl font-black leading-none ${
@@ -398,7 +398,7 @@ export default async function ProgressPage() {
 
         {/* Target progress bar */}
         {progressPct !== null && targetBand && (
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
+          <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-5">
             <div className="flex items-center justify-between mb-3 text-sm">
               <span className="font-semibold text-slate-700">Tiến độ đến mục tiêu Band {targetBand}</span>
               <span className="text-slate-500">
@@ -422,7 +422,7 @@ export default async function ProgressPage() {
         )}
 
         {/* Band Chart */}
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-5">
           <h2 className="text-base font-bold text-slate-800 mb-4">Biểu đồ tiến độ điểm IELTS</h2>
           <BandChart data={chartData} targetBand={targetBand} />
         </div>
@@ -432,7 +432,7 @@ export default async function ProgressPage() {
           <h2 className="text-base font-bold text-slate-800 mb-3">Tiến độ theo tiêu chí</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {criterionStats.map(({ key, label, short, current, highest, average, trend }) => (
-              <div key={key} className="bg-white rounded-2xl border-2 border-emerald-600 p-4 shadow-2xl">
+              <div key={key} className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{short}</span>
                   {trend ? (
@@ -463,7 +463,7 @@ export default async function ProgressPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Common errors */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
+          <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-5">
             <h2 className="text-base font-bold text-slate-800 mb-4">Lỗi thường gặp</h2>
             {topErrors.length === 0 ? (
               <p className="text-sm text-slate-400">Chưa đủ dữ liệu.</p>
@@ -491,7 +491,7 @@ export default async function ProgressPage() {
           </div>
 
           {/* Priorities */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
+          <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-5">
             <h2 className="text-base font-bold text-slate-800 mb-4">Ưu tiên cải thiện</h2>
             <div className="space-y-4">
               {priorities.map(p => (
@@ -511,7 +511,7 @@ export default async function ProgressPage() {
         </div>
 
         {/* Recent Assessments */}
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-5">
           <h2 className="text-base font-bold text-slate-800 mb-4">Kết quả gần đây</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -565,10 +565,10 @@ export default async function ProgressPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Personal Best */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
+          <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-5">
             <h2 className="text-base font-bold text-slate-800 mb-4">Kỷ lục cá nhân</h2>
             <div className="grid grid-cols-2 gap-3">
-              <div className={`rounded-xl border p-4 shadow-2xl ${bandBg(bests.overall)}`}>
+              <div className={`rounded-xl border p-4 ${bandBg(bests.overall)}`}>
                 <div className="text-xs text-slate-500 mb-1">Overall</div>
                 <div className={`text-3xl font-black ${bandColor(bests.overall)}`}>{bests.overall}</div>
               </div>
@@ -578,7 +578,7 @@ export default async function ProgressPage() {
                 { label: 'Lexical Resource',        val: bests.lr },
                 { label: 'Grammatical Accuracy',    val: bests.gr },
               ].map(({ label, val }) => (
-                <div key={label} className="rounded-xl border-2 border-emerald-600 bg-slate-50/70 p-3">
+                <div key={label} className="rounded-xl border border-[rgba(22,163,68,.13)] bg-slate-50/70 p-3">
                   <div className="text-xs text-slate-500 mb-1 leading-tight">{label}</div>
                   <div className={`text-xl font-black ${bandColor(val)}`}>{val}</div>
                 </div>
@@ -587,7 +587,7 @@ export default async function ProgressPage() {
           </div>
 
           {/* Target band info */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
+          <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-5">
             <h2 className="text-base font-bold text-slate-800 mb-4">Mục tiêu IELTS</h2>
             {targetBand ? (
               <div className="space-y-4">

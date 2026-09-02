@@ -136,35 +136,35 @@ export default async function DashboardPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-4 card-hover" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.22)' }}>
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4 card-hover" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Điểm mới nhất</p>
+            <p className="text-[10px] font-bold text-[#5a7864] uppercase tracking-wider">Điểm mới nhất</p>
             <div className="w-6 h-6 bg-emerald-50 rounded-lg flex items-center justify-center">
               <span className="text-xs">📊</span>
             </div>
           </div>
-          <p className="text-3xl font-black text-emerald-600">{latestBand ?? '—'}</p>
-          <p className="text-xs text-slate-400 mt-0.5">AI estimate</p>
+          <p className="text-3xl font-black text-[#16a344]">{latestBand ?? '—'}</p>
+          <p className="text-xs text-[#5a7864] mt-0.5">AI estimate</p>
         </div>
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-4 card-hover" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.22)' }}>
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4 card-hover" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trung bình</p>
+            <p className="text-[10px] font-bold text-[#5a7864] uppercase tracking-wider">Trung bình</p>
             <div className="w-6 h-6 bg-amber-50 rounded-lg flex items-center justify-center">
               <span className="text-xs">📈</span>
             </div>
           </div>
           <p className="text-3xl font-black text-amber-500">{avgBand ?? '—'}</p>
-          <p className="text-xs text-slate-400 mt-0.5">{bandScores.length} bài đã nộp</p>
+          <p className="text-xs text-[#5a7864] mt-0.5">{bandScores.length} bài đã nộp</p>
         </div>
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-4 card-hover" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.22)' }}>
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4 card-hover" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Từ đã học</p>
+            <p className="text-[10px] font-bold text-[#5a7864] uppercase tracking-wider">Từ đã học</p>
             <div className="w-6 h-6 bg-purple-50 rounded-lg flex items-center justify-center">
               <span className="text-xs">📚</span>
             </div>
           </div>
           <p className="text-3xl font-black text-purple-600">—</p>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#5a7864] mt-0.5">
             <Link href="/vocabulary" className="hover:text-purple-600 transition-colors">Mở sổ từ vựng →</Link>
           </p>
         </div>
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
               Xem tất cả →
             </Link>
           </div>
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 divide-y divide-slate-50 overflow-hidden">
+          <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] divide-y divide-[rgba(22,163,68,.07)] overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
             {typedSubmissions.map(sub => (
               <Link
                 key={sub.id}
@@ -298,7 +298,7 @@ export default async function DashboardPage() {
       )}
 
       {typedSubmissions.length === 0 && (
-        <div className="text-center py-14 bg-white rounded-2xl border-2 border-emerald-600">
+        <div className="text-center py-14 bg-white rounded-[20px] border border-[rgba(22,163,68,.13)]" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
           <div className="text-4xl mb-3">✍️</div>
           <p className="text-slate-700 font-black text-lg">Chưa có bài nào</p>
           <p className="text-slate-400 text-sm mt-1 mb-5">Nộp bài viết IELTS đầu tiên để nhận phản hồi từ AI.</p>

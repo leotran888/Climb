@@ -73,7 +73,7 @@ export default async function SubscriptionPage() {
       </div>
 
       {/* Current plan + usage */}
-      <div className="bg-white rounded-2xl border-2 border-emerald-600 p-6 space-y-5">
+      <div className="bg-white rounded-[20px] border-2 border-[#16a344] p-6 space-y-5" style={{ boxShadow: '0 4px 20px rgba(22,163,68,.12)' }}>
         <div className="flex items-start justify-between">
           <div>
             <div className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-1">Gói hiện tại</div>
