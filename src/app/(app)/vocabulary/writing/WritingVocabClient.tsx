@@ -147,7 +147,7 @@ function FolderSaveButton({
       .select('id, name, color').single()
     if (nf) {
       setFolders(prev => prev ? [nf, ...prev] : [nf])
-      await saveToFolder(nf.id)
+      await toggleFolder(nf.id)
     }
     setNewName('')
     setCreating(false)
