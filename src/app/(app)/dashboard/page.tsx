@@ -47,11 +47,11 @@ export default async function DashboardPage() {
       .order('submitted_at', { ascending: false })
       .limit(3),
     supabase
-      .from('writing_submissions')
-      .select('submitted_at')
+      .from('user_activity_log')
+      .select('activity_date')
       .eq('user_id', user!.id)
-      .gte('submitted_at', ninetyDaysAgo)
-      .order('submitted_at', { ascending: false }),
+      .gte('activity_date', new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0])
+      .order('activity_date', { ascending: false }),
     supabase
       .from('writing_vocab_progress')
       .select('status')
@@ -70,7 +70,7 @@ export default async function DashboardPage() {
   function toVnDate(iso: string) {
     return new Date(new Date(iso).getTime() + 7 * 3600000).toISOString().split('T')[0]
   }
-  const activityDates = [...new Set((activityRaw ?? []).map(r => toVnDate(r.submitted_at)))]
+  const activityDates = (activityRaw ?? []).map((r: { activity_date: string }) => r.activity_date)
 
   function computeStreak(dates: string[]): number {
     if (!dates.length) return 0

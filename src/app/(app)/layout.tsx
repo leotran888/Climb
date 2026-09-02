@@ -12,6 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const todayVn = new Date(Date.now() + 7 * 3600000).toISOString().split('T')[0]
   const [profileResult, subResult] = await Promise.all([
     supabase
       .from('profiles')
@@ -24,6 +25,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       .eq('user_id', user.id)
       .single(),
   ])
+
+  supabase.from('user_activity_log').upsert(
+    { user_id: user.id, activity_date: todayVn },
+    { onConflict: 'user_id,activity_date', ignoreDuplicates: true }
+  ).then(() => {})
 
   const profile = profileResult.data
   const planName = (subResult.data as { plans?: { name?: string } } | null)?.plans?.name ?? null
