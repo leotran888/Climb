@@ -4,13 +4,13 @@ export default function WritingPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingBottom: 16 }}>
       <div style={{ marginBottom: 12 }}>
-        <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 3 }}>
+        <p style={{ fontSize: 11, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 4 }}>
           ✦ Writing AI
         </p>
-        <h1 style={{ fontSize: 22, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em', lineHeight: 1.1, marginBottom: 3 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em', lineHeight: 1.1, marginBottom: 4 }}>
           Nộp bài viết để chấm điểm
         </h1>
-        <p style={{ fontSize: 12, fontWeight: 600, color: '#3d5a47' }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#3d5a47' }}>
           AI phân tích 4 tiêu chí IELTS và viết lại bài đạt band mục tiêu
         </p>
       </div>
