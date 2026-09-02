@@ -157,8 +157,6 @@ function FolderSaveButton({
     setCreating(false)
   }
 
-  const hasSaved = savedIn.size > 0
-
   return (
     <>
       <button
