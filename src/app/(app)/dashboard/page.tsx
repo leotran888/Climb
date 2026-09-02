@@ -174,11 +174,7 @@ export default async function DashboardPage() {
 
         {/* Writing AI */}
         <Link href="/writing" style={{ textDecoration: 'none' }}>
-          <div
-            style={{ background: 'linear-gradient(135deg, #1b6b38 0%, #16a344 100%)', borderRadius: 20, padding: 24, cursor: 'pointer', transition: 'transform .2s' }}
-            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
-          >
+          <div style={{ background: 'linear-gradient(135deg, #1b6b38 0%, #16a344 100%)', borderRadius: 20, padding: 24, cursor: 'pointer' }}>
             <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.55)', marginBottom: 10 }}>Writing AI</p>
             <p style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.2, color: '#fff' }}>Nộp bài viết<br />để chấm điểm</p>
             <p style={{ fontSize: 12, fontWeight: 600, marginTop: 6, lineHeight: 1.5, color: 'rgba(255,255,255,.6)' }}>
@@ -192,11 +188,7 @@ export default async function DashboardPage() {
 
         {/* Từ vựng */}
         <Link href="/vocabulary" style={{ textDecoration: 'none' }}>
-          <div
-            style={{ background: '#f3f8f4', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: 24, cursor: 'pointer', transition: 'transform .2s', height: '100%' }}
-            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
-          >
+          <div style={{ background: '#f3f8f4', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: 24, cursor: 'pointer', height: '100%' }}>
             <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 10 }}>Từ vựng</p>
             <p style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.2, color: '#192e1e' }}>Sổ từ vựng<br />IELTS của bạn</p>
             <p style={{ fontSize: 12, fontWeight: 600, marginTop: 6, lineHeight: 1.5, color: '#5a7864' }}>
