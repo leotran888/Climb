@@ -88,12 +88,12 @@ export function CreateFolderButton({ userId }: { userId: string }) {
   )
 }
 
-const FOLDER_BG: Record<string, string> = {
-  green:  'rgba(22,163,68,.06)',
-  amber:  'rgba(245,170,0,.06)',
-  blue:   'rgba(80,80,220,.04)',
-  pink:   'rgba(220,80,80,.04)',
-  purple: 'rgba(120,80,220,.04)',
+const FOLDER_STYLE: Record<string, { bg: string; border: string; accent: string }> = {
+  green:  { bg: 'rgba(22,163,68,.1)',   border: 'rgba(22,163,68,.25)',   accent: '#16a344' },
+  amber:  { bg: 'rgba(245,170,0,.12)',  border: 'rgba(245,170,0,.3)',    accent: '#d4900a' },
+  blue:   { bg: 'rgba(80,80,220,.09)',  border: 'rgba(80,80,220,.2)',    accent: '#4444cc' },
+  pink:   { bg: 'rgba(220,60,100,.09)', border: 'rgba(220,60,100,.2)',   accent: '#cc3366' },
+  purple: { bg: 'rgba(120,60,220,.09)', border: 'rgba(120,60,220,.2)',   accent: '#7a3ccc' },
 }
 
 export function FolderCard({
@@ -104,19 +104,20 @@ export function FolderCard({
   const router = useRouter()
   const [editOpen,  setEditOpen]  = useState(false)
   const [editName,  setEditName]  = useState(folder.name)
+  const [editColor, setEditColor] = useState(folder.color)
   const [saving,    setSaving]    = useState(false)
   const [deleting,  setDeleting]  = useState(false)
 
   const words   = folder.vocab_words ?? []
   const known   = words.filter(w => w.status === 'known').length
   const pct     = words.length ? Math.round((known / words.length) * 100) : 0
-  const bgColor = FOLDER_BG[folder.color] ?? FOLDER_BG.green
+  const style   = FOLDER_STYLE[folder.color] ?? FOLDER_STYLE.green
 
   async function saveEdit() {
     if (!editName.trim()) return
     setSaving(true)
     const supabase = createClient()
-    await supabase.from('vocab_folders').update({ name: editName.trim() }).eq('id', folder.id)
+    await supabase.from('vocab_folders').update({ name: editName.trim(), color: editColor }).eq('id', folder.id)
     setSaving(false)
     setEditOpen(false)
     router.refresh()
@@ -135,11 +136,14 @@ export function FolderCard({
     <>
       <div style={{ position: 'relative' }} className="group">
         <a href={`/vocabulary/${folder.id}`} style={{ textDecoration: 'none', display: 'block' }}>
-          <div style={{ background: bgColor, border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: 20, cursor: 'pointer' }}>
-            <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', marginBottom: 4 }}>{folder.name}</p>
-            <p style={{ fontSize: 12, color: '#5a7864', fontWeight: 600, marginBottom: 14 }}>{words.length} từ</p>
-            <div style={{ background: 'rgba(22,163,68,.1)', borderRadius: 50, height: 6 }}>
-              <div style={{ height: '100%', borderRadius: 50, background: '#16a344', width: `${pct}%` }} />
+          <div style={{ background: style.bg, border: `1.5px solid ${style.border}`, borderRadius: 16, padding: 20, cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: style.accent, flexShrink: 0, display: 'inline-block' }} />
+              <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', margin: 0 }}>{folder.name}</p>
+            </div>
+            <p style={{ fontSize: 12, color: '#5a7864', fontWeight: 600, marginBottom: 14, paddingLeft: 16 }}>{words.length} từ</p>
+            <div style={{ background: 'rgba(0,0,0,.07)', borderRadius: 50, height: 6 }}>
+              <div style={{ height: '100%', borderRadius: 50, background: style.accent, width: `${pct}%` }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10, fontWeight: 700, color: '#5a7864' }}>
               <span>{known} đã thuộc</span>
@@ -175,14 +179,30 @@ export function FolderCard({
       {editOpen && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setEditOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-slate-900 text-lg">Đổi tên thư mục</h3>
-            <input
-              autoFocus
-              value={editName}
-              onChange={e => setEditName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && saveEdit()}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+            <h3 className="font-bold text-slate-900 text-lg">Chỉnh thư mục</h3>
+            <div>
+              <label className="text-xs font-semibold text-slate-500 block mb-1">Tên thư mục</label>
+              <input
+                autoFocus
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveEdit()}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-500 block mb-2">Màu sắc</label>
+              <div className="flex gap-2">
+                {COLORS.map(c => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setEditColor(c.value)}
+                    className={`w-7 h-7 rounded-full ${c.bg} transition-transform ${editColor === c.value ? 'scale-125 ring-2 ring-offset-2 ring-slate-400' : 'hover:scale-110'}`}
+                  />
+                ))}
+              </div>
+            </div>
             <div className="flex gap-2 pt-1">
               <button onClick={saveEdit} disabled={saving || !editName.trim()}
                 style={{ flex: 1, background: '#16a344', color: '#fff', border: 'none', borderRadius: 12, padding: '10px', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: saving ? 'not-allowed' : 'pointer', opacity: (saving || !editName.trim()) ? .5 : 1 }}>
