@@ -121,51 +121,52 @@ export default async function DashboardPage() {
     <div className="space-y-4 pb-8">
 
       {/* Greeting */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em' }}>
-            {greeting === 'Good morning' ? '☀️' : greeting === 'Good afternoon' ? '🌤️' : '🌙'} Xin chào, {firstName}!
-          </h1>
-          <p style={{ fontSize: 13, color: '#5a7864', fontWeight: 600, marginTop: 3 }}>
-            Hãy luyện tập đều đặn mỗi ngày để tăng band
-          </p>
+          <p className="text-emerald-600 font-bold text-xs mb-0.5">{greeting}, {firstName} ✦</p>
+          <h1 className="text-xl font-black text-slate-900">Dashboard</h1>
         </div>
         {profile?.target_band && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'rgba(245,170,0,.12)', color: '#a07000',
-            border: '1.5px solid rgba(245,170,0,.3)',
-            fontSize: 12, fontWeight: 800,
-            padding: '7px 14px', borderRadius: 50, whiteSpace: 'nowrap',
-          }}>
-            🎯 Mục tiêu: Band {profile.target_band}
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2 text-center">
+            <p className="text-xs text-emerald-600 font-semibold">Target</p>
+            <p className="text-2xl font-black text-emerald-600">{profile.target_band}</p>
           </div>
         )}
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="app-stat-card card-hover">
-          <div className="app-stat-label">Band gần nhất</div>
-          <div className="app-stat-num" style={{ color: '#f5aa00' }}>{latestBand ?? '—'}</div>
-          <div className="app-stat-sub">AI estimate</div>
-        </div>
-        <div className="app-stat-card card-hover">
-          <div className="app-stat-label">Band trung bình</div>
-          <div className="app-stat-num" style={{ color: '#16a344' }}>{avgBand ?? '—'}</div>
-          <div className="app-stat-sub">{bandScores.length} bài đã nộp</div>
-        </div>
-        <div className="app-stat-card card-hover">
-          <div className="app-stat-label">Streak</div>
-          <div className="app-stat-num" style={{ color: '#e85d04' }}>🔥 {streak}</div>
-          <div className="app-stat-sub">ngày liên tiếp</div>
-        </div>
-        <div className="app-stat-card card-hover">
-          <div className="app-stat-label">Từ vựng</div>
-          <div className="app-stat-num" style={{ color: '#16a344' }}>—</div>
-          <div className="app-stat-sub">
-            <Link href="/vocabulary" className="hover:text-purple-600 transition-colors">Mở sổ từ vựng →</Link>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4 card-hover" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-bold text-[#5a7864] uppercase tracking-wider">Điểm mới nhất</p>
+            <div className="w-6 h-6 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <span className="text-xs">📊</span>
+            </div>
           </div>
+          <p className="text-3xl font-black text-[#16a344]">{latestBand ?? '—'}</p>
+          <p className="text-xs text-[#5a7864] mt-0.5">AI estimate</p>
+        </div>
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4 card-hover" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-bold text-[#5a7864] uppercase tracking-wider">Trung bình</p>
+            <div className="w-6 h-6 bg-amber-50 rounded-lg flex items-center justify-center">
+              <span className="text-xs">📈</span>
+            </div>
+          </div>
+          <p className="text-3xl font-black text-amber-500">{avgBand ?? '—'}</p>
+          <p className="text-xs text-[#5a7864] mt-0.5">{bandScores.length} bài đã nộp</p>
+        </div>
+        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] p-4 card-hover" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-bold text-[#5a7864] uppercase tracking-wider">Từ đã học</p>
+            <div className="w-6 h-6 bg-purple-50 rounded-lg flex items-center justify-center">
+              <span className="text-xs">📚</span>
+            </div>
+          </div>
+          <p className="text-3xl font-black text-purple-600">—</p>
+          <p className="text-xs text-[#5a7864] mt-0.5">
+            <Link href="/vocabulary" className="hover:text-purple-600 transition-colors">Mở sổ từ vựng →</Link>
+          </p>
         </div>
       </div>
 
@@ -197,7 +198,7 @@ export default async function DashboardPage() {
 
       {/* Practice cards */}
       <div>
-        <h2 style={{ fontSize: 15, fontWeight: 900, color: '#192e1e', marginBottom: 10 }}>Luyện tập ngay</h2>
+        <h2 className="text-sm font-black text-slate-900 mb-2">Luyện tập ngay</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
           {/* Writing */}
@@ -261,12 +262,12 @@ export default async function DashboardPage() {
       {typedSubmissions.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 style={{ fontSize: 15, fontWeight: 900, color: '#192e1e' }}>Bài làm gần đây</h2>
-            <Link href="/history" style={{ fontSize: 12, fontWeight: 800, color: '#16a344', textDecoration: 'none' }}>
+            <h2 className="text-base font-black text-slate-900">Bài làm gần đây</h2>
+            <Link href="/history" className="text-sm text-emerald-600 hover:text-emerald-700 font-bold transition-colors">
               Xem tất cả →
             </Link>
           </div>
-          <div className="app-card divide-y overflow-hidden" style={{ borderColor: 'rgba(22,163,68,.09)' }}>
+          <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] divide-y divide-[rgba(22,163,68,.07)] overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
             {typedSubmissions.map(sub => (
               <Link
                 key={sub.id}
@@ -297,7 +298,7 @@ export default async function DashboardPage() {
       )}
 
       {typedSubmissions.length === 0 && (
-        <div className="app-card text-center py-14">
+        <div className="text-center py-14 bg-white rounded-[20px] border border-[rgba(22,163,68,.13)]" style={{ boxShadow: '0 2px 12px rgba(22,163,68,.07)' }}>
           <div className="text-4xl mb-3">✍️</div>
           <p className="text-slate-700 font-black text-lg">Chưa có bài nào</p>
           <p className="text-slate-400 text-sm mt-1 mb-5">Nộp bài viết IELTS đầu tiên để nhận phản hồi từ AI.</p>
