@@ -7,17 +7,21 @@ export default async function VocabularyPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: folders } = await supabase
-    .from('vocab_folders')
-    .select('*, vocab_words(status)')
-    .eq('user_id', user!.id)
-    .order('created_at', { ascending: false })
+  const [{ data: folders }, { data: progressRows }] = await Promise.all([
+    supabase
+      .from('vocab_folders')
+      .select('*, vocab_words(status)')
+      .eq('user_id', user!.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('writing_vocab_progress')
+      .select('status')
+      .eq('user_id', user!.id),
+  ])
 
-  const allWords      = (folders ?? []).flatMap((f: { vocab_words: { status: string }[] }) => f.vocab_words ?? [])
-  const totalWords    = allWords.length
-  const knownCount    = allWords.filter((w: { status: string }) => w.status === 'known').length
-  const learningCount = allWords.filter((w: { status: string }) => w.status === 'learning').length
-  const newCount      = allWords.filter((w: { status: string }) => w.status === 'new').length
+  const knownCount    = (progressRows ?? []).filter((r: { status: string }) => r.status === 'learned').length
+  const learningCount = (progressRows ?? []).filter((r: { status: string }) => r.status === 'learning').length
+  const totalWords    = knownCount + learningCount
 
   const STAT_CARD = { background: '#fff', border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: '18px 20px' }
 
@@ -34,8 +38,8 @@ export default async function VocabularyPage() {
         </h1>
       </div>
 
-      {/* 4-stat grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
+      {/* 3-stat grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
         <div style={STAT_CARD}>
           <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Tổng từ</p>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#192e1e', fontVariantNumeric: 'tabular-nums' }}>{totalWords || '—'}</p>
@@ -47,10 +51,6 @@ export default async function VocabularyPage() {
         <div style={STAT_CARD}>
           <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Đang học</p>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#f5aa00', fontVariantNumeric: 'tabular-nums' }}>{learningCount || '—'}</p>
-        </div>
-        <div style={STAT_CARD}>
-          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Từ mới</p>
-          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#192e1e', fontVariantNumeric: 'tabular-nums' }}>{newCount || '—'}</p>
         </div>
       </div>
 
