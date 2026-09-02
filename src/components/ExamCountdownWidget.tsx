@@ -69,17 +69,17 @@ export default function ExamCountdownWidget({ examDate: initial, userId }: Props
             </button>
 
             {open && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-[rgba(22,163,68,.25)] p-3 z-20 w-52">
+              <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border-2 border-emerald-600 p-3 z-20 w-52">
                 <p className="text-xs font-bold text-slate-600 mb-2">Chọn ngày thi</p>
                 <input
                   type="date"
                   value={inputDate}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={e => setInputDate(e.target.value)}
-                  className="w-full border border-[rgba(22,163,68,.25)] rounded-lg px-3 py-1.5 text-sm text-slate-800 mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  className="w-full border-2 border-emerald-600 rounded-lg px-3 py-1.5 text-sm text-slate-800 mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 />
                 <div className="flex gap-2">
-                  <button onClick={() => setOpen(false)} className="flex-1 text-xs text-slate-500 py-1.5 rounded-lg border border-[rgba(22,163,68,.25)] hover:bg-slate-50">Huỷ</button>
+                  <button onClick={() => setOpen(false)} className="flex-1 text-xs text-slate-500 py-1.5 rounded-lg border-2 border-emerald-600 hover:bg-slate-50">Huỷ</button>
                   <button onClick={save} disabled={saving || !inputDate} className="flex-1 text-xs bg-emerald-600 text-white py-1.5 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-50">
                     {saving ? '…' : 'Lưu'}
                   </button>

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { CreateFolderButton } from './VocabFoldersClient'
 
@@ -46,7 +46,7 @@ export default async function VocabularyPage() {
           { label: 'Đang học',   value: learningCount, color: 'text-amber-600' },
           { label: 'Mới thêm',   value: newCount,      color: 'text-slate-500' },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-[rgba(22,163,68,.13)] p-4 text-center">
+          <div key={s.label} className="bg-white rounded-xl border-2 border-emerald-600 p-4 text-center">
             <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
             <p className="text-xs text-slate-400 mt-0.5 font-medium">{s.label}</p>
           </div>
@@ -59,7 +59,7 @@ export default async function VocabularyPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link
             href="/vocabulary/writing"
-            className="bg-emerald-600 hover:bg-emerald-700 border border-[rgba(22,163,68,.13)] rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5 shadow-lg shadow-emerald-200"
+            className="bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-600 rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5 shadow-lg shadow-emerald-200"
           >
             <div className="flex items-start justify-between">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -83,7 +83,7 @@ export default async function VocabularyPage() {
 
       {/* Folders */}
       {(folders ?? []).length === 0 ? (
-        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] py-20 text-center">
+        <div className="bg-white rounded-2xl border-2 border-emerald-600 py-20 text-center">
           <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>

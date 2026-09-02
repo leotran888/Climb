@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import LogoutButton from '@/components/LogoutButton'
 import ProfileEditForm from './ProfileEditForm'
@@ -7,7 +7,7 @@ import PasswordForm from './PasswordForm'
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] overflow-hidden">
+    <div className="bg-white rounded-2xl border-2 border-emerald-600 overflow-hidden">
       <div className="px-6 py-4 border-b border-slate-100">
         <h2 className="font-bold text-slate-900">{title}</h2>
       </div>
@@ -118,7 +118,7 @@ export default async function ProfilePage() {
                 <p className="text-xs text-slate-400 mt-0.5">Nhận email khi có kết quả chấm bài</p>
               </div>
               <div className="w-10 h-6 bg-slate-200 rounded-full relative cursor-not-allowed opacity-50">
-                <div className="w-4 h-4 bg-white rounded-full absolute top-1 left-1" />
+                <div className="w-4 h-4 bg-white rounded-full absolute top-1 left-1 shadow-2xl" />
               </div>
             </div>
           </div>

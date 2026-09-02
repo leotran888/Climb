@@ -1,11 +1,9 @@
-export default function ClimbLogo({ size = 'md', darkMode = false }: { size?: 'sm' | 'md'; darkMode?: boolean }) {
+export default function ClimbLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const box = size === 'sm' ? 30 : 38
   const radius = size === 'sm' ? 8 : 11
   const iconW = size === 'sm' ? 16 : 20
   const iconH = size === 'sm' ? 18 : 23
   const textSize = size === 'sm' ? 'text-base' : 'text-[19px]'
-  const textColor = darkMode ? 'text-white' : 'text-[#192e1e]'
-  const accentColor = darkMode ? '#6ee09a' : '#16a344'
 
   return (
     <span className="flex items-center gap-2.5">
@@ -20,8 +18,8 @@ export default function ClimbLogo({ size = 'md', darkMode = false }: { size?: 's
           />
         </svg>
       </span>
-      <span className={`font-black ${textSize} ${textColor} tracking-tight leading-none`}>
-        Climb <em className="not-italic" style={{ color: accentColor }}>IELTS</em>
+      <span className={`font-black ${textSize} text-[#192e1e] tracking-tight leading-none`}>
+        Climb <em className="not-italic text-[#16a344]">IELTS</em>
       </span>
     </span>
   )

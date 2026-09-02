@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { WritingSubmission, TASK_TYPE_LABELS } from '@/lib/types'
 
@@ -38,7 +38,7 @@ export default async function HistoryPage() {
       </div>
 
       {typedSubmissions.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-[20px] border border-[rgba(22,163,68,.13)]">
+        <div className="text-center py-16 bg-white rounded-2xl border-2 border-emerald-600">
           <p className="text-4xl mb-4">📂</p>
           <p className="text-slate-700 font-medium">No essays checked yet</p>
           <p className="text-slate-400 text-sm mt-1 mb-6">Your writing checks will appear here.</p>
@@ -47,7 +47,7 @@ export default async function HistoryPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-[20px] border border-[rgba(22,163,68,.13)] divide-y divide-slate-100">
+        <div className="bg-white rounded-2xl border-2 border-emerald-600 divide-y divide-slate-100">
           {typedSubmissions.map(sub => (
             <Link
               key={sub.id}

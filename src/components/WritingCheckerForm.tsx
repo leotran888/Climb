@@ -235,7 +235,7 @@ export default function WritingCheckerForm() {
             onPaste={handleQuestionPaste}
             disabled={loading}
             placeholder={questionPlaceholder}
-            className={`w-full border border-[rgba(22,163,68,.25)] rounded-xl p-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none leading-relaxed ${
+            className={`w-full border-2 border-emerald-600 rounded-xl p-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none leading-relaxed ${
               isAcademic ? 'min-h-[60px]' : 'min-h-[160px] flex-1'
             }`}
           />
@@ -269,7 +269,7 @@ export default function WritingCheckerForm() {
             disabled={loading}
             required
             placeholder="Write or paste your essay here..."
-            className="flex-1 min-h-[160px] w-full border border-[rgba(22,163,68,.25)] rounded-xl p-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none leading-relaxed"
+            className="flex-1 min-h-[160px] w-full border-2 border-emerald-600 rounded-xl p-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none leading-relaxed"
           />
           <p className="text-xs text-slate-400">
             Minimum {minWords} words for {taskType === 'task2' ? 'Task 2' : 'Task 1'}.
