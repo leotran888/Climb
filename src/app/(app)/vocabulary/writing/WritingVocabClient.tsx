@@ -78,6 +78,8 @@ function FolderSaveButton({
   const [newName,  setNewName] = useState('')
   const [creating, setCreating] = useState(false)
 
+  useEffect(() => { setHasSaved(initialSaved) }, [initialSaved])
+
   useEffect(() => {
     if (!open) return
     function onMouseDown(e: MouseEvent) {
