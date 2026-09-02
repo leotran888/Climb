@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import ClimbLogo from '@/components/ClimbLogo'
 
 export const metadata: Metadata = {
   title: 'Chính sách bảo mật',
@@ -12,13 +13,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-white">
       <header className="border-b border-slate-100 px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-slate-800 font-bold text-lg hover:text-emerald-600 transition-colors">
-            <svg width="20" height="24" viewBox="0 0 36 42" fill="none">
-              <path d="M2 40 L2 32.5 Q2 29 5.5 29 L8.5 29 Q12 29 12 25.5 L12 21.5 Q12 18 15.5 18 L18.5 18 Q22 18 22 14.5 L22 11.5 Q22 8 25.5 8 L34 8"
-                stroke="#16a344" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Climb IELTS
-          </Link>
+          <Link href="/"><ClimbLogo size="sm" /></Link>
           <Link href="/" className="text-sm text-slate-500 hover:text-slate-800 transition-colors">← Trang chủ</Link>
         </div>
       </header>
