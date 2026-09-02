@@ -97,6 +97,7 @@ export default function WritingCheckerForm() {
 
   function handleTaskChange(value: string) {
     setTaskType(value)
+    if (value !== 'academic_task1') clearImage()
   }
 
   function parseCompletionTime(value: string): number | null {
