@@ -21,33 +21,35 @@ import {
   BandLevel,
   LearningPriority,
   TOPICS,
-  BAND_COLORS,
   SUITABILITY_LABELS,
   PRIORITY_LABELS,
   PHRASE_FUNCTIONS,
 } from './types'
 
-const LS_SAVED = 'climb_wv_saved'
+const LS_SAVED  = 'climb_wv_saved'
 const LS_STATUS = 'climb_wv_status'
 
 type StatusMap = Record<string, 'learning' | 'learned'>
-type TabKey = 'vocabulary' | 'collocation' | 'phrasal_verb' | 'writing_phrase' | 'common_mistake'
+type TabKey    = 'vocabulary' | 'collocation' | 'phrasal_verb' | 'writing_phrase' | 'common_mistake'
 
-// ─── Small UI helpers ────────────────────────────────────────────────────────
-
-function SuitabilityBadge({ s }: { s: VocabularyItem['writingSuitability'] }) {
-  const info = SUITABILITY_LABELS[s]
-  return (
-    <span className={`text-xs font-medium ${info.color} flex items-center gap-0.5`}>
-      <span>{info.icon}</span>
-      <span>{info.label}</span>
-    </span>
-  )
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const CARD: React.CSSProperties = {
+  background: '#fff',
+  border: '1.5px solid rgba(22,163,68,.13)',
+  borderRadius: 20,
 }
+const STAT_CARD: React.CSSProperties = {
+  background: '#fff',
+  border: '1.5px solid rgba(22,163,68,.13)',
+  borderRadius: 16,
+  padding: '16px 18px',
+}
+
+// ─── Tag helpers ──────────────────────────────────────────────────────────────
 
 function BandPill({ band }: { band: BandLevel }) {
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BAND_COLORS[band]}`}>
+    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 50, background: 'rgba(22,163,68,.08)', color: '#0f7a33' }}>
       Band {band}
     </span>
   )
@@ -55,25 +57,36 @@ function BandPill({ band }: { band: BandLevel }) {
 
 function TopicPill({ topic }: { topic: string }) {
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{topic}</span>
+    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 50, background: 'rgba(22,163,68,.06)', color: '#5a7864', border: '1.5px solid rgba(22,163,68,.13)' }}>
+      {topic}
+    </span>
   )
 }
 
 function TaskPill({ task }: { task: WritingTask }) {
   const label = task === 'both' ? 'Task 1 & 2' : task === 'task1' ? 'Task 1' : 'Task 2'
-  const color =
-    task === 'task1'
-      ? 'bg-purple-50 text-purple-700'
-      : task === 'task2'
-      ? 'bg-blue-50 text-blue-700'
-      : 'bg-teal-50 text-teal-700'
-  return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{label}</span>
+  return (
+    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 50, background: 'rgba(80,80,220,.07)', color: '#4444cc' }}>
+      {label}
+    </span>
+  )
+}
+
+function SuitabilityBadge({ s }: { s: VocabularyItem['writingSuitability'] }) {
+  const info = SUITABILITY_LABELS[s]
+  return (
+    <span style={{ fontSize: 11, fontWeight: 700, color: '#16a344', display: 'flex', alignItems: 'center', gap: 2 }}>
+      <span>{info.icon}</span>
+      <span>{info.label}</span>
+    </span>
+  )
 }
 
 function PriorityPill({ p }: { p: LearningPriority }) {
   const info = PRIORITY_LABELS[p]
+  const isMust = p === 'must_learn'
   return (
-    <span className={`text-xs font-medium ${info.color} flex items-center gap-0.5`}>
+    <span style={{ fontSize: 11, fontWeight: 800, color: isMust ? '#e05555' : '#5a7864', display: 'flex', alignItems: 'center', gap: 3 }}>
       <span>{info.icon}</span>
       <span>{info.label}</span>
     </span>
@@ -82,18 +95,18 @@ function PriorityPill({ p }: { p: LearningPriority }) {
 
 function TagList({ label, items, tone }: { label: string; items: string[]; tone: 'green' | 'blue' | 'slate' }) {
   if (items.length === 0) return null
-  const cls =
+  const tagStyle: React.CSSProperties =
     tone === 'green'
-      ? 'bg-emerald-50 text-emerald-700'
+      ? { background: 'rgba(22,163,68,.08)', color: '#0f7a33' }
       : tone === 'blue'
-      ? 'bg-blue-50 text-blue-700'
-      : 'bg-slate-100 text-slate-600'
+      ? { background: 'rgba(80,80,220,.07)', color: '#4444cc' }
+      : { background: 'rgba(22,163,68,.06)', color: '#5a7864', border: '1px solid rgba(22,163,68,.13)' }
   return (
     <div>
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{label}</p>
-      <div className="flex flex-wrap gap-1.5">
+      <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>{label}</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
         {items.map(i => (
-          <span key={i} className={`${cls} text-xs px-2 py-0.5 rounded`}>{i}</span>
+          <span key={i} style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 50, ...tagStyle }}>{i}</span>
         ))}
       </div>
     </div>
@@ -102,32 +115,26 @@ function TagList({ label, items, tone }: { label: string; items: string[]; tone:
 
 function WritingTip({ text }: { text: string }) {
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-      <span className="font-semibold text-amber-700">Writing Tip: </span>
+    <div style={{ background: 'rgba(245,170,0,.08)', border: '1.5px solid rgba(245,170,0,.25)', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: '#8a6100', lineHeight: 1.5 }}>
+      <span style={{ fontWeight: 800, color: '#b87d00' }}>Writing Tip: </span>
       {text}
     </div>
   )
 }
 
-// ─── Practice Modal ──────────────────────────────────────────────────────────
+// ─── Practice Modal ───────────────────────────────────────────────────────────
 
-function PracticeModal({
-  item,
-  onClose,
-}: {
-  item: StudyItem
-  onClose: () => void
-}) {
+function PracticeModal({ item, onClose }: { item: StudyItem; onClose: () => void }) {
   const [sentence, setSentence] = useState('')
   const [feedback, setFeedback] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading]   = useState(false)
 
   const submit = useCallback(async () => {
     if (!sentence.trim()) return
     setLoading(true)
     setFeedback('')
     try {
-      const res = await fetch('/api/vocabulary/practice', {
+      const res  = await fetch('/api/vocabulary/practice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ term: item.term, sentence, definition: item.definition }),
@@ -142,45 +149,42 @@ function PracticeModal({
   }, [sentence, item])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="font-bold text-slate-900 text-base">Practice: <span className="text-emerald-600">{item.term}</span></h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,.4)' }}>
+      <div style={{ background: '#fff', borderRadius: 20, boxShadow: '0 24px 64px rgba(0,0,0,.18)', width: '100%', maxWidth: 520 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(22,163,68,.1)' }}>
+          <h2 style={{ fontWeight: 900, color: '#192e1e', fontSize: 15 }}>
+            Practice: <span style={{ color: '#16a344' }}>{item.term}</span>
+          </h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5a7864', lineHeight: 0, padding: 4 }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
-
-        <div className="p-6 space-y-4">
-          <p className="text-slate-600 text-sm">
-            Write an IELTS-style sentence using <strong className="text-slate-900">&ldquo;{item.term}&rdquo;</strong>.
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <p style={{ fontSize: 14, color: '#5a7864', fontWeight: 600 }}>
+            Write an IELTS-style sentence using <strong style={{ color: '#192e1e' }}>&ldquo;{item.term}&rdquo;</strong>.
           </p>
-
-          <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600 border-l-2 border-slate-300">
-            <span className="font-medium text-slate-700">Definition:</span> {item.definition}
+          <div style={{ background: 'rgba(22,163,68,.04)', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: '#3a5540', borderLeft: '2px solid rgba(22,163,68,.25)' }}>
+            <span style={{ fontWeight: 700, color: '#5a7864' }}>Definition: </span>{item.definition}
           </div>
-
           <textarea
             value={sentence}
             onChange={e => setSentence(e.target.value)}
             placeholder="Write your sentence here..."
             rows={3}
-            className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 resize-none"
+            style={{ width: '100%', border: '1.5px solid rgba(22,163,68,.2)', borderRadius: 12, padding: 12, fontSize: 14, fontFamily: 'inherit', color: '#192e1e', outline: 'none', resize: 'none' }}
           />
-
           <button
             onClick={submit}
             disabled={loading || !sentence.trim()}
-            className="w-full bg-emerald-600 text-white rounded-xl px-4 py-2.5 font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{ width: '100%', background: '#16a344', color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontFamily: 'inherit', fontSize: 14, fontWeight: 800, cursor: loading || !sentence.trim() ? 'not-allowed' : 'pointer', opacity: (loading || !sentence.trim()) ? .5 : 1 }}
           >
             {loading ? 'Getting feedback...' : 'Get AI Feedback'}
           </button>
-
           {feedback && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-slate-700 leading-relaxed">
-              <p className="font-semibold text-emerald-700 mb-1">Feedback</p>
+            <div style={{ background: 'rgba(22,163,68,.06)', border: '1.5px solid rgba(22,163,68,.2)', borderRadius: 12, padding: 16, fontSize: 13, color: '#3a5540', lineHeight: 1.6 }}>
+              <p style={{ fontWeight: 800, color: '#16a344', marginBottom: 4 }}>Feedback</p>
               {feedback}
             </div>
           )}
@@ -190,15 +194,10 @@ function PracticeModal({
   )
 }
 
-// ─── Study card (vocabulary / collocation / phrasal verb) ────────────────────
+// ─── Study card ───────────────────────────────────────────────────────────────
 
 function StudyCard({
-  item,
-  saved,
-  status,
-  onToggleSave,
-  onSetStatus,
-  onPractice,
+  item, saved, status, onToggleSave, onSetStatus, onPractice,
 }: {
   item: StudyItem
   saved: boolean
@@ -209,21 +208,20 @@ function StudyCard({
 }) {
   const [expanded, setExpanded] = useState(false)
 
-  const isVocab = item.type === 'vocabulary'
-  const isColl = item.type === 'collocation'
+  const isVocab   = item.type === 'vocabulary'
+  const isColl    = item.type === 'collocation'
   const isPhrasal = item.type === 'phrasal_verb'
 
-  const vocab = isVocab ? (item as VocabularyItem) : null
-  const coll = isColl ? (item as CollocationItem) : null
-  const phrasal = isPhrasal ? (item as PhrasalVerbItem) : null
+  const vocab   = isVocab   ? (item as VocabularyItem)  : null
+  const coll    = isColl    ? (item as CollocationItem)  : null
+  const phrasal = isPhrasal ? (item as PhrasalVerbItem)  : null
 
   const pronunciation = vocab?.pronunciation
-  const partOfSpeech = vocab?.partOfSpeech ?? phrasal?.partOfSpeech
-  const suitability = vocab?.writingSuitability ?? phrasal?.writingSuitability
+  const partOfSpeech  = vocab?.partOfSpeech ?? phrasal?.partOfSpeech
+  const suitability   = vocab?.writingSuitability ?? phrasal?.writingSuitability
 
   const collocationTags = vocab?.collocations ?? phrasal?.collocations ?? []
-  const alternativeTags =
-    vocab?.alternatives ?? phrasal?.academicAlternatives ?? (coll?.alternative ? [coll.alternative] : [])
+  const alternativeTags = vocab?.alternatives ?? phrasal?.academicAlternatives ?? (coll?.alternative ? [coll.alternative] : [])
   const alternativesLabel = phrasal ? 'Academic alternatives' : 'Alternatives'
   const writingTip = vocab?.writingTip ?? coll?.writingTip
 
@@ -234,140 +232,132 @@ function StudyCard({
         utt.lang = 'en-GB'
         window.speechSynthesis.speak(utt)
       }
-    } catch {
-      // silently ignore
-    }
+    } catch { /* ignore */ }
   }, [item.term])
 
   const hasExtra =
-    collocationTags.length > 0 ||
-    alternativeTags.length > 0 ||
-    (vocab?.wordFamily?.length ?? 0) > 0 ||
-    Boolean(vocab?.antonym) ||
-    Boolean(phrasal?.formalAlternative) ||
-    Boolean(phrasal?.usageWarning) ||
-    Boolean(writingTip)
+    collocationTags.length > 0 || alternativeTags.length > 0 ||
+    (vocab?.wordFamily?.length ?? 0) > 0 || Boolean(vocab?.antonym) ||
+    Boolean(phrasal?.formalAlternative) || Boolean(phrasal?.usageWarning) || Boolean(writingTip)
+
+  const isMustLearn = LEARN_FIRST_IDS.has(item.id)
 
   return (
-    <div className="bg-white border-2 border-slate-300 rounded-xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md hover:border-slate-400 transition-all">
+    <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
       {/* Top row */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-lg font-bold text-slate-900">{item.term}</span>
-            {LEARN_FIRST_IDS.has(item.id) && (
-              <span title="Learn this first" className="text-xs px-1.5 py-0.5 rounded bg-red-50 text-red-600 font-semibold">
-                Learn first
-              </span>
-            )}
-            {pronunciation && (
-              <button
-                onClick={speakTerm}
-                title="Listen"
-                className="text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-1 text-xs"
-              >
-                🔊 <span className="text-slate-400 font-mono text-xs">{pronunciation}</span>
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {partOfSpeech && <span className="text-xs text-slate-400 italic">{partOfSpeech}</span>}
-            {coll && <span className="text-xs text-slate-400 italic">{coll.collocationType}</span>}
-            {vocab?.cefrLevel && (
-              <span className="text-xs text-slate-400 font-mono">{vocab.cefrLevel}</span>
-            )}
-          </div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 17, fontWeight: 900, color: '#192e1e' }}>{item.term}</div>
+          {(pronunciation || partOfSpeech || vocab?.cefrLevel || coll?.collocationType) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
+              {pronunciation && (
+                <button onClick={speakTerm} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5a7864', lineHeight: 0, padding: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  </svg>
+                  <span style={{ fontSize: 11, color: '#5a7864', fontWeight: 600 }}>{pronunciation}</span>
+                </button>
+              )}
+              {partOfSpeech && <span style={{ fontSize: 11, fontStyle: 'italic', color: '#5a7864', fontWeight: 600 }}>{partOfSpeech}</span>}
+              {coll?.collocationType && <span style={{ fontSize: 11, fontStyle: 'italic', color: '#5a7864', fontWeight: 600 }}>{coll.collocationType}</span>}
+              {vocab?.cefrLevel && (
+                <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 7px', borderRadius: 50, background: 'rgba(22,163,68,.1)', color: '#0f7a33' }}>
+                  {vocab.cefrLevel}
+                </span>
+              )}
+            </div>
+          )}
         </div>
-
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => onToggleSave(item.id)}
-            title={saved ? 'Unsave' : 'Save'}
-            className={`p-1.5 rounded-lg transition-colors ${saved ? 'text-red-500 hover:text-red-700' : 'text-slate-300 hover:text-red-400'}`}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          </button>
-        </div>
+        <button
+          onClick={() => onToggleSave(item.id)}
+          title={saved ? 'Unsave' : 'Save'}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
+        >
+          {saved ? '♥' : '♡'}
+        </button>
       </div>
 
-      {/* Metadata pills */}
-      <div className="flex flex-wrap items-center gap-1.5">
+      {/* Tag row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
         <BandPill band={item.bandLevel} />
         <TopicPill topic={item.topic} />
         <TaskPill task={item.task} />
         {suitability && <SuitabilityBadge s={suitability} />}
         <PriorityPill p={item.priority} />
+        {isMustLearn && (
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#e05555', display: 'flex', alignItems: 'center', gap: 2 }}>🔥 Must Learn</span>
+        )}
       </div>
 
-      <p className="text-slate-700 text-sm">{item.definition}</p>
-      <p className="text-slate-500 text-sm italic">{item.vietnameseMeaning}</p>
+      {/* Definition */}
+      <div style={{ fontSize: 13, fontWeight: 600, color: '#3a5540', lineHeight: 1.5 }}>{item.definition}</div>
+      <div style={{ fontSize: 12, fontStyle: 'italic', color: '#5a7864', lineHeight: 1.4 }}>{item.vietnameseMeaning}</div>
 
-      <div className="text-slate-700 text-sm bg-slate-50 rounded-lg p-3 border-l-2 border-emerald-500">
-        <span className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-0.5">Example</span>
+      {/* Example */}
+      <div style={{ fontSize: 13, color: '#3a5540', background: 'rgba(22,163,68,.04)', borderRadius: 10, padding: '10px 14px', borderLeft: '2px solid rgba(22,163,68,.25)', lineHeight: 1.5 }}>
+        <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', display: 'block', marginBottom: 3 }}>Example</span>
         {item.example}
       </div>
 
+      {/* Expandable extras */}
       {hasExtra && (
         <>
           {expanded && (
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <TagList label="Collocations" items={collocationTags} tone="green" />
               <TagList label={alternativesLabel} items={alternativeTags} tone="blue" />
               {vocab?.wordFamily && <TagList label="Word family" items={vocab.wordFamily} tone="slate" />}
-
               {vocab?.antonym && (
-                <p className="text-sm text-slate-600">
-                  <span className="font-semibold text-slate-500 uppercase tracking-wide text-xs">Opposite: </span>
+                <p style={{ fontSize: 13, color: '#5a7864' }}>
+                  <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', marginRight: 4 }}>Opposite:</span>
                   {vocab.antonym}
                 </p>
               )}
-
               {phrasal?.formalAlternative && (
-                <p className="text-sm text-slate-600">
-                  <span className="font-semibold text-slate-500 uppercase tracking-wide text-xs">Formal alternative: </span>
+                <p style={{ fontSize: 13, color: '#5a7864' }}>
+                  <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', marginRight: 4 }}>Formal alternative:</span>
                   {phrasal.formalAlternative}
                 </p>
               )}
-
               {phrasal?.usageWarning && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-                  <span className="font-semibold text-red-700">Usage warning: </span>
+                <div style={{ background: 'rgba(220,60,60,.06)', border: '1.5px solid rgba(220,60,60,.2)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#8b1a1a' }}>
+                  <span style={{ fontWeight: 800, color: '#cc3333' }}>Usage warning: </span>
                   {phrasal.usageWarning}
                 </div>
               )}
-
               {writingTip && <WritingTip text={writingTip} />}
             </div>
           )}
-
           <button
             onClick={() => setExpanded(v => !v)}
-            className="text-xs text-emerald-600 hover:text-emerald-800 font-medium text-left transition-colors"
+            style={{ fontSize: 12, color: '#16a344', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, fontFamily: 'inherit' }}
           >
             {expanded ? '▲ Show less' : '▼ See more'}
           </button>
         </>
       )}
 
-      <div className="flex items-center gap-2 pt-1 border-t border-slate-100 flex-wrap">
+      {/* Divider + actions */}
+      <div style={{ height: 1, background: 'rgba(22,163,68,.1)' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <button
           onClick={() => onSetStatus(item.id, status === 'learning' ? 'learned' : 'learning')}
-          className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors border ${
-            status === 'learned'
-              ? 'bg-emerald-600 text-white border-emerald-600'
+          style={{
+            fontSize: 11, padding: '5px 12px', borderRadius: 50, fontFamily: 'inherit', fontWeight: 800, cursor: 'pointer', border: '1.5px solid',
+            ...(status === 'learned'
+              ? { background: '#16a344', color: '#fff', borderColor: '#16a344' }
               : status === 'learning'
-              ? 'bg-amber-50 text-amber-700 border-amber-300'
-              : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-amber-300'
-          }`}
+              ? { background: 'rgba(245,170,0,.1)', color: '#b87d00', borderColor: 'rgba(245,170,0,.3)' }
+              : { background: 'transparent', color: '#5a7864', borderColor: 'rgba(22,163,68,.2)' }),
+          }}
         >
           {status === 'learned' ? '✓ Learned' : status === 'learning' ? '⟳ Learning' : 'Mark as Learning'}
         </button>
-
         <button
           onClick={() => onPractice(item)}
-          className="text-xs px-2.5 py-1 rounded-lg font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+          style={{ fontSize: 11, padding: '5px 12px', borderRadius: 50, fontFamily: 'inherit', fontWeight: 800, cursor: 'pointer', background: 'rgba(22,163,68,.08)', color: '#16a344', border: '1.5px solid rgba(22,163,68,.2)' }}
         >
           Practice ✏️
         </button>
@@ -376,92 +366,95 @@ function StudyCard({
   )
 }
 
-// ─── Writing phrase card ─────────────────────────────────────────────────────
+// ─── Writing phrase card ──────────────────────────────────────────────────────
 
 function PhraseCard({
-  item,
-  saved,
-  onToggleSave,
+  item, saved, onToggleSave,
 }: {
   item: WritingPhraseItem
   saved: boolean
   onToggleSave: (id: string) => void
 }) {
   return (
-    <div className="bg-white border-2 border-slate-300 rounded-xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md hover:border-slate-400 transition-all">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-base font-semibold text-slate-900 leading-snug flex-1">{item.term}</p>
+    <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', lineHeight: 1.4, flex: 1 }}>{item.term}</p>
         <button
           onClick={() => onToggleSave(item.id)}
           title={saved ? 'Unsave' : 'Save'}
-          className={`p-1.5 rounded-lg shrink-0 transition-colors ${saved ? 'text-red-500 hover:text-red-700' : 'text-slate-300 hover:text-red-400'}`}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
+          {saved ? '♥' : '♡'}
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">{item.function}</span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 50, background: 'rgba(80,80,200,.07)', color: '#5050c8' }}>{item.function}</span>
         <BandPill band={item.bandLevel} />
         <TopicPill topic={item.topic} />
         <TaskPill task={item.task} />
         <PriorityPill p={item.priority} />
       </div>
 
-      <p className="text-slate-500 text-sm italic">{item.vietnameseMeaning}</p>
+      <div style={{ fontSize: 12, fontStyle: 'italic', color: '#5a7864' }}>{item.vietnameseMeaning}</div>
 
-      <div className="text-slate-700 text-sm bg-slate-50 rounded-lg p-3 border-l-2 border-indigo-500">
-        <span className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-0.5">In an essay</span>
+      <div style={{ fontSize: 13, color: '#3a5540', background: 'rgba(80,80,200,.04)', borderRadius: 10, padding: '10px 14px', borderLeft: '2px solid rgba(80,80,200,.2)', lineHeight: 1.5 }}>
+        <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', display: 'block', marginBottom: 3 }}>In an essay</span>
         {item.example}
       </div>
     </div>
   )
 }
 
-// ─── Common mistake card ─────────────────────────────────────────────────────
+// ─── Common mistake card ──────────────────────────────────────────────────────
 
 function MistakeCard({ item }: { item: CommonMistakeItem }) {
   return (
-    <div className="bg-white border-2 border-slate-300 rounded-xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md hover:border-slate-400 transition-all">
-      <div className="flex flex-wrap items-center gap-1.5">
+    <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
         <TopicPill topic={item.topic} />
         <PriorityPill p={item.priority} />
       </div>
 
-      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-        <span className="text-red-600 text-xs font-semibold uppercase tracking-wide block mb-0.5">✗ Incorrect</span>
-        <p className="text-sm text-red-900 line-through decoration-red-300">{item.incorrect}</p>
+      <div style={{ background: 'rgba(220,60,60,.06)', border: '1.5px solid rgba(220,60,60,.2)', borderRadius: 10, padding: '10px 14px' }}>
+        <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#cc3333', display: 'block', marginBottom: 3 }}>✗ Incorrect</span>
+        <p style={{ fontSize: 13, color: '#8b1a1a', textDecoration: 'line-through', textDecorationColor: 'rgba(220,60,60,.4)' }}>{item.incorrect}</p>
       </div>
 
-      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-        <span className="text-emerald-600 text-xs font-semibold uppercase tracking-wide block mb-0.5">✓ Correct</span>
-        <p className="text-sm text-emerald-900">{item.correct}</p>
+      <div style={{ background: 'rgba(22,163,68,.06)', border: '1.5px solid rgba(22,163,68,.2)', borderRadius: 10, padding: '10px 14px' }}>
+        <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#0f7a33', display: 'block', marginBottom: 3 }}>✓ Correct</span>
+        <p style={{ fontSize: 13, color: '#1a5c2e' }}>{item.correct}</p>
       </div>
 
-      <p className="text-slate-600 text-sm leading-relaxed">{item.explanation}</p>
+      <div style={{ fontSize: 13, color: '#5a7864', lineHeight: 1.5, fontWeight: 600 }}>{item.explanation}</div>
     </div>
   )
 }
 
-// ─── Main component ──────────────────────────────────────────────────────────
+// ─── Main component ───────────────────────────────────────────────────────────
 
 const FREE_TOPICS = ['Environment', 'Education', 'Health']
 
-export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFull }: { userId: string; planSlug: string; hasWritingVocabFull: boolean }) {
+export default function WritingVocabClient({
+  userId, planSlug, hasWritingVocabFull,
+}: {
+  userId: string
+  planSlug: string
+  hasWritingVocabFull: boolean
+}) {
   const isFree = !hasWritingVocabFull
   const isTopicLocked = (topic: string) => isFree && topic !== 'All Topics' && !FREE_TOPICS.includes(topic)
-  const [activeTab, setActiveTab] = useState<TabKey>('vocabulary')
-  const [search, setSearch] = useState('')
-  const [topicFilter, setTopicFilter] = useState('All Topics')
-  const [bandFilter, setBandFilter] = useState<BandLevel | 'all'>('all')
-  const [taskFilter, setTaskFilter] = useState<WritingTask | 'all'>('all')
-  const [functionFilter, setFunctionFilter] = useState<string>('All Functions')
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
-  const [statusMap, setStatusMap] = useState<StatusMap>({})
-  const [practiceItem, setPracticeItem] = useState<StudyItem | null>(null)
-  const [hydrated, setHydrated] = useState(false)
+
+  const [activeTab,       setActiveTab]       = useState<TabKey>('vocabulary')
+  const [search,          setSearch]           = useState('')
+  const [topicFilter,     setTopicFilter]      = useState('All Topics')
+  const [bandFilter,      setBandFilter]        = useState<BandLevel | 'all'>('all')
+  const [taskFilter,      setTaskFilter]        = useState<WritingTask | 'all'>('all')
+  const [functionFilter,  setFunctionFilter]   = useState<string>('All Functions')
+  const [savedIds,        setSavedIds]         = useState<Set<string>>(new Set())
+  const [statusMap,       setStatusMap]        = useState<StatusMap>({})
+  const [practiceItem,    setPracticeItem]     = useState<StudyItem | null>(null)
+  const [hydrated,        setHydrated]         = useState(false)
 
   useEffect(() => {
     try {
@@ -475,10 +468,9 @@ export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFu
     setHydrated(true)
   }, [])
 
-  const persistSaved = useCallback((next: Set<string>) => {
+  const persistSaved  = useCallback((next: Set<string>) => {
     try { localStorage.setItem(LS_SAVED, JSON.stringify([...next])) } catch { /* ignore */ }
   }, [])
-
   const persistStatus = useCallback((next: StatusMap) => {
     try { localStorage.setItem(LS_STATUS, JSON.stringify(next)) } catch { /* ignore */ }
   }, [])
@@ -486,8 +478,7 @@ export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFu
   const toggleSave = useCallback((id: string) => {
     setSavedIds(prev => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(id)) next.delete(id); else next.add(id)
       persistSaved(next)
       return next
     })
@@ -496,8 +487,7 @@ export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFu
   const setStatus = useCallback((id: string, s: 'learning' | 'learned') => {
     setStatusMap(prev => {
       const next = { ...prev }
-      if (prev[id] === s) delete next[id]
-      else next[id] = s
+      if (prev[id] === s) delete next[id]; else next[id] = s
       persistStatus(next)
       return next
     })
@@ -513,32 +503,22 @@ export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFu
       if (taskFilter !== 'all' && task !== taskFilter && task !== 'both') return false
       return true
     },
-    [isFree, topicFilter, bandFilter, taskFilter]
+    [isFree, topicFilter, bandFilter, taskFilter],
   )
 
   const filteredStudy = useMemo(() => {
     const source: StudyItem[] =
-      activeTab === 'vocabulary'
-        ? ALL_VOCABULARY
-        : activeTab === 'collocation'
-        ? ALL_COLLOCATIONS
+      activeTab === 'vocabulary'   ? ALL_VOCABULARY
+        : activeTab === 'collocation' ? ALL_COLLOCATIONS
         : ALL_PHRASAL_VERBS
-
     return source.filter(item => {
       if (!matchesShared(item.topic, item.bandLevel, item.task)) return false
       if (!q) return true
       const extras =
-        item.type === 'vocabulary'
-          ? [...(item.collocations ?? []), ...(item.alternatives ?? []), ...(item.wordFamily ?? [])]
-          : item.type === 'phrasal_verb'
-          ? [...(item.collocations ?? []), ...(item.academicAlternatives ?? [])]
-          : item.alternative
-          ? [item.alternative]
-          : []
-      const hay = [item.term, item.definition, item.vietnameseMeaning, item.topic, item.example, ...extras]
-        .join(' ')
-        .toLowerCase()
-      return hay.includes(q)
+        item.type === 'vocabulary'   ? [...(item.collocations ?? []), ...(item.alternatives ?? []), ...(item.wordFamily ?? [])]
+          : item.type === 'phrasal_verb' ? [...(item.collocations ?? []), ...(item.academicAlternatives ?? [])]
+          : item.alternative ? [item.alternative] : []
+      return [item.term, item.definition, item.vietnameseMeaning, item.topic, item.example, ...extras].join(' ').toLowerCase().includes(q)
     })
   }, [activeTab, matchesShared, q])
 
@@ -547,10 +527,7 @@ export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFu
       if (!matchesShared(item.topic, item.bandLevel, item.task)) return false
       if (functionFilter !== 'All Functions' && item.function !== functionFilter) return false
       if (!q) return true
-      const hay = [item.term, item.function, item.vietnameseMeaning, item.topic, item.example]
-        .join(' ')
-        .toLowerCase()
-      return hay.includes(q)
+      return [item.term, item.function, item.vietnameseMeaning, item.topic, item.example].join(' ').toLowerCase().includes(q)
     })
   }, [matchesShared, functionFilter, q])
 
@@ -559,176 +536,161 @@ export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFu
       if (isFree && !FREE_TOPICS.includes(item.topic)) return false
       if (topicFilter !== 'All Topics' && item.topic !== topicFilter) return false
       if (!q) return true
-      const hay = [item.incorrect, item.correct, item.explanation, item.topic].join(' ').toLowerCase()
-      return hay.includes(q)
+      return [item.incorrect, item.correct, item.explanation, item.topic].join(' ').toLowerCase().includes(q)
     })
   }, [isFree, topicFilter, q])
 
   const tabs: { key: TabKey; label: string; count: number }[] = [
-    { key: 'vocabulary', label: 'Vocabulary', count: ALL_VOCABULARY.length },
-    { key: 'collocation', label: 'Collocations', count: ALL_COLLOCATIONS.length },
-    { key: 'phrasal_verb', label: 'Phrasal Verbs', count: ALL_PHRASAL_VERBS.length },
+    { key: 'vocabulary',     label: 'Vocabulary',      count: ALL_VOCABULARY.length },
+    { key: 'collocation',    label: 'Collocations',    count: ALL_COLLOCATIONS.length },
+    { key: 'phrasal_verb',   label: 'Phrasal Verbs',   count: ALL_PHRASAL_VERBS.length },
     { key: 'writing_phrase', label: 'Writing Phrases', count: ALL_WRITING_PHRASES.length },
     { key: 'common_mistake', label: 'Common Mistakes', count: ALL_MISTAKES.length },
   ]
 
-  const bands: (BandLevel | 'all')[] = ['all', '5-6', '6-7', '7+']
+  const bands: (BandLevel | 'all')[]              = ['all', '5-6', '6-7', '7+']
   const taskOptions: { v: WritingTask | 'all'; label: string }[] = [
-    { v: 'all', label: 'All Tasks' },
+    { v: 'all',   label: 'All Tasks' },
     { v: 'task1', label: 'Task 1' },
     { v: 'task2', label: 'Task 2' },
   ]
 
-  const isStudyTab =
-    activeTab === 'vocabulary' || activeTab === 'collocation' || activeTab === 'phrasal_verb'
-  const isPhraseTab = activeTab === 'writing_phrase'
+  const isStudyTab   = activeTab === 'vocabulary' || activeTab === 'collocation' || activeTab === 'phrasal_verb'
+  const isPhraseTab  = activeTab === 'writing_phrase'
   const isMistakeTab = activeTab === 'common_mistake'
 
-  const resultCount = isStudyTab
-    ? filteredStudy.length
-    : isPhraseTab
-    ? filteredPhrases.length
-    : filteredMistakes.length
+  const resultCount = isStudyTab ? filteredStudy.length : isPhraseTab ? filteredPhrases.length : filteredMistakes.length
 
   const clearFilters = () => {
-    setSearch('')
-    setTopicFilter('All Topics')
-    setBandFilter('all')
-    setTaskFilter('all')
-    setFunctionFilter('All Functions')
+    setSearch(''); setTopicFilter('All Topics'); setBandFilter('all'); setTaskFilter('all'); setFunctionFilter('All Functions')
   }
 
-  // suppress hydration mismatch for localStorage-driven state
   if (!hydrated) return null
+
+  const chipBase: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '5px 12px', borderRadius: 50,
+    fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
+    border: '1.5px solid rgba(22,163,68,.13)',
+    background: '#fff', color: '#5a7864',
+    cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+    transition: 'all .12s',
+  }
+  const chipActive: React.CSSProperties = { background: '#16a344', borderColor: '#16a344', color: '#fff' }
 
   return (
     <>
-      {practiceItem && (
-        <PracticeModal item={practiceItem} onClose={() => setPracticeItem(null)} />
-      )}
+      <style>{`
+        .wv-card { transition: transform .18s, box-shadow .18s; }
+        .wv-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(22,163,68,.14); }
+      `}</style>
 
-      <div className="space-y-6 pb-12">
+      {practiceItem && <PracticeModal item={practiceItem} onClose={() => setPracticeItem(null)} />}
+
+      <div style={{ paddingBottom: 48 }}>
+
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Writing Vocabulary</h1>
-            <p className="text-slate-400 text-sm mt-1">
-              18 IELTS topics: vocabulary, collocations, phrasal verbs, writing phrases and common mistakes.
-            </p>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 6 }}>✦ Kho từ vựng</p>
+            <h1 style={{ fontSize: 26, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em', lineHeight: 1.1, marginBottom: 4 }}>Writing Vocabulary</h1>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#5a7864' }}>18 chủ đề IELTS: từ vựng, collocations, phrasal verbs, writing phrases và common mistakes.</p>
           </div>
           <Link
             href="/vocabulary/writing/saved"
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 50, padding: '9px 18px', fontSize: 13, fontWeight: 800, color: '#192e1e', textDecoration: 'none', flexShrink: 0 }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="0">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+            <span style={{ color: '#e05555', fontSize: 14 }}>♥</span>
             Saved ({savedIds.size})
           </Link>
         </div>
 
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* Stat grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" style={{ gap: 12, marginBottom: 20 }}>
           {tabs.map(t => (
-            <div key={t.key} className="bg-white rounded-xl border-2 border-emerald-600 p-3 text-center">
-              <p className="text-2xl font-black text-slate-900">{t.count}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{t.label}</p>
+            <div key={t.key} style={STAT_CARD}>
+              <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 5 }}>{t.label}</p>
+              <p style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, color: '#192e1e', fontVariantNumeric: 'tabular-nums' }}>{t.count}</p>
             </div>
           ))}
         </div>
 
         {/* Tab bar */}
-        <div className="flex gap-2 bg-white border-2 border-slate-300 rounded-xl p-1.5 overflow-x-auto shadow-sm">
+        <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: 6, display: 'flex', gap: 4, marginBottom: 16, overflowX: 'auto' }}>
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`flex-1 whitespace-nowrap text-sm font-semibold py-2 px-3 rounded-lg transition-all border-2 ${
-                activeTab === t.key
-                  ? 'bg-white text-emerald-700 border-emerald-600 shadow-sm'
-                  : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-200'
-              }`}
+              style={{
+                flexShrink: 0, padding: '8px 18px', borderRadius: 14, border: 'none',
+                fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
+                ...(activeTab === t.key
+                  ? { background: '#16a344', color: '#fff', boxShadow: '0 2px 8px rgba(22,163,68,.3)' }
+                  : { background: 'transparent', color: '#5a7864' }),
+              }}
             >
               {t.label}
             </button>
           ))}
         </div>
 
-        {/* Filters */}
-        <div className="space-y-3">
-          {/* Topic scroll */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {TOPICS.map(t => {
-              const locked = isTopicLocked(t)
-              return (
-                <button
-                  key={t}
-                  onClick={() => setTopicFilter(t)}
-                  className={`shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap flex items-center gap-1 ${
-                    topicFilter === t
-                      ? locked
-                        ? 'bg-slate-200 text-slate-500 border border-slate-300'
-                        : 'bg-emerald-600 text-white'
-                      : locked
-                      ? 'bg-white border border-slate-100 text-slate-400'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
-                  }`}
-                >
-                  {locked && <span className="text-[10px]">🔒</span>}
-                  {t}
-                </button>
-              )
-            })}
+        {/* Filters card */}
+        <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: '14px 16px', marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Topic row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto' }}>
+            <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', flexShrink: 0, minWidth: 48 }}>Topic</span>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'nowrap' }}>
+              {TOPICS.map(t => {
+                const locked = isTopicLocked(t)
+                const active = topicFilter === t && !locked
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTopicFilter(t)}
+                    style={{ ...chipBase, ...(active ? chipActive : {}), ...(locked ? { opacity: .5 } : {}) }}
+                  >
+                    {locked && <span style={{ fontSize: 10 }}>🔒</span>}
+                    {t}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          {/* Function filter (writing phrases only) */}
+          {/* Function filter — writing phrases only */}
           {isPhraseTab && (
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {PHRASE_FUNCTIONS.map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFunctionFilter(f)}
-                  className={`shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap ${
-                    functionFilter === f
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-400'
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto' }}>
+              <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', flexShrink: 0, minWidth: 48 }}>Function</span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {PHRASE_FUNCTIONS.map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setFunctionFilter(f)}
+                    style={{ ...chipBase, ...(functionFilter === f ? { background: 'rgba(80,80,200,.1)', borderColor: 'rgba(80,80,200,.25)', color: '#5050c8' } : {}) }}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Band + Task filters */}
+          {/* Band + Task row */}
           {!isMistakeTab && (
-            <div className="flex gap-4 flex-wrap">
-              <div className="flex gap-1">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', minWidth: 48 }}>Band</span>
+              <div style={{ display: 'flex', gap: 6 }}>
                 {bands.map(b => (
-                  <button
-                    key={b}
-                    onClick={() => setBandFilter(b)}
-                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
-                      bandFilter === b
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
-                    }`}
-                  >
+                  <button key={b} onClick={() => setBandFilter(b)} style={{ ...chipBase, ...(bandFilter === b ? chipActive : {}) }}>
                     {b === 'all' ? 'All Bands' : `Band ${b}`}
                   </button>
                 ))}
               </div>
-              <div className="flex gap-1">
+              <div style={{ width: 1, height: 20, background: 'rgba(22,163,68,.13)', flexShrink: 0 }} />
+              <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864' }}>Task</span>
+              <div style={{ display: 'flex', gap: 6 }}>
                 {taskOptions.map(t => (
-                  <button
-                    key={t.v}
-                    onClick={() => setTaskFilter(t.v)}
-                    className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
-                      taskFilter === t.v
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-400'
-                    }`}
-                  >
+                  <button key={t.v} onClick={() => setTaskFilter(t.v)} style={{ ...chipBase, ...(taskFilter === t.v ? chipActive : {}) }}>
                     {t.label}
                   </button>
                 ))}
@@ -738,107 +700,95 @@ export default function WritingVocabClient({ userId, planSlug, hasWritingVocabFu
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <svg style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#5a7864', pointerEvents: 'none' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search term, definition, Vietnamese meaning, example..."
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
+            style={{ width: '100%', background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 14, padding: '12px 44px', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, color: '#192e1e', outline: 'none' }}
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+            <button
+              onClick={() => setSearch('')}
+              style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#5a7864', lineHeight: 0, padding: 4 }}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
           )}
         </div>
 
-        {/* Results count */}
-        <p className="text-xs text-slate-400">
-          {resultCount} item{resultCount !== 1 ? 's' : ''} found
-          {q ? ` for "${search}"` : ''}
+        {/* Result count */}
+        <p style={{ fontSize: 12, fontWeight: 700, color: '#5a7864', marginBottom: 14 }}>
+          {resultCount} item{resultCount !== 1 ? 's' : ''} found{q ? ` for "${search}"` : ''}
         </p>
 
-        {/* Free tier upgrade banner */}
+        {/* Upgrade banner */}
         {isFree && (
-          <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <span className="text-lg">🔒</span>
-            <p className="text-sm text-amber-800 flex-1">
-              Upgrade to unlock <strong>15 more topics</strong> and get full access to all vocabulary.
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(245,170,0,.08)', border: '1.5px solid rgba(245,170,0,.3)', borderRadius: 14, padding: '14px 18px', marginBottom: 20 }}>
+            <span style={{ fontSize: 18 }}>🔒</span>
+            <p style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#8a6100' }}>
+              Upgrade to unlock <strong style={{ color: '#b87d00' }}>15 more topics</strong> and get full access to all vocabulary.
             </p>
             <Link
               href="/subscription"
-              className="shrink-0 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition-colors"
+              style={{ padding: '9px 20px', borderRadius: 50, background: '#f5aa00', color: '#5a3d00', fontFamily: 'inherit', fontSize: 12, fontWeight: 900, textDecoration: 'none', flexShrink: 0 }}
             >
               Upgrade now
             </Link>
           </div>
         )}
 
-        {/* Card grid */}
+        {/* Card grid / locked / empty states */}
         {isTopicLocked(topicFilter) ? (
-          <div className="bg-white rounded-xl border-2 border-slate-200 py-16 px-8 text-center shadow-sm">
-            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">🔒</div>
-            <p className="font-bold text-slate-800 text-lg mb-1">{topicFilter} is locked</p>
-            <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+          <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: '64px 32px', textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, background: 'rgba(22,163,68,.06)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24 }}>🔒</div>
+            <p style={{ fontWeight: 900, color: '#192e1e', fontSize: 17, marginBottom: 6 }}>{topicFilter} is locked</p>
+            <p style={{ fontSize: 13, color: '#5a7864', fontWeight: 600, maxWidth: 360, margin: '0 auto 24px', lineHeight: 1.6 }}>
               Upgrade to unlock all 18 IELTS topics and get full access to vocabulary, collocations, phrasal verbs, writing phrases, and common mistakes.
             </p>
             <Link
               href="/subscription"
-              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#16a344', color: '#fff', textDecoration: 'none', padding: '11px 24px', borderRadius: 50, fontWeight: 800, fontSize: 13 }}
             >
               Upgrade to unlock all topics
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </Link>
           </div>
         ) : resultCount === 0 ? (
-          <div className="bg-white rounded-xl border-2 border-slate-300 py-16 text-center shadow-sm">
-            <p className="text-4xl mb-3">🔍</p>
-            <p className="font-semibold text-slate-700">No items found</p>
-            <p className="text-slate-400 text-sm mt-1">Try adjusting your filters or search query.</p>
+          <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: '64px 32px', textAlign: 'center' }}>
+            <p style={{ fontSize: 36, marginBottom: 12 }}>🔍</p>
+            <p style={{ fontWeight: 900, color: '#192e1e', fontSize: 15, marginBottom: 4 }}>No items found</p>
+            <p style={{ fontSize: 13, color: '#5a7864', fontWeight: 600, marginBottom: 16 }}>Try adjusting your filters or search query.</p>
             <button
               onClick={clearFilters}
-              className="mt-4 text-sm text-emerald-600 hover:text-emerald-800 font-medium"
+              style={{ fontSize: 13, color: '#16a344', fontWeight: 800, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
             >
               Clear all filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {isStudyTab &&
-              filteredStudy.map(item => (
-                <StudyCard
-                  key={item.id}
-                  item={item}
-                  saved={savedIds.has(item.id)}
-                  status={statusMap[item.id]}
-                  onToggleSave={toggleSave}
-                  onSetStatus={setStatus}
-                  onPractice={setPracticeItem}
-                />
-              ))}
-
-            {isPhraseTab &&
-              filteredPhrases.map(item => (
-                <PhraseCard
-                  key={item.id}
-                  item={item}
-                  saved={savedIds.has(item.id)}
-                  onToggleSave={toggleSave}
-                />
-              ))}
-
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3" style={{ gap: 14 }}>
+            {isStudyTab && filteredStudy.map(item => (
+              <StudyCard
+                key={item.id} item={item}
+                saved={savedIds.has(item.id)} status={statusMap[item.id]}
+                onToggleSave={toggleSave} onSetStatus={setStatus} onPractice={setPracticeItem}
+              />
+            ))}
+            {isPhraseTab && filteredPhrases.map(item => (
+              <PhraseCard key={item.id} item={item} saved={savedIds.has(item.id)} onToggleSave={toggleSave} />
+            ))}
             {isMistakeTab && filteredMistakes.map(item => <MistakeCard key={item.id} item={item} />)}
           </div>
         )}
       </div>
 
-      {/* Suppress unused userId warning — kept for potential future personalisation */}
       <span data-user={userId} className="hidden" />
     </>
   )
