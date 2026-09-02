@@ -135,7 +135,7 @@ function FolderSaveButton({
         ref={btnRef}
         onClick={handleOpen}
         title="Lưu vào thư mục"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, lineHeight: 0, flexShrink: 0, color: hasSaved ? '#16a344' : '#ddd', transition: 'color .15s' }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, lineHeight: 0, flexShrink: 0, color: hasSaved ? '#16a344' : '#b0c4b8', transition: 'color .15s' }}
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill={hasSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
@@ -426,7 +426,7 @@ function StudyCard({
           <button
             onClick={() => onToggleSave(item.id)}
             title={saved ? 'Unsave' : 'Save'}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#b0c4b8', transition: 'color .15s' }}
           >
             {saved ? '♥' : '♡'}
           </button>
@@ -539,7 +539,7 @@ function PhraseCard({
           <button
             onClick={() => onToggleSave(item.id)}
             title={saved ? 'Unsave' : 'Save'}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#ddd', transition: 'color .15s' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 2, flexShrink: 0, color: saved ? '#e05555' : '#b0c4b8', transition: 'color .15s' }}
           >
             {saved ? '♥' : '♡'}
           </button>
