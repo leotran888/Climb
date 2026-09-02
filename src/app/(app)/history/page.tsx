@@ -31,9 +31,13 @@ function getTaskLabel(sub: WritingSubmission): string {
 }
 
 function bandColor(band: number): { bg: string; color: string } {
-  if (band >= 7.0) return { bg: 'rgba(22,163,68,.22)', color: '#16a344' }
-  if (band >= 6.0) return { bg: 'rgba(22,163,68,.16)', color: '#16a344' }
-  return { bg: 'rgba(245,158,11,.22)', color: '#b45309' }
+  if (band >= 6.0) return { bg: 'rgba(22,163,68,.12)', color: '#0f7a33' }
+  return { bg: 'rgba(245,170,0,.15)', color: '#8a6100' }
+}
+
+function iconStroke(band: number | undefined): string {
+  if (!band || band < 6.0) return '#5a7864'
+  return '#16a344'
 }
 
 export default async function HistoryPage() {
@@ -96,6 +100,8 @@ export default async function HistoryPage() {
           {typedSubmissions.map((sub) => {
             const band = sub.writing_results?.overall_band
             const bc = band ? bandColor(band) : null
+            const stroke = iconStroke(band)
+            const isGood = !!(band && band >= 6.0)
             const taskLabel = getTaskLabel(sub)
             const meta = [taskLabel, sub.word_count ? `${sub.word_count} từ` : null, relativeTime(sub.submitted_at)].filter(Boolean).join(' · ')
             return (
@@ -110,16 +116,15 @@ export default async function HistoryPage() {
                   padding: '16px 20px',
                   background: '#fff',
                   border: `1.5px solid ${C.greenBorder}`,
-                  borderRadius: 14,
+                  borderRadius: 16,
                   textDecoration: 'none',
                 }}
               >
-                <div style={{ width: 40, height: 40, borderRadius: 11, background: '#e3f2e8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" style={{ fill: 'none', stroke: C.green, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' } as React.CSSProperties}>
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#f3f8f4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <rect x="5" y="3" width="14" height="18" rx="2" stroke={stroke} strokeWidth="2"/>
+                    <line x1="8" y1="8" x2="16" y2="8" stroke={stroke} strokeWidth="1.8" strokeLinecap="round"/>
+                    {isGood && <line x1="8" y1="12" x2="14" y2="12" stroke={stroke} strokeWidth="1.8" strokeLinecap="round"/>}
                   </svg>
                 </div>
 
