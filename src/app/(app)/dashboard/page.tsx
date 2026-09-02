@@ -1,23 +1,36 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { WritingSubmission, TASK_TYPE_LABELS } from '@/lib/types'
-function BlobCharStatic({ shade }: { shade: string }) {
-  return (
-    <svg viewBox="0 0 180 124" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[140px] mx-auto block">
-      <ellipse cx="90" cy="68" rx="68" ry="52" fill={shade}/>
-      <circle cx="66" cy="58" r="13" fill="white"/>
-      <circle cx="114" cy="58" r="13" fill="white"/>
-      <circle cx="69" cy="61" r="8" fill="#0a0a0a"/>
-      <circle cx="117" cy="61" r="8" fill="#0a0a0a"/>
-      <circle cx="64" cy="56" r="3" fill="white"/>
-      <circle cx="112" cy="56" r="3" fill="white"/>
-      <path d="M 66 86 Q 90 102 114 86" fill="none" stroke="#0a0a0a" strokeWidth="4" strokeLinecap="round"/>
-    </svg>
-  )
-}
-import ExamCountdownWidget from '@/components/ExamCountdownWidget'
-import StreakWidget from '@/components/StreakWidget'
 
+function relativeTime(isoStr: string) {
+  const days = Math.floor((Date.now() - new Date(isoStr).getTime()) / 86400000)
+  if (days === 0) return 'hôm nay'
+  if (days === 1) return '1 ngày trước'
+  return `${days} ngày trước`
+}
+
+function bandStyle(band: number) {
+  if (band >= 6.5) return { background: 'rgba(22,163,68,.12)', color: '#0f7a33' }
+  if (band >= 5.5) return { background: 'rgba(245,170,0,.15)', color: '#8a6100' }
+  return { background: 'rgba(220,60,60,.1)', color: '#b03030' }
+}
+
+function getSubmissionTitle(sub: WritingSubmission) {
+  if (sub.writing_prompts?.title) return sub.writing_prompts.title
+  if (sub.question) return sub.question.slice(0, 72) + (sub.question.length > 72 ? '…' : '')
+  const type = sub.task_type ?? sub.writing_prompts?.task_type
+  return type && TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]
+    ? TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS] + ' Submission'
+    : 'Writing Submission'
+}
+
+function getSubmissionMeta(sub: WritingSubmission) {
+  const type = sub.task_type ?? sub.writing_prompts?.task_type
+  const typeLabel = type && TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]
+    ? TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]
+    : 'Writing'
+  return `${typeLabel} · ${sub.word_count ?? 0} từ · ${relativeTime(sub.submitted_at)}`
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -25,29 +38,39 @@ export default async function DashboardPage() {
 
   const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString()
 
-  const [{ data: profile }, { data: submissions }, { data: activityRaw }] = await Promise.all([
+  const [{ data: profile }, { data: submissions }, { data: activityRaw }, { data: vocabFolders }] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', user!.id).single(),
     supabase
       .from('writing_submissions')
       .select('*, writing_prompts(task_type, title), writing_results(overall_band)')
       .eq('user_id', user!.id)
       .order('submitted_at', { ascending: false })
-      .limit(5),
+      .limit(3),
     supabase
       .from('writing_submissions')
       .select('submitted_at')
       .eq('user_id', user!.id)
       .gte('submitted_at', ninetyDaysAgo)
       .order('submitted_at', { ascending: false }),
+    supabase
+      .from('vocab_folders')
+      .select('vocab_words(status)')
+      .eq('user_id', user!.id),
   ])
 
-  // Convert to Vietnam dates (UTC+7) and deduplicate
+  // Vocab counts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allWords = (vocabFolders ?? []).flatMap((f: any) => f.vocab_words ?? [])
+  const totalWords = allWords.length
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const knownCount = allWords.filter((w: any) => w.status === 'known').length
+
+  // Streak
   function toVnDate(iso: string) {
     return new Date(new Date(iso).getTime() + 7 * 3600000).toISOString().split('T')[0]
   }
   const activityDates = [...new Set((activityRaw ?? []).map(r => toVnDate(r.submitted_at)))]
 
-  // Streak calculation
   function computeStreak(dates: string[]): number {
     if (!dates.length) return 0
     const today = toVnDate(new Date().toISOString())
@@ -65,246 +88,173 @@ export default async function DashboardPage() {
   }
   const streak = computeStreak(activityDates)
 
-  // Current week (Mon–Sun) activity
-  const todayVn = toVnDate(new Date().toISOString())
-  const todayDate = new Date(todayVn)
-  const dayOfWeek = todayDate.getDay() // 0=Sun,1=Mon,...,6=Sat
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(todayDate)
-    d.setDate(todayDate.getDate() + mondayOffset + i)
-    return d.toISOString().split('T')[0]
-  })
-  const DAY_LABELS = ['T2','T3','T4','T5','T6','T7','CN']
-
-  // Current month calendar
-  const now = new Date(todayVn)
-  const year = now.getFullYear()
-  const month = now.getMonth()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstDayOfWeek = new Date(year, month, 1).getDay() // 0=Sun
-  const calendarOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1 // shift to Mon-start
-  const activitySet = new Set(activityDates)
-
+  // Band scores
   const typedSubmissions = (submissions ?? []) as WritingSubmission[]
   const bandScores = typedSubmissions
     .map(s => s.writing_results?.overall_band)
     .filter((b): b is number => b !== undefined && b !== null)
-
   const latestBand = bandScores[0] ?? null
   const avgBand = bandScores.length
     ? Math.round((bandScores.reduce((a, b) => a + b, 0) / bandScores.length) * 2) / 2
     : null
 
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'bạn'
+  // Greeting (Vietnam time UTC+7)
+  const nowVN = new Date(Date.now() + 7 * 3600 * 1000)
+  const hour = nowVN.getUTCHours()
+  const greetVi = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'
+  const greetEmoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙'
+  const dayNamesVi = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
+  const dayNameVi = dayNamesVi[nowVN.getUTCDay()]
+  const dateStrVi = nowVN.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', timeZone: 'UTC' })
+  const firstName = profile?.full_name?.split(' ').pop() ?? 'bạn'
 
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
-
-  function getSubmissionTitle(sub: WritingSubmission) {
-    if (sub.writing_prompts?.title) return sub.writing_prompts.title
-    if (sub.question) return sub.question.slice(0, 70) + (sub.question.length > 70 ? '…' : '')
-    const type = sub.task_type ?? sub.writing_prompts?.task_type
-    return type && TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]
-      ? TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS] + ' Submission'
-      : 'Writing Submission'
-  }
-
-  function getSubmissionType(sub: WritingSubmission) {
-    const type = sub.task_type ?? sub.writing_prompts?.task_type
-    return type && TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]
-      ? TASK_TYPE_LABELS[type as keyof typeof TASK_TYPE_LABELS]
-      : ''
-  }
+  // Shared style tokens
+  const CARD = { background: '#fff', border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 20, padding: 24 }
+  const STAT_CARD = { background: '#fff', border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: '18px 20px' }
 
   return (
-    <div className="space-y-4 pb-8">
+    <div style={{ paddingBottom: 48 }}>
 
-      {/* Greeting */}
-      <div className="flex items-center justify-between">
+      {/* ── Greeting ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
-          <p className="text-emerald-600 font-bold text-xs mb-0.5">{greeting}, {firstName} ✦</p>
-          <h1 className="text-xl font-black text-slate-900">Dashboard</h1>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: '#192e1e' }}>
+            {greetVi}, {firstName} {greetEmoji}
+          </h2>
+          <p style={{ fontSize: 14, color: '#5a7864', fontWeight: 600, marginTop: 2 }}>
+            {dayNameVi}, {dateStrVi} · Hãy luyện tập đều đặn mỗi ngày
+          </p>
         </div>
         {profile?.target_band && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2 text-center">
-            <p className="text-xs text-emerald-600 font-semibold">Target</p>
-            <p className="text-2xl font-black text-emerald-600">{profile.target_band}</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(245,170,0,.12)', color: '#b87d00', border: '1.5px solid rgba(245,170,0,.3)', fontSize: 12, fontWeight: 800, padding: '7px 14px', borderRadius: 50 }}>
+            🎯 Mục tiêu: Band {profile.target_band}
           </div>
         )}
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-4 card-hover" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.22)' }}>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Điểm mới nhất</p>
-            <div className="w-6 h-6 bg-emerald-50 rounded-lg flex items-center justify-center">
-              <span className="text-xs">📊</span>
-            </div>
-          </div>
-          <p className="text-3xl font-black text-emerald-600">{latestBand ?? '—'}</p>
-          <p className="text-xs text-slate-400 mt-0.5">AI estimate</p>
+      {/* ── 4-stat grid ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
+        {/* Band gần nhất */}
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Band gần nhất</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: latestBand ? '#f5aa00' : '#192e1e' }}>{latestBand ?? '—'}</p>
+          <p style={{ fontSize: 11, color: '#5a7864', fontWeight: 600, marginTop: 4 }}>
+            {typedSubmissions[0] ? getSubmissionMeta(typedSubmissions[0]).split(' · ').slice(0, 2).join(' · ') : 'Chưa có bài nào'}
+          </p>
         </div>
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-4 card-hover" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.22)' }}>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trung bình</p>
-            <div className="w-6 h-6 bg-amber-50 rounded-lg flex items-center justify-center">
-              <span className="text-xs">📈</span>
-            </div>
-          </div>
-          <p className="text-3xl font-black text-amber-500">{avgBand ?? '—'}</p>
-          <p className="text-xs text-slate-400 mt-0.5">{bandScores.length} bài đã nộp</p>
+
+        {/* Band trung bình */}
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Band trung bình</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: '#16a344' }}>{avgBand ?? '—'}</p>
+          <p style={{ fontSize: 11, color: '#5a7864', fontWeight: 600, marginTop: 4 }}>Từ {bandScores.length} bài nộp</p>
         </div>
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-4 card-hover" style={{ boxShadow: '0 6px 28px rgba(0,0,0,0.22)' }}>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Từ đã học</p>
-            <div className="w-6 h-6 bg-purple-50 rounded-lg flex items-center justify-center">
-              <span className="text-xs">📚</span>
-            </div>
-          </div>
-          <p className="text-3xl font-black text-purple-600">—</p>
-          <p className="text-xs text-slate-400 mt-0.5">
-            <Link href="/vocabulary" className="hover:text-purple-600 transition-colors">Mở sổ từ vựng →</Link>
+
+        {/* Streak */}
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Streak</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: streak > 0 ? '#e85d04' : '#192e1e' }}>
+            {streak > 0 ? `🔥 ${streak}` : '—'}
+          </p>
+          <p style={{ fontSize: 11, color: '#5a7864', fontWeight: 600, marginTop: 4 }}>Ngày liên tiếp</p>
+        </div>
+
+        {/* Từ vựng */}
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Từ vựng</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: '#16a344' }}>{totalWords || '—'}</p>
+          <p style={{ fontSize: 11, color: '#5a7864', fontWeight: 600, marginTop: 4 }}>
+            {totalWords ? `${knownCount} đã thuộc` : 'Chưa có từ nào'}
           </p>
         </div>
       </div>
 
-      {/* ── Night Sky Widgets ── */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-start">
+      {/* ── Practice grid ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
 
-        {/* Streak (col-span-3) — with expandable calendar */}
-        <div className="md:col-span-3">
-          <StreakWidget
-            streak={streak}
-            weekDays={weekDays}
-            activityDates={activityDates}
-            todayVn={todayVn}
-            dayLabels={DAY_LABELS}
-            year={year}
-            month={month}
-            daysInMonth={daysInMonth}
-            calendarOffset={calendarOffset}
-            monthLabel={new Date(year, month).toLocaleDateString('vi-VN', { month:'long', year:'numeric' })}
-            currentDay={now.getDate()}
-          />
-        </div>
+        {/* Writing AI */}
+        <Link href="/writing" style={{ textDecoration: 'none' }}>
+          <div
+            style={{ background: 'linear-gradient(135deg, #1b6b38 0%, #16a344 100%)', borderRadius: 20, padding: 24, cursor: 'pointer', transition: 'transform .2s' }}
+            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
+            onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
+          >
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.55)', marginBottom: 10 }}>Writing AI</p>
+            <p style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.2, color: '#fff' }}>Nộp bài viết<br />để chấm điểm</p>
+            <p style={{ fontSize: 12, fontWeight: 600, marginTop: 6, lineHeight: 1.5, color: 'rgba(255,255,255,.6)' }}>
+              AI chấm 4 tiêu chí, viết lại bài đạt band mục tiêu của bạn.
+            </p>
+            <button style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 800, padding: '9px 18px', borderRadius: 50, border: 'none', cursor: 'pointer', background: 'rgba(255,255,255,.2)', color: '#fff' }}>
+              Bắt đầu viết →
+            </button>
+          </div>
+        </Link>
 
-        {/* Exam countdown (col-span-2) */}
-        <div className="md:col-span-2">
-          <ExamCountdownWidget examDate={profile?.exam_date ?? null} userId={user!.id} />
-        </div>
+        {/* Từ vựng */}
+        <Link href="/vocabulary" style={{ textDecoration: 'none' }}>
+          <div
+            style={{ background: '#f3f8f4', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: 24, cursor: 'pointer', transition: 'transform .2s', height: '100%' }}
+            onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
+            onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
+          >
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 10 }}>Từ vựng</p>
+            <p style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.2, color: '#192e1e' }}>Sổ từ vựng<br />IELTS của bạn</p>
+            <p style={{ fontSize: 12, fontWeight: 600, marginTop: 6, lineHeight: 1.5, color: '#5a7864' }}>
+              Ghi chép từ mới, ôn luyện qua flashcard thông minh theo topic.
+            </p>
+            <button style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'inherit', fontSize: 13, fontWeight: 800, padding: '9px 18px', borderRadius: 50, border: 'none', cursor: 'pointer', background: '#16a344', color: '#fff' }}>
+              Khám phá ngay →
+            </button>
+          </div>
+        </Link>
       </div>
 
-      {/* Practice cards */}
-      <div>
-        <h2 className="text-sm font-black text-slate-900 mb-2">Luyện tập ngay</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-          {/* Writing */}
-          <Link href="/writing" className="group block">
-            <div
-              className="rounded-[24px] overflow-hidden flex flex-col transition-all duration-200 group-hover:-translate-y-1"
-              style={{ background: '#16a344', minHeight: '210px', boxShadow: '0 6px 24px rgba(22,163,68,0.25)' }}
-            >
-              <div className="p-5 flex-1">
-                <div className="w-11 h-11 bg-white/90 rounded-2xl flex items-center justify-center mb-4">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-                  </svg>
-                </div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <h3 className="text-xl font-black text-white">Writing</h3>
-                  <span className="text-white/40">✦</span>
-                </div>
-                <p className="text-white/70 text-sm leading-snug">AI chấm điểm & nhận xét theo tiêu chí IELTS bằng tiếng Việt.</p>
-                <div className="mt-4 inline-flex items-center gap-1.5 bg-black/15 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full" />
-                  Bắt đầu ngay
-                </div>
-              </div>
-              <div className="px-6 flex justify-start -mb-1">
-                <BlobCharStatic shade="rgba(0,0,0,0.15)"/>
-              </div>
-            </div>
-          </Link>
-
-
-        </div>
-      </div>
-
-      {/* Vocabulary card */}
-      <Link href="/vocabulary" className="group block">
-        <div
-          className="rounded-[24px] p-6 flex items-center justify-between transition-all duration-200 group-hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', boxShadow: '0 4px 20px rgba(124,58,237,0.2)' }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/15 rounded-2xl flex items-center justify-center shrink-0">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-black text-white text-lg">Sổ từ vựng</h3>
-              <p className="text-white/60 text-sm">Ghi chép từ mới, ôn luyện qua flashcard 3D</p>
-            </div>
-          </div>
-          <div className="text-white/50 group-hover:text-white transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </div>
-        </div>
-      </Link>
-
-      {/* Recent submissions */}
+      {/* ── Recent submissions ── */}
       {typedSubmissions.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-black text-slate-900">Bài làm gần đây</h2>
-            <Link href="/history" className="text-sm text-emerald-600 hover:text-emerald-700 font-bold transition-colors">
+        <div style={CARD}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <p style={{ fontSize: 16, fontWeight: 900, color: '#192e1e', margin: 0 }}>Bài nộp gần đây</p>
+            <Link href="/history" style={{ fontSize: 12, fontWeight: 800, color: '#16a344', textDecoration: 'none' }}>
               Xem tất cả →
             </Link>
           </div>
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 divide-y divide-slate-50 overflow-hidden">
-            {typedSubmissions.map(sub => (
-              <Link
-                key={sub.id}
-                href={`/writing/result/${sub.id}`}
-                className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50/80 transition-colors duration-150 group"
-              >
-                <div className="min-w-0 mr-4">
-                  <p className="font-semibold text-slate-900 text-sm truncate group-hover:text-emerald-600 transition-colors">
-                    {getSubmissionTitle(sub)}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {getSubmissionType(sub)} · {new Date(sub.submitted_at).toLocaleDateString('vi-VN')} · {sub.word_count} từ
-                  </p>
-                </div>
-                <div className="shrink-0">
-                  {sub.writing_results?.overall_band ? (
-                    <span className="bg-emerald-50 text-emerald-700 font-black text-sm px-3 py-1 rounded-full border border-emerald-100">
-                      Band {sub.writing_results.overall_band}
-                    </span>
-                  ) : (
-                    <span className="text-slate-300 text-sm">Đang phân tích…</span>
-                  )}
-                </div>
-              </Link>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {typedSubmissions.map(sub => {
+              const band = sub.writing_results?.overall_band
+              return (
+                <Link key={sub.id} href={`/writing/result/${sub.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 14, cursor: 'pointer', transition: 'box-shadow .15s' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#192e1e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 3 }}>
+                        {getSubmissionTitle(sub)}
+                      </p>
+                      <p style={{ fontSize: 11, color: '#5a7864', fontWeight: 600 }}>
+                        {getSubmissionMeta(sub)}
+                      </p>
+                    </div>
+                    {band != null ? (
+                      <span style={{ ...bandStyle(band), padding: '4px 12px', borderRadius: 50, fontSize: 12, fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                        {band}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 11, color: '#5a7864', flexShrink: 0 }}>Đang phân tích…</span>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </div>
       )}
 
       {typedSubmissions.length === 0 && (
-        <div className="text-center py-14 bg-white rounded-2xl border-2 border-emerald-600">
-          <div className="text-4xl mb-3">✍️</div>
-          <p className="text-slate-700 font-black text-lg">Chưa có bài nào</p>
-          <p className="text-slate-400 text-sm mt-1 mb-5">Nộp bài viết IELTS đầu tiên để nhận phản hồi từ AI.</p>
+        <div style={{ ...CARD, textAlign: 'center', padding: '56px 24px' }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>✍️</div>
+          <p style={{ fontSize: 18, fontWeight: 900, color: '#192e1e', marginBottom: 6 }}>Chưa có bài nào</p>
+          <p style={{ fontSize: 13, color: '#5a7864', fontWeight: 600, marginBottom: 20 }}>Nộp bài viết IELTS đầu tiên để nhận phản hồi từ AI.</p>
           <Link
             href="/writing"
-            className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors btn-press inline-block"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#16a344', color: '#fff', borderRadius: 50, padding: '10px 24px', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}
           >
             Bắt đầu luyện Writing →
           </Link>
