@@ -232,7 +232,7 @@ export default function Sidebar({
           h-full md:h-screen md:sticky md:top-0
           overflow-hidden
         `}
-        style={{ background: '#1b3621', boxShadow: '6px 0 32px rgba(0,0,0,0.35)' }}
+        style={{ background: '#1b3621' }}
       >
         {sidebarContent}
       </aside>
