@@ -46,20 +46,20 @@ export default function GoalsForm({
     return (
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 0 }}>
-          {/* Band mục tiêu — warm yellow */}
+          {/* Writing mục tiêu — accent green, ưu tiên đầu */}
           <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Band mục tiêu</p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: overall ? '#f5aa00' : '#192e1e' }}>{overall || '—'}</p>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Writing mục tiêu</p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: writing ? '#16a344' : '#192e1e' }}>{writing || '—'}</p>
           </div>
-          {/* Ngày thi — smaller font */}
+          {/* Ngày thi */}
           <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
             <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Ngày thi dự kiến</p>
             <p style={{ fontSize: 16, fontWeight: 900, color: '#192e1e' }}>{formatDate(examDate)}</p>
           </div>
-          {/* Writing mục tiêu — accent green */}
+          {/* Band mục tiêu tổng — warm yellow */}
           <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Writing mục tiêu</p>
-            <p style={{ fontSize: 20, fontWeight: 900, color: writing ? '#16a344' : '#192e1e' }}>{writing || '—'}</p>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Band mục tiêu</p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: overall ? '#f5aa00' : '#192e1e' }}>{overall || '—'}</p>
           </div>
         </div>
 
