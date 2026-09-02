@@ -115,8 +115,7 @@ export default async function FolderPage({
       {counts.all === 0 && (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
           <p className="font-semibold text-slate-700 mb-1">Thư mục đang trống</p>
-          <p className="text-slate-400 text-sm mb-5">Thêm từ vựng để bắt đầu luyện tập.</p>
-          <AddWordForm userId={user!.id} folderId={folderId} />
+          <p className="text-slate-400 text-sm">Thêm từ vựng để bắt đầu luyện tập.</p>
         </div>
       )}
     </div>
