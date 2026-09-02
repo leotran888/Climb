@@ -161,7 +161,7 @@ export default function WritingCheckerForm() {
     : 'Dán đề bài IELTS vào đây…\n\nVí dụ: You recently bought a product from an online shop. Write a letter to the company. In your letter: describe what you bought, explain the problem, say what you would like them to do.'
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 8, minHeight: 0, overflow: 'hidden' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 6, minHeight: 0, overflow: 'hidden' }}>
       <style>{`
         .wc-textarea:focus, .wc-input:focus {
           border-color: #16a344 !important;
@@ -174,7 +174,7 @@ export default function WritingCheckerForm() {
 
       {/* Loại bài */}
       <div>
-        <span style={{ ...LABEL, marginBottom: 5, display: 'block' }}>Loại bài</span>
+        <span style={{ ...LABEL, marginBottom: 4, display: 'block' }}>Loại bài</span>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {TASKS.map(t => (
             <button
@@ -197,7 +197,7 @@ export default function WritingCheckerForm() {
             </button>
           ))}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginTop: 5, padding: '5px 12px', background: C.greenBg, borderRadius: 10, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginTop: 4, padding: '4px 11px', background: C.greenBg, borderRadius: 10, lineHeight: 1.4 }}>
           {task.desc} <span style={{ color: C.green, fontWeight: 800 }}>{task.minStr}</span>
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function WritingCheckerForm() {
         onDrop={isAcademic ? handleDrop : undefined}
         onDragOver={isAcademic ? e => e.preventDefault() : undefined}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <span style={LABEL}>Đề bài</span>
           {isAcademic && (
             <label
