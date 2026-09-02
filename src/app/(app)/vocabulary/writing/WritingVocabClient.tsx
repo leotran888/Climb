@@ -59,21 +59,23 @@ const FOLDER_ACCENT: Record<string, string> = {
 // ─── Save-to-folder button ────────────────────────────────────────────────────
 
 function FolderSaveButton({
-  term, definition, example, userId,
+  term, definition, example, userId, initialSaved,
 }: {
   term: string
   definition: string | null
   example: string | null
   userId: string
+  initialSaved: boolean
 }) {
   const btnRef     = useRef<HTMLButtonElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
-  const [open,    setOpen]    = useState(false)
-  const [pos,     setPos]     = useState({ top: 0, right: 0 })
-  const [folders, setFolders] = useState<Array<{ id: string; name: string; color: string }> | null>(null)
-  const [savedIn, setSavedIn] = useState<Set<string>>(new Set())
-  const [saving,  setSaving]  = useState<string | null>(null)
-  const [newName, setNewName] = useState('')
+  const [open,     setOpen]    = useState(false)
+  const [pos,      setPos]     = useState({ top: 0, right: 0 })
+  const [folders,  setFolders] = useState<Array<{ id: string; name: string; color: string }> | null>(null)
+  const [savedIn,  setSavedIn] = useState<Set<string>>(new Set())
+  const [hasSaved, setHasSaved] = useState(initialSaved)
+  const [saving,   setSaving]  = useState<string | null>(null)
+  const [newName,  setNewName] = useState('')
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
@@ -127,12 +129,14 @@ function FolderSaveButton({
         .delete()
         .eq('user_id', userId).eq('folder_id', folderId).eq('word', term)
       setSavedIn(prev => { const n = new Set(prev); n.delete(folderId); return n })
+      setHasSaved(savedIn.size > 1)
     } else {
       await supabase.from('vocab_words').insert({
         user_id: userId, folder_id: folderId,
         word: term, definition: definition || null, example: example || null,
       })
       setSavedIn(prev => new Set([...prev, folderId]))
+      setHasSaved(true)
     }
     setSaving(null)
   }
@@ -376,7 +380,7 @@ function PracticeModal({ item, onClose }: { item: StudyItem; onClose: () => void
 // ─── Study card ───────────────────────────────────────────────────────────────
 
 function StudyCard({
-  item, saved, status, onToggleSave, onSetStatus, onPractice, userId,
+  item, saved, status, onToggleSave, onSetStatus, onPractice, userId, initialFolderSaved,
 }: {
   item: StudyItem
   saved: boolean
@@ -385,6 +389,7 @@ function StudyCard({
   onSetStatus: (id: string, s: 'learning' | 'learned') => void
   onPractice: (item: StudyItem) => void
   userId: string
+  initialFolderSaved: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -451,7 +456,7 @@ function StudyCard({
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          <FolderSaveButton term={item.term} definition={item.definition} example={item.example} userId={userId} />
+          <FolderSaveButton term={item.term} definition={item.definition} example={item.example} userId={userId} initialSaved={initialFolderSaved} />
           <button
             onClick={() => onToggleSave(item.id)}
             title={saved ? 'Unsave' : 'Save'}
@@ -552,19 +557,20 @@ function StudyCard({
 // ─── Writing phrase card ──────────────────────────────────────────────────────
 
 function PhraseCard({
-  item, saved, onToggleSave, userId,
+  item, saved, onToggleSave, userId, initialFolderSaved,
 }: {
   item: WritingPhraseItem
   saved: boolean
   onToggleSave: (id: string) => void
   userId: string
+  initialFolderSaved: boolean
 }) {
   return (
     <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', lineHeight: 1.4, flex: 1 }}>{item.term}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          <FolderSaveButton term={item.term} definition={item.vietnameseMeaning} example={item.example} userId={userId} />
+          <FolderSaveButton term={item.term} definition={item.vietnameseMeaning} example={item.example} userId={userId} initialSaved={initialFolderSaved} />
           <button
             onClick={() => onToggleSave(item.id)}
             title={saved ? 'Unsave' : 'Save'}
@@ -595,7 +601,7 @@ function PhraseCard({
 
 // ─── Common mistake card ──────────────────────────────────────────────────────
 
-function MistakeCard({ item, userId }: { item: CommonMistakeItem; userId: string }) {
+function MistakeCard({ item, userId, initialFolderSaved }: { item: CommonMistakeItem; userId: string; initialFolderSaved: boolean }) {
   return (
     <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -603,7 +609,7 @@ function MistakeCard({ item, userId }: { item: CommonMistakeItem; userId: string
           <TopicPill topic={item.topic} />
           <PriorityPill p={item.priority} />
         </div>
-        <FolderSaveButton term={item.correct} definition={item.explanation} example={null} userId={userId} />
+        <FolderSaveButton term={item.correct} definition={item.explanation} example={null} userId={userId} initialSaved={initialFolderSaved} />
       </div>
 
       <div style={{ background: 'rgba(220,60,60,.06)', border: '1.5px solid rgba(220,60,60,.2)', borderRadius: 10, padding: '10px 14px' }}>
@@ -645,6 +651,7 @@ export default function WritingVocabClient({
   const [statusMap,       setStatusMap]        = useState<StatusMap>({})
   const [practiceItem,    setPracticeItem]     = useState<StudyItem | null>(null)
   const [hydrated,        setHydrated]         = useState(false)
+  const [savedWordSet,    setSavedWordSet]     = useState<Set<string>>(new Set())
 
   useEffect(() => {
     try {
@@ -657,6 +664,16 @@ export default function WritingVocabClient({
     } catch { /* ignore */ }
     setHydrated(true)
   }, [])
+
+  useEffect(() => {
+    async function fetchSavedWords() {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('vocab_words').select('word').eq('user_id', userId)
+      if (data) setSavedWordSet(new Set(data.map((w: { word: string }) => w.word)))
+    }
+    fetchSavedWords()
+  }, [userId])
 
   const persistSaved  = useCallback((next: Set<string>) => {
     try { localStorage.setItem(LS_SAVED, JSON.stringify([...next])) } catch { /* ignore */ }
@@ -969,13 +986,13 @@ export default function WritingVocabClient({
                 key={item.id} item={item}
                 saved={savedIds.has(item.id)} status={statusMap[item.id]}
                 onToggleSave={toggleSave} onSetStatus={setStatus} onPractice={setPracticeItem}
-                userId={userId}
+                userId={userId} initialFolderSaved={savedWordSet.has(item.term)}
               />
             ))}
             {isPhraseTab && filteredPhrases.map(item => (
-              <PhraseCard key={item.id} item={item} saved={savedIds.has(item.id)} onToggleSave={toggleSave} userId={userId} />
+              <PhraseCard key={item.id} item={item} saved={savedIds.has(item.id)} onToggleSave={toggleSave} userId={userId} initialFolderSaved={savedWordSet.has(item.term)} />
             ))}
-            {isMistakeTab && filteredMistakes.map(item => <MistakeCard key={item.id} item={item} userId={userId} />)}
+            {isMistakeTab && filteredMistakes.map(item => <MistakeCard key={item.id} item={item} userId={userId} initialFolderSaved={savedWordSet.has(item.correct)} />)}
           </div>
         )}
       </div>
