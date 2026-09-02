@@ -1,9 +1,22 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { FolderCard, CreateFolderCard } from './VocabFoldersClient'
+import { ALL_ITEMS } from './writing/data'
 
+const ITEM_MAP = new Map(ALL_ITEMS.map(i => [i.id, i]))
 
-export default async function VocabularyPage() {
+const TYPE_LABEL: Record<string, string> = {
+  vocabulary:    'Từ vựng',
+  collocation:   'Collocation',
+  phrasal_verb:  'Phrasal verb',
+}
+
+export default async function VocabularyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>
+}) {
+  const { view } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -15,7 +28,7 @@ export default async function VocabularyPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('writing_vocab_progress')
-      .select('status')
+      .select('item_id, status')
       .eq('user_id', user!.id),
   ])
 
@@ -23,7 +36,28 @@ export default async function VocabularyPage() {
   const learningCount = (progressRows ?? []).filter((r: { status: string }) => r.status === 'learning').length
   const totalWords    = knownCount + learningCount
 
-  const STAT_CARD = { background: '#fff', border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: '18px 20px' }
+  // Words to show in detail view
+  const viewStatus = view === 'learned' ? 'learned' : view === 'learning' ? 'learning' : null
+  const viewItems = viewStatus
+    ? (progressRows ?? [])
+        .filter((r: { item_id: string; status: string }) => r.status === viewStatus)
+        .map((r: { item_id: string; status: string }) => ({ row: r, item: ITEM_MAP.get(r.item_id) }))
+        .filter(({ item }) => !!item)
+    : []
+
+  const STAT_CARD: React.CSSProperties = {
+    background: '#fff',
+    border: '1.5px solid rgba(22,163,68,0.13)',
+    borderRadius: 16,
+    padding: '18px 20px',
+    textDecoration: 'none',
+    display: 'block',
+  }
+  const STAT_CARD_ACTIVE: React.CSSProperties = {
+    ...STAT_CARD,
+    border: '1.5px solid rgba(22,163,68,.45)',
+    boxShadow: '0 0 0 3px rgba(22,163,68,.08)',
+  }
 
   return (
     <div style={{ paddingBottom: 48 }}>
@@ -40,19 +74,66 @@ export default async function VocabularyPage() {
 
       {/* 3-stat grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
-        <div style={STAT_CARD}>
+        <Link href="/vocabulary" style={view ? STAT_CARD : STAT_CARD_ACTIVE}>
           <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Tổng từ</p>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#192e1e', fontVariantNumeric: 'tabular-nums' }}>{totalWords || '—'}</p>
-        </div>
-        <div style={STAT_CARD}>
+        </Link>
+        <Link href={view === 'learned' ? '/vocabulary' : '/vocabulary?view=learned'} style={view === 'learned' ? STAT_CARD_ACTIVE : STAT_CARD}>
           <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Đã thuộc</p>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#16a344', fontVariantNumeric: 'tabular-nums' }}>{knownCount || '—'}</p>
-        </div>
-        <div style={STAT_CARD}>
+        </Link>
+        <Link href={view === 'learning' ? '/vocabulary' : '/vocabulary?view=learning'} style={view === 'learning' ? STAT_CARD_ACTIVE : STAT_CARD}>
           <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Đang học</p>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#f5aa00', fontVariantNumeric: 'tabular-nums' }}>{learningCount || '—'}</p>
-        </div>
+        </Link>
       </div>
+
+      {/* Word list (when a stat card is active) */}
+      {viewStatus && (
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 16, fontWeight: 900, color: '#192e1e', marginBottom: 14 }}>
+            {viewStatus === 'learned' ? 'Từ đã thuộc' : 'Từ đang học'}
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#5a7864', marginLeft: 8 }}>({viewItems.length} từ)</span>
+          </p>
+          {viewItems.length === 0 ? (
+            <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 16, padding: '32px 20px', textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#5a7864', fontWeight: 600 }}>Chưa có từ nào.</p>
+              <Link href="/vocabulary/writing" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, fontWeight: 800, color: '#16a344', textDecoration: 'none' }}>
+                Học từ vựng Writing →
+              </Link>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {viewItems.map(({ item }) => {
+                if (!item) return null
+                return (
+                  <Link key={item.id} href="/vocabulary/writing" style={{ textDecoration: 'none' }}>
+                    <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 2 }}>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: '#192e1e' }}>{item.term}</span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#5a7864', background: 'rgba(22,163,68,.08)', borderRadius: 6, padding: '2px 7px' }}>
+                            {TYPE_LABEL[item.type] ?? item.type}
+                          </span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#5a7864', background: 'rgba(22,163,68,.06)', borderRadius: 6, padding: '2px 7px' }}>
+                            {item.topic}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 12, color: '#5a7864', fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.definition}
+                        </p>
+                      </div>
+                      <span style={{ fontSize: 11, color: viewStatus === 'learned' ? '#16a344' : '#d4900a', fontWeight: 800, flexShrink: 0 }}>
+                        {viewStatus === 'learned' ? '✓ Learned' : '⟳ Learning'}
+                      </span>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Featured — Writing vocabulary */}
       <Link href="/vocabulary/writing" style={{ textDecoration: 'none', display: 'block', marginBottom: 28 }}>
