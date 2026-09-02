@@ -1,13 +1,13 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { CreateFolderButton } from './VocabFoldersClient'
+import { CreateFolderCard } from './VocabFoldersClient'
 
-const COLOR_MAP: Record<string, { card: string; hover: string; icon: string; text: string }> = {
-  green:  { card: 'bg-emerald-100 border-emerald-200', hover: 'hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-200', icon: 'bg-emerald-500', text: 'text-emerald-700' },
-  pink:   { card: 'bg-pink-100 border-pink-200',       hover: 'hover:border-pink-500 hover:shadow-xl hover:shadow-pink-200',       icon: 'bg-pink-400',    text: 'text-pink-700' },
-  purple: { card: 'bg-purple-100 border-purple-200',   hover: 'hover:border-purple-500 hover:shadow-xl hover:shadow-purple-200',   icon: 'bg-purple-500',  text: 'text-purple-700' },
-  amber:  { card: 'bg-amber-100 border-amber-200',     hover: 'hover:border-amber-500 hover:shadow-xl hover:shadow-amber-200',     icon: 'bg-amber-400',   text: 'text-amber-700' },
-  blue:   { card: 'bg-blue-100 border-blue-200',       hover: 'hover:border-blue-500 hover:shadow-xl hover:shadow-blue-200',       icon: 'bg-blue-500',    text: 'text-blue-700' },
+const FOLDER_BG: Record<string, string> = {
+  green:  'rgba(22,163,68,.06)',
+  amber:  'rgba(245,170,0,.06)',
+  blue:   'rgba(80,80,220,.04)',
+  pink:   'rgba(220,80,80,.04)',
+  purple: 'rgba(120,80,220,.04)',
 }
 
 export default async function VocabularyPage() {
@@ -20,115 +20,92 @@ export default async function VocabularyPage() {
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false })
 
-  const allWords = (folders ?? []).flatMap((f: { vocab_words: { status: string }[] }) => f.vocab_words ?? [])
+  const allWords      = (folders ?? []).flatMap((f: { vocab_words: { status: string }[] }) => f.vocab_words ?? [])
   const totalWords    = allWords.length
   const knownCount    = allWords.filter((w: { status: string }) => w.status === 'known').length
   const learningCount = allWords.filter((w: { status: string }) => w.status === 'learning').length
   const newCount      = allWords.filter((w: { status: string }) => w.status === 'new').length
 
+  const STAT_CARD = { background: '#fff', border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: '18px 20px' }
+
   return (
-    <div className="space-y-7 pb-12">
+    <div style={{ paddingBottom: 48 }}>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Sổ từ vựng</h1>
-          <p className="text-slate-400 text-sm mt-1">Lưu và ôn luyện từ vựng IELTS của bạn.</p>
-        </div>
-        <CreateFolderButton userId={user!.id} />
+      <div style={{ marginBottom: 28 }}>
+        <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 6 }}>
+          ✦ Kho từ vựng
+        </p>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em', lineHeight: 1.1 }}>
+          Sổ từ vựng
+        </h1>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
-        {[
-          { label: 'Tổng từ',    value: totalWords,    color: 'text-slate-900' },
-          { label: 'Đã nhớ',     value: knownCount,    color: 'text-emerald-600' },
-          { label: 'Đang học',   value: learningCount, color: 'text-amber-600' },
-          { label: 'Mới thêm',   value: newCount,      color: 'text-slate-500' },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border-2 border-emerald-600 p-4 text-center">
-            <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5 font-medium">{s.label}</p>
+      {/* 4-stat grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Tổng từ</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#192e1e', fontVariantNumeric: 'tabular-nums' }}>{totalWords || '—'}</p>
+        </div>
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Đã thuộc</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#16a344', fontVariantNumeric: 'tabular-nums' }}>{knownCount || '—'}</p>
+        </div>
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Đang học</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#f5aa00', fontVariantNumeric: 'tabular-nums' }}>{learningCount || '—'}</p>
+        </div>
+        <div style={STAT_CARD}>
+          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Từ mới</p>
+          <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#192e1e', fontVariantNumeric: 'tabular-nums' }}>{newCount || '—'}</p>
+        </div>
+      </div>
+
+      {/* Featured — Writing vocabulary */}
+      <Link href="/vocabulary/writing" style={{ textDecoration: 'none', display: 'block', marginBottom: 28 }}>
+        <div style={{ background: 'linear-gradient(135deg, #1b3621 0%, #1e5c2e 100%)', borderRadius: 20, padding: '24px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 8 }}>✦ Bộ từ vựng Writing</p>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 6 }}>Từ vựng 18 chủ đề IELTS</h3>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', fontWeight: 600 }}>80 từ học thuật cần thiết cho Writing Task 2</p>
           </div>
-        ))}
-      </div>
-
-      {/* Writing Vocabulary Section */}
-      <div>
-        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Học theo kỹ năng</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Link
-            href="/vocabulary/writing"
-            className="bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-600 rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5 shadow-lg shadow-emerald-200"
-          >
-            <div className="flex items-start justify-between">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                </svg>
-              </div>
-              <span className="text-xs font-semibold text-emerald-100 bg-white/20 px-2 py-0.5 rounded-full">80 mục</span>
-            </div>
-            <div>
-              <p className="font-bold text-base text-white">Từ vựng Writing</p>
-              <p className="text-xs text-emerald-100 mt-0.5">Vocabulary · Collocations · Phrasal Verbs cho IELTS Writing</p>
-            </div>
-            <div className="flex items-center gap-1 text-emerald-100 text-xs font-medium">
-              <span>Khám phá ngay</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </div>
-          </Link>
+          <button style={{ padding: '10px 22px', borderRadius: 50, border: 'none', background: '#16a344', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            Học ngay →
+          </button>
         </div>
-      </div>
+      </Link>
 
-      {/* Folders */}
+      {/* Folder section */}
+      <p style={{ fontSize: 16, fontWeight: 900, color: '#192e1e', marginBottom: 16 }}>Thư mục của bạn</p>
+
       {(folders ?? []).length === 0 ? (
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 py-20 text-center">
-          <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <p className="font-semibold text-slate-700">Chưa có thư mục nào</p>
-          <p className="text-slate-400 text-sm mt-1">Tạo thư mục để bắt đầu lưu từ vựng IELTS.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+          <CreateFolderCard userId={user!.id} />
         </div>
       ) : (
-        <div>
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Thư mục của bạn</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(folders ?? []).map((folder: { id: string; name: string; color: string; vocab_words: { status: string }[] }) => {
-              const c = COLOR_MAP[folder.color] ?? COLOR_MAP.green
-              const words = folder.vocab_words ?? []
-              const known = words.filter((w: { status: string }) => w.status === 'known').length
-              return (
-                <Link
-                  key={folder.id}
-                  href={`/vocabulary/${folder.id}`}
-                  className={`${c.card} ${c.hover} border-2 rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className={`w-10 h-10 ${c.icon} rounded-xl flex items-center justify-center`}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                      </svg>
-                    </div>
-                    <span className="text-xs font-semibold text-slate-400">{words.length} từ</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+          {(folders ?? []).map((folder: { id: string; name: string; color: string; vocab_words: { status: string }[] }) => {
+            const words   = folder.vocab_words ?? []
+            const known   = words.filter((w: { status: string }) => w.status === 'known').length
+            const pct     = words.length ? Math.round((known / words.length) * 100) : 0
+            const bgColor = FOLDER_BG[folder.color] ?? FOLDER_BG.green
+            return (
+              <Link key={folder.id} href={`/vocabulary/${folder.id}`} style={{ textDecoration: 'none' }}>
+                <div style={{ background: bgColor, border: '1.5px solid rgba(22,163,68,0.13)', borderRadius: 16, padding: 20, cursor: 'pointer' }}>
+                  <p style={{ fontSize: 14, fontWeight: 800, color: '#192e1e', marginBottom: 4 }}>{folder.name}</p>
+                  <p style={{ fontSize: 12, color: '#5a7864', fontWeight: 600, marginBottom: 14 }}>{words.length} từ</p>
+                  <div style={{ background: 'rgba(22,163,68,.1)', borderRadius: 50, height: 6 }}>
+                    <div style={{ height: '100%', borderRadius: 50, background: '#16a344', width: `${pct}%` }} />
                   </div>
-                  <div>
-                    <p className={`font-bold text-base ${c.text}`}>{folder.name}</p>
-                    {words.length > 0 && (
-                      <p className="text-xs text-slate-400 mt-0.5">{known}/{words.length} đã nhớ</p>
-                    )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10, fontWeight: 700, color: '#5a7864' }}>
+                    <span>{known} đã thuộc</span>
+                    <span>{pct}%</span>
                   </div>
-                  {words.length > 0 && (
-                    <div className="h-1.5 bg-white/60 rounded-full overflow-hidden">
-                      <div className="h-1.5 bg-emerald-500 rounded-full" style={{ width: `${(known / words.length) * 100}%` }} />
-                    </div>
-                  )}
-                </Link>
-              )
-            })}
-          </div>
+                </div>
+              </Link>
+            )
+          })}
+          <CreateFolderCard userId={user!.id} />
         </div>
       )}
     </div>
