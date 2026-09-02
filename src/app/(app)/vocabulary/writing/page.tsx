@@ -2,7 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import WritingVocabClient from './WritingVocabClient'
 
-export default async function WritingVocabPage() {
+export default async function WritingVocabPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ highlight?: string }>
+}) {
+  const { highlight } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -18,5 +23,5 @@ export default async function WritingVocabPage() {
   const planSlug: string = plan?.slug ?? 'free'
   const hasWritingVocabFull: boolean = plan?.features?.writing_vocab_full ?? false
 
-  return <WritingVocabClient userId={user.id} planSlug={planSlug} hasWritingVocabFull={hasWritingVocabFull} />
+  return <WritingVocabClient userId={user.id} planSlug={planSlug} hasWritingVocabFull={hasWritingVocabFull} highlight={highlight} />
 }

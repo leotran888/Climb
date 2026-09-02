@@ -107,7 +107,7 @@ export default async function VocabularyPage({
               {viewItems.map(({ item }) => {
                 if (!item) return null
                 return (
-                  <Link key={item.id} href="/vocabulary/writing" style={{ textDecoration: 'none' }}>
+                  <Link key={item.id} href={`/vocabulary/writing?highlight=${item.id}`} style={{ textDecoration: 'none' }}>
                     <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 2 }}>

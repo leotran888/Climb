@@ -428,7 +428,7 @@ function StudyCard({
   const isMustLearn = LEARN_FIRST_IDS.has(item.id)
 
   return (
-    <div className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div id={item.id} className="wv-card" style={{ ...CARD, padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
       {/* Top row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -632,11 +632,12 @@ function MistakeCard({ item, userId, initialFolderSaved }: { item: CommonMistake
 const FREE_TOPICS = ['Environment', 'Education', 'Health']
 
 export default function WritingVocabClient({
-  userId, planSlug, hasWritingVocabFull,
+  userId, planSlug, hasWritingVocabFull, highlight,
 }: {
   userId: string
   planSlug: string
   hasWritingVocabFull: boolean
+  highlight?: string
 }) {
   const isFree = !hasWritingVocabFull
   const isTopicLocked = (topic: string) => isFree && topic !== 'All Topics' && !FREE_TOPICS.includes(topic)
@@ -660,6 +661,26 @@ export default function WritingVocabClient({
     } catch { /* ignore */ }
     setHydrated(true)
   }, [])
+
+  useEffect(() => {
+    if (!highlight) return
+    const item = ALL_VOCABULARY.find(i => i.id === highlight)
+      ?? ALL_COLLOCATIONS.find(i => i.id === highlight)
+      ?? ALL_PHRASAL_VERBS.find(i => i.id === highlight)
+    if (!item) return
+    const tab: TabKey = item.type === 'collocation' ? 'collocation'
+      : item.type === 'phrasal_verb' ? 'phrasal_verb'
+      : 'vocabulary'
+    setActiveTab(tab)
+    setSearch('')
+    setTopicFilter('All Topics')
+    setBandFilter('all')
+    setTaskFilter('all')
+    setTimeout(() => {
+      const el = document.getElementById(highlight)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 300)
+  }, [highlight])
 
   useEffect(() => {
     async function fetchProgress() {
