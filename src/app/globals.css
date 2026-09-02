@@ -78,3 +78,45 @@ button, a {
 .btn-press:active {
   transform: scale(0.97);
 }
+
+/* ── App shell: Nunito font + design tokens ── */
+.app-shell {
+  font-family: 'Nunito', sans-serif;
+}
+.app-shell h1, .app-shell h2, .app-shell h3 {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+}
+.app-page-tag {
+  font-size: 10px; font-weight: 900; letter-spacing: .14em;
+  text-transform: uppercase; color: #16a344; margin-bottom: 5px;
+}
+.app-page-h1 {
+  font-size: 24px; font-weight: 900; color: #192e1e;
+  letter-spacing: -.02em; line-height: 1.1;
+}
+.app-page-sub {
+  font-size: 13px; color: #5a7864; font-weight: 600; margin-top: 3px;
+}
+.app-stat-card {
+  background: #fff;
+  border: 1.5px solid rgba(22,163,68,.13);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(22,163,68,.06);
+}
+.app-stat-label {
+  font-size: 10px; font-weight: 900; letter-spacing: .12em;
+  text-transform: uppercase; color: #5a7864; margin-bottom: 6px;
+}
+.app-stat-num {
+  font-size: 30px; font-weight: 900; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.app-stat-sub { font-size: 11px; color: #5a7864; font-weight: 600; margin-top: 3px; }
+.app-card {
+  background: #fff;
+  border: 1.5px solid rgba(22,163,68,.13);
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(22,163,68,.06);
+}
