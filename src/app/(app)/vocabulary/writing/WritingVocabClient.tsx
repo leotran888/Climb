@@ -84,8 +84,13 @@ function FolderSaveButton({
         btnRef.current    && !btnRef.current.contains(e.target as Node)
       ) setOpen(false)
     }
+    function onScroll() { setOpen(false) }
     document.addEventListener('mousedown', onMouseDown)
-    return () => document.removeEventListener('mousedown', onMouseDown)
+    window.addEventListener('scroll', onScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('scroll', onScroll, true)
+    }
   }, [open])
 
   async function loadFolders() {
