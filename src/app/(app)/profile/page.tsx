@@ -95,11 +95,8 @@ export default async function ProfilePage() {
       <Card title="Thành tích">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
           <StatItem label="Writing hiện tại"   value={latestWritingBand ?? '—'} />
-          <StatItem label="Speaking hiện tại"  value="—" />
           <StatItem label="Writing cao nhất"   value={bestWritingBand ?? '—'} />
-          <StatItem label="Speaking cao nhất"  value="—" />
           <StatItem label="Bài Writing đã chấm" value={writingCount} />
-          <StatItem label="Bài Speaking đã chấm" value="0" />
         </div>
       </Card>
 

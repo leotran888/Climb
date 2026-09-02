@@ -14,7 +14,6 @@ export default function GoalsForm({
 }) {
   const [overall, setOverall]   = useState(initial.target_band?.toString() ?? '')
   const [writing, setWriting]   = useState(initial.target_writing?.toString() ?? '')
-  const [speaking, setSpeaking] = useState(initial.target_speaking?.toString() ?? '')
   const [examDate, setExamDate] = useState(initial.exam_date ?? '')
   const [loading, setLoading]   = useState(false)
   const [msg, setMsg]           = useState('')
@@ -26,7 +25,6 @@ export default function GoalsForm({
     const { error } = await supabase.from('profiles').update({
       target_band:     overall  ? parseFloat(overall)  : null,
       target_writing:  writing  ? parseFloat(writing)  : null,
-      target_speaking: speaking ? parseFloat(speaking) : null,
       exam_date:       examDate || null,
     }).eq('user_id', userId)
     setMsg(error ? 'Lỗi: ' + error.message : 'Đã lưu!')
@@ -39,7 +37,6 @@ export default function GoalsForm({
         {[
           { label: 'Target Overall', value: overall, set: setOverall },
           { label: 'Target Writing', value: writing, set: setWriting },
-          { label: 'Target Speaking', value: speaking, set: setSpeaking },
         ].map(f => (
           <div key={f.label}>
             <label className="text-xs font-semibold text-slate-500 block mb-1">{f.label}</label>

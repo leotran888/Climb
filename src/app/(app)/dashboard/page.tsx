@@ -229,34 +229,6 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          {/* Speaking - coming soon */}
-          <div>
-            <div
-              className="rounded-[24px] overflow-hidden flex flex-col opacity-80 cursor-not-allowed"
-              style={{ background: '#e8507a', minHeight: '210px', boxShadow: '0 6px 24px rgba(232,80,122,0.18)' }}
-            >
-              <div className="p-5 flex-1">
-                <div className="w-11 h-11 bg-white/90 rounded-2xl flex items-center justify-center mb-4">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e8507a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    <line x1="12" y1="19" x2="12" y2="23"/>
-                  </svg>
-                </div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <h3 className="text-xl font-black text-white">Speaking</h3>
-                  <span className="text-white/40">✦</span>
-                </div>
-                <p className="text-white/70 text-sm leading-snug">Luyện Part 1, 2 & 3 với AI phản hồi về fluency và từ vựng.</p>
-                <div className="mt-4 inline-flex items-center gap-1.5 bg-black/15 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                  Sắp ra mắt ✨
-                </div>
-              </div>
-              <div className="px-6 flex justify-start -mb-1">
-                <BlobCharStatic shade="rgba(0,0,0,0.15)"/>
-              </div>
-            </div>
-          </div>
 
         </div>
       </div>

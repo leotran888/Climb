@@ -17,20 +17,19 @@ const PLAN_META: Record<string, {
     priceLabel: '0đ',
     priceDay: 'Mãi mãi miễn phí',
     features: ['2 lượt Writing AI/tháng', '3 topic Vocabulary', 'Lịch sử bài nộp'],
-    locked: ['18 topic Vocabulary đầy đủ', 'Speaking AI'],
+    locked: ['18 topic Vocabulary đầy đủ'],
   },
   starter: {
     desc: 'Học từ vựng bài bản, luyện Writing đều đặn.',
     priceLabel: '99.000đ',
     priceDay: '~3.300đ/ngày',
     features: ['10 lượt Writing AI/tháng', '18 topic Vocabulary đầy đủ', 'Lưu từ & theo dõi tiến độ', 'Lịch sử bài nộp đầy đủ'],
-    locked: ['Speaking AI'],
   },
   pro: {
     desc: 'Luyện không giới hạn, tăng band nhanh nhất.',
     priceLabel: '199.000đ',
     priceDay: '~6.600đ/ngày',
-    features: ['Writing AI không giới hạn', 'Speaking AI 15 lượt/tháng', '18 topic Vocabulary đầy đủ', 'Lưu từ & theo dõi tiến độ', 'Ưu tiên xử lý nhanh hơn'],
+    features: ['Writing AI không giới hạn', '18 topic Vocabulary đầy đủ', 'Lưu từ & theo dõi tiến độ', 'Ưu tiên xử lý nhanh hơn'],
     highlight: true,
     badge: '🔥 Phổ biến nhất',
   },
@@ -101,12 +100,6 @@ export default async function SubscriptionPage() {
               used={entitlements.writing.currentUsage}
               limit={entitlements.writing.monthlyLimit}
               bonus={entitlements.writing.bonusRemaining}
-            />
-            <UsageBar
-              label="Speaking AI Grading"
-              used={entitlements.speaking.currentUsage}
-              limit={entitlements.speaking.monthlyLimit}
-              bonus={entitlements.speaking.bonusRemaining}
             />
           </div>
         </div>

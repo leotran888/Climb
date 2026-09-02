@@ -29,7 +29,7 @@ export default function PrivacyPage() {
             <p>Khi bạn sử dụng Climb IELTS, chúng tôi thu thập:</p>
             <ul className="list-disc pl-5 mt-2 space-y-1.5 text-sm">
               <li><strong>Thông tin tài khoản:</strong> họ tên, địa chỉ email, mật khẩu (được mã hóa).</li>
-              <li><strong>Nội dung bài nộp:</strong> bài luận Writing, câu trả lời Speaking bạn tải lên để chấm điểm.</li>
+              <li><strong>Nội dung bài nộp:</strong> bài luận Writing bạn tải lên để chấm điểm.</li>
               <li><strong>Dữ liệu sử dụng:</strong> lịch sử bài nộp, điểm số, lượt sử dụng tính năng, tiến độ học tập.</li>
               <li><strong>Dữ liệu kỹ thuật:</strong> địa chỉ IP, loại trình duyệt, thời gian truy cập — dùng để vận hành và bảo mật dịch vụ.</li>
             </ul>
