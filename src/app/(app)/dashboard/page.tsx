@@ -126,9 +126,9 @@ export default async function DashboardPage() {
           </p>
         </div>
         {profile?.target_band && (
-          <div style={{ background: 'rgba(245,170,0,.1)', border: '1.5px solid rgba(245,170,0,.3)', borderRadius: 16, padding: '10px 20px', textAlign: 'right', flexShrink: 0 }}>
-            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#b87d00', marginBottom: 2 }}>Mục tiêu</p>
-            <p style={{ fontSize: 22, fontWeight: 900, color: '#8a5e00', lineHeight: 1 }}>Band {profile.target_band}</p>
+          <div style={{ background: 'rgba(245,170,0,.1)', border: '1.5px solid rgba(245,170,0,.3)', borderRadius: 14, padding: '8px 16px', textAlign: 'right', flexShrink: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#b87d00', marginBottom: 2 }}>Mục tiêu</p>
+            <p style={{ fontSize: 17, fontWeight: 900, color: '#8a5e00', lineHeight: 1 }}>Band {profile.target_band}</p>
           </div>
         )}
       </div>
