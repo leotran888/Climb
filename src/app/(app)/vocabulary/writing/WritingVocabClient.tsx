@@ -66,7 +66,8 @@ function FolderSaveButton({
   example: string | null
   userId: string
 }) {
-  const btnRef  = useRef<HTMLButtonElement>(null)
+  const btnRef     = useRef<HTMLButtonElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
   const [open,    setOpen]    = useState(false)
   const [pos,     setPos]     = useState({ top: 0, right: 0 })
   const [folders, setFolders] = useState<Array<{ id: string; name: string; color: string }> | null>(null)
@@ -74,6 +75,18 @@ function FolderSaveButton({
   const [saving,  setSaving]  = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [creating, setCreating] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    function onMouseDown(e: MouseEvent) {
+      if (
+        popoverRef.current && !popoverRef.current.contains(e.target as Node) &&
+        btnRef.current    && !btnRef.current.contains(e.target as Node)
+      ) setOpen(false)
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    return () => document.removeEventListener('mousedown', onMouseDown)
+  }, [open])
 
   async function loadFolders() {
     const supabase = createClient()
@@ -144,9 +157,7 @@ function FolderSaveButton({
       </button>
 
       {open && createPortal(
-        <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
-          <div style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 9999, background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 16, boxShadow: '0 8px 32px rgba(22,163,68,.15)', minWidth: 220, maxHeight: 300, overflowY: 'auto', paddingBottom: 6 }}>
+        <div ref={popoverRef} style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 9999, background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 16, boxShadow: '0 8px 32px rgba(22,163,68,.15)', minWidth: 220, maxHeight: 300, overflowY: 'auto', paddingBottom: 6 }}>
             <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', padding: '10px 14px 6px' }}>Lưu vào thư mục</p>
 
             {folders === null ? (
@@ -189,8 +200,7 @@ function FolderSaveButton({
                 {creating ? '…' : 'Tạo'}
               </button>
             </div>
-          </div>
-        </>,
+        </div>,
         document.body,
       )}
     </>
