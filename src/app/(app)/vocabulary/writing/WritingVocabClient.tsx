@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -142,10 +143,10 @@ function FolderSaveButton({
         </svg>
       </button>
 
-      {open && (
+      {open && createPortal(
         <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setOpen(false)} />
-          <div style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 50, background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 16, boxShadow: '0 8px 32px rgba(22,163,68,.15)', minWidth: 220, maxHeight: 300, overflowY: 'auto', paddingBottom: 6 }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
+          <div style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 9999, background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 16, boxShadow: '0 8px 32px rgba(22,163,68,.15)', minWidth: 220, maxHeight: 300, overflowY: 'auto', paddingBottom: 6 }}>
             <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', padding: '10px 14px 6px' }}>Lưu vào thư mục</p>
 
             {folders === null ? (
@@ -189,7 +190,8 @@ function FolderSaveButton({
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </>
   )
