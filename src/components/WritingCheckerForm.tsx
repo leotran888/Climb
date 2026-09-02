@@ -73,7 +73,6 @@ export default function WritingCheckerForm() {
   }
 
   function handleQuestionPaste(e: React.ClipboardEvent) {
-    if (!isAcademic) return
     const items = Array.from(e.clipboardData?.items ?? [])
     const imageItem = items.find(i => i.type.startsWith('image/'))
     if (imageItem) {
@@ -97,7 +96,6 @@ export default function WritingCheckerForm() {
 
   function handleTaskChange(value: string) {
     setTaskType(value)
-    if (value !== 'academic_task1') clearImage()
   }
 
   function parseCompletionTime(value: string): number | null {
