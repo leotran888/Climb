@@ -10,15 +10,6 @@ function formatDate(dateStr: string | null) {
   return new Date(dateStr).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-function StatBox({ label, value, warm }: { label: string; value: string; warm?: boolean }) {
-  return (
-    <div className="bg-slate-50 rounded-xl p-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{label}</p>
-      <p className={`text-2xl font-black ${warm ? 'text-[#f5aa00]' : 'text-slate-800'}`}>{value}</p>
-    </div>
-  )
-}
-
 export default function GoalsForm({
   userId,
   initial,
@@ -53,19 +44,34 @@ export default function GoalsForm({
 
   if (!editing) {
     return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatBox label="Band mục tiêu"     value={overall ? overall : '—'} warm />
-          <StatBox label="Ngày thi dự kiến"  value={formatDate(examDate)} />
-          <StatBox label="Writing mục tiêu"  value={writing ? writing : '—'} />
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 0 }}>
+          {/* Band mục tiêu — warm yellow */}
+          <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Band mục tiêu</p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: overall ? '#f5aa00' : '#192e1e' }}>{overall || '—'}</p>
+          </div>
+          {/* Ngày thi — smaller font */}
+          <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Ngày thi dự kiến</p>
+            <p style={{ fontSize: 16, fontWeight: 900, color: '#192e1e' }}>{formatDate(examDate)}</p>
+          </div>
+          {/* Writing mục tiêu — accent green */}
+          <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Writing mục tiêu</p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: writing ? '#16a344' : '#192e1e' }}>{writing || '—'}</p>
+          </div>
         </div>
-        <button
-          onClick={() => setEditing(true)}
-          className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors btn-press"
-        >
-          Cập nhật mục tiêu
-        </button>
-        {msg && <span className="text-xs font-medium text-emerald-600">{msg}</span>}
+
+        <div style={{ marginTop: 16 }}>
+          <button
+            onClick={() => setEditing(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#16a344', color: '#fff', border: 'none', borderRadius: 50, padding: '10px 22px', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}
+          >
+            Cập nhật mục tiêu
+          </button>
+          {msg && <span style={{ marginLeft: 12, fontSize: 12, fontWeight: 600, color: '#16a344' }}>{msg}</span>}
+        </div>
       </div>
     )
   }
@@ -78,11 +84,11 @@ export default function GoalsForm({
           { label: 'Target Writing', value: writing, set: setWriting },
         ].map(f => (
           <div key={f.label}>
-            <label className="text-xs font-semibold text-slate-500 block mb-1">{f.label}</label>
+            <label style={{ fontSize: 11, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 8, display: 'block' }}>{f.label}</label>
             <select
               value={f.value}
               onChange={e => f.set(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+              style={{ width: '100%', border: '1.5px solid rgba(22,163,68,0.2)', borderRadius: 14, padding: '10px 14px', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, background: '#fff', color: '#192e1e', outline: 'none' }}
             >
               {BAND_OPTIONS.map(b => (
                 <option key={b} value={b}>{b ? `Band ${b}` : '— Chưa đặt —'}</option>
@@ -91,12 +97,12 @@ export default function GoalsForm({
           </div>
         ))}
         <div>
-          <label className="text-xs font-semibold text-slate-500 block mb-1">Ngày thi dự kiến</label>
+          <label style={{ fontSize: 11, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 8, display: 'block' }}>Ngày thi dự kiến</label>
           <input
             type="date"
             value={examDate}
             onChange={e => setExamDate(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            style={{ width: '100%', border: '1.5px solid rgba(22,163,68,0.2)', borderRadius: 14, padding: '10px 14px', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, color: '#192e1e', outline: 'none' }}
           />
         </div>
       </div>
@@ -104,17 +110,17 @@ export default function GoalsForm({
         <button
           onClick={handleSave}
           disabled={loading}
-          className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 btn-press"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#16a344', color: '#fff', border: 'none', borderRadius: 50, padding: '10px 22px', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
         >
           {loading ? 'Đang lưu…' : 'Lưu mục tiêu'}
         </button>
         <button
           onClick={() => { setEditing(false); setMsg('') }}
-          className="text-sm text-slate-400 hover:text-slate-700 font-medium transition-colors"
+          style={{ fontSize: 13, fontWeight: 600, color: '#5a7864', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           Huỷ
         </button>
-        {msg && <span className={`text-xs font-medium ${msg.startsWith('Lỗi') ? 'text-red-500' : 'text-emerald-600'}`}>{msg}</span>}
+        {msg && <span style={{ fontSize: 12, fontWeight: 600, color: msg.startsWith('Lỗi') ? '#ef4444' : '#16a344' }}>{msg}</span>}
       </div>
     </div>
   )

@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const planName = (subResult.data as { plans?: { name?: string } } | null)?.plans?.name ?? null
 
   return (
-    <div className="flex h-screen bg-[#d8dce0]" style={{ fontFamily: "'Nunito', sans-serif" }}>
+    <div className="flex h-screen bg-[#f3f8f4]" style={{ fontFamily: "'Nunito', sans-serif" }}>
       <Sidebar
         name={profile?.full_name ?? ''}
         plan={planName ?? undefined}

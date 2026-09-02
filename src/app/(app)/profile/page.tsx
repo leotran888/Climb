@@ -12,11 +12,26 @@ const PRICE_MAP: Record<string, string> = {
   pro_yearly: '1.490.000đ/năm',
 }
 
-function StatBox({ label, value }: { label: string; value: string | number }) {
+const CARD = {
+  background: '#fff',
+  border: '1.5px solid rgba(22,163,68,0.13)',
+  borderRadius: 20,
+  padding: 24,
+} as const
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-slate-50 rounded-xl p-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{label}</p>
-      <p className="text-2xl font-black text-slate-800">{value}</p>
+    <p style={{ fontSize: 16, fontWeight: 900, color: '#192e1e', marginBottom: 16 }}>
+      {children}
+    </p>
+  )
+}
+
+function StatBox({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
+  return (
+    <div style={{ background: '#f3f8f4', borderRadius: 14, padding: '14px 16px' }}>
+      <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>{label}</p>
+      <p style={{ fontSize: 20, fontWeight: 900, color: accent ? '#16a344' : '#192e1e' }}>{value}</p>
     </div>
   )
 }
@@ -53,7 +68,7 @@ export default async function ProfilePage() {
   const writingCount = (submissions ?? []).length
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const plan = (subData as any)?.plans
+  const plan        = (subData as any)?.plans
   const planSlug    = plan?.slug ?? 'free'
   const planName    = plan?.name ?? 'Free'
   const expiresAt   = (subData as { expires_at?: string | null } | null)?.expires_at
@@ -66,46 +81,51 @@ export default async function ProfilePage() {
   const initial = profile.full_name?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <div className="max-w-3xl space-y-5 pb-12">
+    <div style={{ maxWidth: 720, paddingBottom: 48 }} className="space-y-5">
 
       {/* Header */}
-      <div>
-        <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">+ Hồ sơ</p>
-        <h1 className="text-2xl font-black text-slate-900">Tài khoản của bạn</h1>
+      <div style={{ marginBottom: 28 }}>
+        <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 6 }}>
+          ✦ Hồ sơ
+        </p>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em', lineHeight: 1.1 }}>
+          Tài khoản của bạn
+        </h1>
       </div>
 
       {/* Top row: Profile + Plan */}
-      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-5">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 0 }}>
 
         {/* Profile info card */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shrink-0">
-              <span className="text-white font-black text-xl">{initial}</span>
+        <div style={CARD}>
+          {/* Avatar + info */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 8 }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#16a344', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ color: '#fff', fontSize: 28, fontWeight: 900 }}>{initial}</span>
             </div>
             <div>
-              <p className="font-black text-slate-900 text-lg leading-tight">{profile.full_name}</p>
-              <p className="text-sm text-slate-500 mt-0.5">{user.email}</p>
-              <p className="text-xs text-slate-400 mt-0.5">Thành viên từ {joinedDate}</p>
+              <p style={{ fontSize: 22, fontWeight: 900, color: '#192e1e' }}>{profile.full_name}</p>
+              <p style={{ fontSize: 13, color: '#5a7864', fontWeight: 600 }}>{user.email}</p>
+              <p style={{ fontSize: 11, color: '#5a7864', fontWeight: 600, marginTop: 4 }}>Thành viên từ {joinedDate}</p>
             </div>
           </div>
 
-          <div className="border-t border-slate-100 pt-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Họ và tên</p>
+          {/* Name edit form */}
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(22,163,68,0.13)' }}>
             <ProfileEditForm userId={user.id} initialName={profile.full_name} />
           </div>
         </div>
 
         {/* Plan card */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col gap-4">
-          <p className="font-black text-slate-900">Gói hiện tại</p>
+        <div style={CARD}>
+          <SectionTitle>Gói hiện tại</SectionTitle>
 
-          <div className="rounded-xl p-4 flex-1" style={{ background: '#1b3621' }}>
-            <p className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <div style={{ background: 'linear-gradient(135deg,#1b3621,#1e5c2e)', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <p style={{ fontSize: 11, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 6 }}>
               Gói hiện tại
             </p>
-            <p className="text-2xl font-black" style={{ color: '#f5aa00' }}>{planName}</p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p style={{ fontSize: 22, fontWeight: 900, color: '#f5aa00' }}>{planName}</p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', marginTop: 4 }}>
               {priceLabel}
               {expiresAt && (
                 <> · Gia hạn {new Date(expiresAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' })}</>
@@ -115,7 +135,7 @@ export default async function ProfilePage() {
 
           <Link
             href="/subscription"
-            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#16a344', textDecoration: 'none' }}
           >
             Xem chi tiết gói →
           </Link>
@@ -123,8 +143,8 @@ export default async function ProfilePage() {
       </div>
 
       {/* Goals */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-        <p className="font-black text-slate-900 mb-4">Mục tiêu IELTS</p>
+      <div style={CARD}>
+        <SectionTitle>Mục tiêu IELTS</SectionTitle>
         <GoalsForm
           userId={user.id}
           initial={{
@@ -137,18 +157,18 @@ export default async function ProfilePage() {
       </div>
 
       {/* Achievements */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-        <p className="font-black text-slate-900 mb-4">Thành tích</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatBox label="Writing cao nhất" value={bestWritingBand ?? '—'} />
+      <div style={CARD}>
+        <SectionTitle>Thành tích</SectionTitle>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+          <StatBox label="Writing cao nhất" value={bestWritingBand ?? '—'} accent />
           <StatBox label="Trung bình"        value={avgWritingBand ?? '—'} />
           <StatBox label="Bài đã nộp"        value={writingCount} />
         </div>
       </div>
 
       {/* Logout */}
-      <div className="flex justify-start px-1">
-        <div className="[&_button]:text-sm [&_button]:text-slate-400 [&_button]:hover:text-red-500 [&_button]:font-semibold [&_button]:transition-colors">
+      <div style={{ paddingTop: 4 }}>
+        <div className="[&_button]:text-sm [&_button]:text-[#5a7864] [&_button]:hover:text-red-500 [&_button]:font-semibold [&_button]:transition-colors">
           <LogoutButton />
         </div>
       </div>
