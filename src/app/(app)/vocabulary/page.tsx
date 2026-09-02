@@ -52,6 +52,7 @@ export default async function VocabularyPage({
     padding: '18px 20px',
     textDecoration: 'none',
     display: 'block',
+    cursor: 'pointer',
   }
   const STAT_CARD_ACTIVE: React.CSSProperties = {
     ...STAT_CARD,
@@ -61,6 +62,11 @@ export default async function VocabularyPage({
 
   return (
     <div style={{ paddingBottom: 48 }}>
+    <style>{`
+      .vc-stat { transition: transform .15s, box-shadow .15s; }
+      .vc-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,163,68,.12); }
+      .vc-stat:active { transform: translateY(0); }
+    `}</style>
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
@@ -74,16 +80,22 @@ export default async function VocabularyPage({
 
       {/* 3-stat grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
-        <Link href="/vocabulary" style={view ? STAT_CARD : STAT_CARD_ACTIVE}>
+        <Link href="/vocabulary" className="vc-stat" style={view ? STAT_CARD : STAT_CARD_ACTIVE}>
           <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Tổng từ</p>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#192e1e', fontVariantNumeric: 'tabular-nums' }}>{totalWords || '—'}</p>
         </Link>
-        <Link href={view === 'learned' ? '/vocabulary' : '/vocabulary?view=learned'} style={view === 'learned' ? STAT_CARD_ACTIVE : STAT_CARD}>
-          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Đã thuộc</p>
+        <Link href={view === 'learned' ? '/vocabulary' : '/vocabulary?view=learned'} className="vc-stat" style={view === 'learned' ? STAT_CARD_ACTIVE : STAT_CARD}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', margin: 0 }}>Đã thuộc</p>
+            <span style={{ fontSize: 11, color: view === 'learned' ? '#16a344' : '#b0c4b8', fontWeight: 700 }}>{view === 'learned' ? '▲ Ẩn' : '▼ Xem'}</span>
+          </div>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#16a344', fontVariantNumeric: 'tabular-nums' }}>{knownCount || '—'}</p>
         </Link>
-        <Link href={view === 'learning' ? '/vocabulary' : '/vocabulary?view=learning'} style={view === 'learning' ? STAT_CARD_ACTIVE : STAT_CARD}>
-          <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 6 }}>Đang học</p>
+        <Link href={view === 'learning' ? '/vocabulary' : '/vocabulary?view=learning'} className="vc-stat" style={view === 'learning' ? STAT_CARD_ACTIVE : STAT_CARD}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#5a7864', margin: 0 }}>Đang học</p>
+            <span style={{ fontSize: 11, color: view === 'learning' ? '#d4900a' : '#b0c4b8', fontWeight: 700 }}>{view === 'learning' ? '▲ Ẩn' : '▼ Xem'}</span>
+          </div>
           <p style={{ fontSize: 32, fontWeight: 900, lineHeight: 1, color: '#f5aa00', fontVariantNumeric: 'tabular-nums' }}>{learningCount || '—'}</p>
         </Link>
       </div>
