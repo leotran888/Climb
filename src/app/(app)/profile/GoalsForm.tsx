@@ -97,9 +97,9 @@ export default function GoalsForm({
     <div className="space-y-4">
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { label: 'Target Overall', value: overall, set: setOverall },
-          { label: 'Target Writing', value: writing, set: setWriting },
-        ].map(f => (
+          { label: 'Writing mục tiêu', value: writing, set: setWriting },
+          { label: 'Band tổng mục tiêu', value: overall, set: setOverall },
+        ].map((f) => (
           <div key={f.label}>
             <label style={{ fontSize: 11, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#5a7864', marginBottom: 8, display: 'block' }}>{f.label}</label>
             <select
