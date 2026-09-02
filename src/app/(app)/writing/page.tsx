@@ -2,7 +2,7 @@ import WritingCheckerForm from '@/components/WritingCheckerForm'
 
 export default function WritingPage() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingBottom: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingTop: 16, paddingBottom: 32 }}>
       <div style={{ marginBottom: 12 }}>
         <p style={{ fontSize: 11, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 4 }}>
           ✦ Writing AI
