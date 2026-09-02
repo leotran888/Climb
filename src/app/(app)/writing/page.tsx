@@ -1,24 +1,29 @@
-﻿import WritingCheckerForm from '@/components/WritingCheckerForm'
+import WritingCheckerForm from '@/components/WritingCheckerForm'
 
 export default function WritingPage() {
   return (
-    <div className="space-y-3 flex-1 flex flex-col">
-      {/* Header */}
-      <div>
-        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          AI Writing Checker
-        </div>
-        <h1 className="text-3xl font-bold text-slate-900">Check My Writing</h1>
-        <p className="text-slate-500 mt-2 text-base">
-          Paste any IELTS question and your essay — AI will score it on all 4 criteria, correct errors, and give detailed feedback.
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingBottom: 16 }}>
+      <div style={{ marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 3 }}>
+          ✦ Writing AI
+        </p>
+        <h1 style={{ fontSize: 22, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em', lineHeight: 1.1, marginBottom: 3 }}>
+          Nộp bài viết để chấm điểm
+        </h1>
+        <p style={{ fontSize: 12, fontWeight: 600, color: '#3d5a47' }}>
+          AI phân tích 4 tiêu chí IELTS và viết lại bài đạt band mục tiêu
         </p>
       </div>
 
-      {/* Form */}
-      <div className="bg-white rounded-2xl border-2 border-emerald-600 p-3 shadow-2xl flex-1 flex flex-col">
+      <div style={{
+        background: '#fff',
+        border: '1.5px solid rgba(22,163,68,.13)',
+        borderRadius: 20,
+        padding: '18px 22px',
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+      }}>
         <WritingCheckerForm />
       </div>
     </div>

@@ -1,24 +1,48 @@
-﻿'use client'
+'use client'
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 const TASKS = [
-  { value: 'task2',         label: 'Task 2 – Essay',          desc: 'Opinion, discussion, or problem-solution. Min 250 words.', icon: '📄' },
-  { value: 'academic_task1', label: 'Academic Task 1 – Report', desc: 'Describe a graph, chart, table, or process. Min 150 words.', icon: '📊' },
-  { value: 'general_task1', label: 'General Task 1 – Letter',  desc: 'Formal, semi-formal, or informal letter. Min 150 words.',  icon: '✉️' },
+  { value: 'task2',          label: 'Task 2 – Essay',           desc: 'Bài viết luận — opinion, discussion hoặc problem-solution.', minStr: 'Tối thiểu 250 từ.' },
+  { value: 'academic_task1', label: 'Academic Task 1 – Report', desc: 'Mô tả biểu đồ, bảng số liệu hoặc sơ đồ quy trình.',      minStr: 'Tối thiểu 150 từ.' },
+  { value: 'general_task1',  label: 'General Task 1 – Letter',  desc: 'Viết thư — formal, semi-formal hoặc informal letter.',      minStr: 'Tối thiểu 150 từ.' },
 ]
 
 function countWords(text: string) {
   return text.trim() ? text.trim().split(/\s+/).length : 0
 }
 
+const C = {
+  green:       '#16a344',
+  greenBorder: 'rgba(22,163,68,.13)',
+  greenMid:    'rgba(22,163,68,.22)',
+  greenBg:     'rgba(22,163,68,.06)',
+  text:        '#192e1e',
+  muted:       '#3d5a47',
+  hint:        '#7a9e87',
+  label:       '#3a5a43',
+} as const
+
+const LABEL: React.CSSProperties = {
+  fontSize: 10, fontWeight: 900, letterSpacing: '.12em',
+  textTransform: 'uppercase', color: C.label,
+}
+
+const TEXTAREA: React.CSSProperties = {
+  width: '100%', border: `1.5px solid ${C.greenMid}`, borderRadius: 14,
+  padding: '10px 14px', fontSize: 13, fontWeight: 600, color: C.text,
+  lineHeight: 1.55, resize: 'none', outline: 'none', background: '#fdfffd',
+  fontFamily: 'inherit',
+}
+
 export default function WritingCheckerForm() {
   const router = useRouter()
   const [taskType, setTaskType] = useState('task2')
   const [question, setQuestion] = useState('')
-  const [questionImage, setQuestionImage] = useState<string | null>(null)   // data URL
+  const [questionImage, setQuestionImage] = useState<string | null>(null)
+  const [questionImageName, setQuestionImageName] = useState('')
   const [questionImageType, setQuestionImageType] = useState<string>('image/png')
   const [essay, setEssay] = useState('')
   const [completionTime, setCompletionTime] = useState('')
@@ -29,8 +53,9 @@ export default function WritingCheckerForm() {
 
   const isAcademic = taskType === 'academic_task1'
   const wordCount = countWords(essay)
-  const charCount = essay.length
   const minWords = taskType === 'task2' ? 250 : 150
+  const wordCountOk = wordCount >= minWords
+  const task = TASKS.find(t => t.value === taskType)!
 
   function handleImageFile(file: File) {
     const supported = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
@@ -42,6 +67,7 @@ export default function WritingCheckerForm() {
     reader.onload = ev => {
       setQuestionImage(ev.target?.result as string)
       setQuestionImageType(file.type)
+      setQuestionImageName(file.name)
     }
     reader.readAsDataURL(file)
   }
@@ -65,6 +91,7 @@ export default function WritingCheckerForm() {
 
   function clearImage() {
     setQuestionImage(null)
+    setQuestionImageName('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -99,7 +126,6 @@ export default function WritingCheckerForm() {
     try {
       const completionTimeSeconds = parseCompletionTime(completionTime)
 
-      // Step 1: save submission (fast, ~200ms)
       const res = await fetch('/api/grade/writing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,7 +136,6 @@ export default function WritingCheckerForm() {
 
       const { submissionId } = data
 
-      // Step 2: store image in sessionStorage so result page can send it to process API
       if (questionImage) {
         try {
           sessionStorage.setItem(`pending_img_${submissionId}`, JSON.stringify({
@@ -122,7 +147,6 @@ export default function WritingCheckerForm() {
         }
       }
 
-      // Step 3: navigate immediately to result page (grading starts there)
       router.push(`/writing/result/${submissionId}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -130,214 +154,235 @@ export default function WritingCheckerForm() {
     }
   }
 
-  const questionPlaceholder =
-    taskType === 'task2'
-      ? 'Paste the IELTS question here...\n\nExample: Some people believe that universities should focus on teaching practical skills for employment rather than academic knowledge. To what extent do you agree or disagree?'
-      : taskType === 'academic_task1'
-      ? 'Paste the Task 1 question text here...\n\nExample: The graph below shows the percentage of households owning different devices in the UK from 2000 to 2020. Summarise the information by selecting and reporting the main features.'
-      : 'Paste the letter task here...\n\nExample: You recently bought a product from an online shop. Write a letter to the company. In your letter: describe what you bought, explain the problem, say what you would like them to do.'
+  const questionPlaceholder = isAcademic
+    ? 'Mô tả thêm biểu đồ nếu cần (không bắt buộc nếu đã có ảnh)…'
+    : taskType === 'task2'
+    ? 'Dán đề bài IELTS vào đây…\n\nVí dụ: Some people believe that universities should focus on practical skills rather than academic knowledge. To what extent do you agree or disagree?'
+    : 'Dán đề bài IELTS vào đây…\n\nVí dụ: You recently bought a product from an online shop. Write a letter to the company. In your letter: describe what you bought, explain the problem, say what you would like them to do.'
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 flex-1 flex flex-col">
-      {/* Task type */}
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 12 }}>
+      <style>{`
+        .wc-textarea:focus, .wc-input:focus {
+          border-color: #16a344 !important;
+          box-shadow: 0 0 0 3px rgba(22,163,68,.08);
+        }
+        .wc-textarea::placeholder, .wc-input::placeholder { color: #7a9e87; font-weight: 600; }
+        .wc-img-btn:hover { background: rgba(22,163,68,.06) !important; }
+        .wc-tab:hover { opacity: .85; }
+      `}</style>
+
+      {/* Loại bài */}
       <div>
-        <p className="text-sm font-semibold text-slate-700 mb-3">Choose your task type</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <span style={{ ...LABEL, marginBottom: 7, display: 'block' }}>Loại bài</span>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {TASKS.map(t => (
             <button
               key={t.value}
               type="button"
+              className="wc-tab"
               onClick={() => handleTaskChange(t.value)}
-              className={`text-left p-3 rounded-xl border-2 transition-all ${
-                taskType === t.value
-                  ? 'border-emerald-500 bg-emerald-50'
-                  : 'border-slate-400 hover:border-slate-400 bg-white'
-              }`}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '7px 14px', borderRadius: 50,
+                border: `1.5px solid ${taskType === t.value ? C.green : C.greenMid}`,
+                background: taskType === t.value ? C.green : '#fff',
+                color: taskType === t.value ? '#fff' : C.muted,
+                fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                fontFamily: 'inherit', transition: 'all .15s',
+              }}
             >
-              <span className="text-base mb-1 block">{t.icon}</span>
-              <p className={`font-semibold text-sm mb-0.5 ${taskType === t.value ? 'text-emerald-700' : 'text-slate-800'}`}>
-                {t.label}
-              </p>
-              <p className="text-xs text-slate-500 leading-snug">{t.desc}</p>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'currentColor', opacity: taskType === t.value ? 1 : .7, flexShrink: 0, display: 'block' }} />
+              {t.label}
             </button>
           ))}
         </div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginTop: 7, padding: '7px 12px', background: C.greenBg, borderRadius: 10, lineHeight: 1.45 }}>
+          {task.desc} <span style={{ color: C.green, fontWeight: 800 }}>{task.minStr}</span>
+        </div>
       </div>
 
-      {/* 2-column inputs */}
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr_7fr] gap-5 flex-1">
+      <div style={{ height: 1, background: C.greenBorder, flexShrink: 0 }} />
 
-        {/* Question / Image area */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline gap-2">
-            <label className="text-sm font-semibold text-slate-700">IELTS Writing Question</label>
-            <span className="text-xs text-slate-400">Optional but recommended</span>
-          </div>
-
-          {/* Academic Task 1: image paste zone */}
+      {/* Đề bài */}
+      <div
+        style={{ flex: 3, display: 'flex', flexDirection: 'column', minHeight: 0 }}
+        onDrop={isAcademic ? handleDrop : undefined}
+        onDragOver={isAcademic ? e => e.preventDefault() : undefined}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+          <span style={LABEL}>Đề bài</span>
           {isAcademic && (
-            <div
-              onDrop={handleDrop}
-              onDragOver={e => e.preventDefault()}
-              className={`rounded-xl border-2 border-dashed transition-colors ${
-                questionImage ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-400 hover:border-emerald-300'
-              }`}
+            <label
+              className="wc-img-btn"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '3px 10px', borderRadius: 50, border: `1.5px solid ${C.greenMid}`,
+                background: '#fff', color: C.green, fontSize: 11, fontWeight: 800,
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s',
+              }}
             >
-              {questionImage ? (
-                <div className="relative">
-                  <Image
-                    src={questionImage}
-                    alt="Chart / diagram"
-                    width={600}
-                    height={400}
-                    className="w-full rounded-xl object-contain max-h-64"
-                    unoptimized
-                  />
-                  <button
-                    type="button"
-                    onClick={clearImage}
-                    className="absolute top-2 right-2 bg-white/90 hover:bg-red-50 text-red-500 text-xs font-semibold px-2.5 py-1 rounded-lg border border-red-200 shadow-md transition-colors"
-                  >
-                    Remove image
-                  </button>
-                </div>
-              ) : (
-                <div
-                  className="flex flex-col items-center justify-center gap-2 py-8 px-4 text-center cursor-pointer"
-                  onClick={() => fileInputRef.current?.click()}
-                  onPaste={handleQuestionPaste}
-                  tabIndex={0}
-                  onKeyDown={e => e.key === 'Enter' && fileInputRef.current?.click()}
-                >
-                  <span className="text-3xl">📊</span>
-                  <p className="text-sm font-medium text-slate-700">Paste chart image here</p>
-                  <p className="text-xs text-slate-400">
-                    <kbd className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-mono">Ctrl+V</kbd>
-                    {' '}to paste · drag &amp; drop · or{' '}
-                    <span className="text-emerald-600 underline underline-offset-2">browse</span>
-                  </p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }}
-                  />
-                </div>
-              )}
-            </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+              Thêm ảnh
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f) }}
+              />
+            </label>
           )}
-
-          {/* Text question textarea */}
-          <textarea
-            value={question}
-            onChange={e => setQuestion(e.target.value)}
-            onPaste={handleQuestionPaste}
-            disabled={loading}
-            placeholder={questionPlaceholder}
-            className={`w-full border-2 border-emerald-600 rounded-xl p-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none leading-relaxed ${
-              isAcademic ? 'min-h-[60px]' : 'min-h-[160px] flex-1'
-            }`}
-          />
-
-          <p className="text-xs text-slate-400">
-            {isAcademic
-              ? 'Paste the chart image above + add the question text. AI reads both.'
-              : 'With the question, AI can fully evaluate Task Response.'}
-          </p>
         </div>
 
-        {/* Essay */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-slate-700">Your Essay</label>
-            <div className="flex items-center gap-3 text-xs">
-              <span className={`font-semibold ${wordCount < minWords ? 'text-amber-600' : 'text-emerald-600'}`}>
-                {wordCount} words
-              </span>
-              <span className="text-slate-400">{charCount} chars</span>
-              {essay && (
-                <button type="button" onClick={() => setEssay('')} className="text-slate-400 hover:text-red-500 transition-colors">
-                  Clear
-                </button>
-              )}
-            </div>
+        <textarea
+          className="wc-textarea"
+          value={question}
+          onChange={e => setQuestion(e.target.value)}
+          onPaste={handleQuestionPaste}
+          disabled={loading}
+          placeholder={questionPlaceholder}
+          style={{ ...TEXTAREA, flex: 1, minHeight: 0 }}
+        />
+
+        {questionImage && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6,
+            padding: '4px 6px 4px 4px', borderRadius: 10, border: `1.5px solid ${C.greenMid}`,
+            background: '#fdfffd', alignSelf: 'flex-start',
+          }}>
+            <Image
+              src={questionImage}
+              alt="chart"
+              width={32}
+              height={32}
+              style={{ borderRadius: 7, objectFit: 'cover', width: 32, height: 32 }}
+              unoptimized
+            />
+            <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {questionImageName || 'Ảnh đề bài'}
+            </span>
+            <button
+              type="button"
+              onClick={clearImage}
+              style={{ background: 'none', border: 'none', color: C.hint, fontSize: 13, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
+            >
+              ✕
+            </button>
           </div>
-          <textarea
-            value={essay}
-            onChange={e => setEssay(e.target.value)}
-            disabled={loading}
-            required
-            placeholder="Write or paste your essay here..."
-            className="flex-1 min-h-[160px] w-full border-2 border-emerald-600 rounded-xl p-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none leading-relaxed"
-          />
-          <p className="text-xs text-slate-400">
-            Minimum {minWords} words for {taskType === 'task2' ? 'Task 2' : 'Task 1'}.
-            {wordCount > 0 && wordCount < minWords && (
-              <span className="text-amber-500"> {minWords - wordCount} more words needed.</span>
-            )}
-          </p>
-        </div>
+        )}
+
+        <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 4 }}>
+          Không bắt buộc — nhưng giúp AI chấm Task Response chính xác hơn.
+          {isAcademic && ' Có thể dán ảnh (Ctrl+V) hoặc browse.'}
+        </p>
       </div>
 
-      {/* Completion time */}
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm font-semibold text-slate-700 shrink-0">Thời gian hoàn thành bài</label>
+      {/* Bài viết */}
+      <div style={{ flex: 7, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+          <span style={LABEL}>Bài viết của bạn</span>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center',
+            padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 800,
+            background: wordCount > 0 && !wordCountOk ? 'rgba(212,144,10,.1)' : 'rgba(22,163,68,.1)',
+            color: wordCount > 0 && !wordCountOk ? '#d4900a' : C.green,
+          }}>
+            {wordCount} từ
+          </span>
+        </div>
+        <textarea
+          className="wc-textarea"
+          value={essay}
+          onChange={e => setEssay(e.target.value)}
+          disabled={loading}
+          required
+          placeholder="Viết hoặc dán bài viết của bạn vào đây…"
+          style={{ ...TEXTAREA, flex: 1, minHeight: 0 }}
+        />
+        <p style={{ fontSize: 10, fontWeight: 600, color: C.hint, marginTop: 4 }}>
+          Tối thiểu {minWords} từ cho {taskType === 'task2' ? 'Task 2' : 'Task 1'}.
+          {wordCount > 0 && !wordCountOk && (
+            <span style={{ color: '#d4900a' }}> Cần thêm {minWords - wordCount} từ.</span>
+          )}
+        </p>
+      </div>
+
+      <div style={{ height: 1, background: C.greenBorder, flexShrink: 0 }} />
+
+      {/* Thời gian */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flexShrink: 0 }}>
+        <span style={LABEL}>Thời gian hoàn thành</span>
         <input
+          className="wc-input"
           type="text"
           value={completionTime}
           onChange={e => { setCompletionTime(e.target.value); setTimeError('') }}
           disabled={loading}
           placeholder="42:35"
           maxLength={7}
-          className={`w-24 border-2 rounded-lg px-3 py-1.5 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
-            timeError ? 'border-red-400' : 'border-slate-300'
-          }`}
+          style={{
+            width: 80, border: `1.5px solid ${timeError ? '#f87171' : C.greenMid}`, borderRadius: 10,
+            padding: '5px 10px', fontSize: 12, fontWeight: 700, fontFamily: 'inherit',
+            color: C.text, outline: 'none', background: '#fdfffd',
+          }}
         />
-        <span className="text-xs text-slate-400">phút:giây · để trống nếu không ghi lại</span>
-        {timeError && <span className="text-xs text-red-500">{timeError}</span>}
+        <span style={{ fontSize: 11, fontWeight: 600, color: C.hint }}>phút:giây · để trống nếu không ghi lại</span>
+        {timeError && <span style={{ fontSize: 11, color: '#ef4444' }}>{timeError}</span>}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontSize: 12, padding: '10px 14px', borderRadius: 12, flexShrink: 0 }}>
           {error}
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <p className="text-xs text-slate-400 max-w-sm">
-          AI band scores are estimates for practice only — not official IELTS results.
+      {/* Submit */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', flexShrink: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: C.hint, maxWidth: 320, lineHeight: 1.55 }}>
+          Điểm band của AI chỉ mang tính tham khảo luyện tập — không phải kết quả IELTS chính thức.
         </p>
         <button
           type="submit"
           disabled={loading || !essay.trim()}
-          className="bg-emerald-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5 shadow-lg shadow-emerald-100 shrink-0"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: loading || !essay.trim() ? '#a7d9b8' : C.green,
+            color: '#fff', border: 'none', borderRadius: 50,
+            padding: '10px 24px', fontSize: 13, fontWeight: 900,
+            cursor: loading || !essay.trim() ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit', transition: 'opacity .15s',
+          }}
         >
           {loading ? (
             <>
-              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              <svg style={{ animation: 'wc-spin 1s linear infinite', width: 15, height: 15 }} viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity=".25"/>
+                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
               </svg>
-              Analysing your essay…
+              Đang phân tích…
             </>
           ) : (
             <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
               </svg>
-              Check My Writing
+              Chấm bài ngay
             </>
           )}
         </button>
       </div>
 
       {loading && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-4 text-sm text-emerald-800 text-center">
-          <p className="font-medium mb-1">AI is analysing your essay…</p>
-          <p className="text-xs text-emerald-600">Checking grammar, vocabulary, coherence, and task response. This usually takes 20–40 seconds.</p>
+        <div style={{ background: C.greenBg, border: `1px solid rgba(22,163,68,.2)`, borderRadius: 12, padding: '12px 16px', fontSize: 12, color: C.muted, textAlign: 'center', flexShrink: 0 }}>
+          <p style={{ fontWeight: 800, marginBottom: 3 }}>AI đang phân tích bài viết…</p>
+          <p style={{ color: C.hint }}>Kiểm tra ngữ pháp, từ vựng, coherence, và task response. Thường mất 20–40 giây.</p>
         </div>
       )}
+
+      <style>{`@keyframes wc-spin { to { transform: rotate(360deg) } }`}</style>
     </form>
   )
 }
