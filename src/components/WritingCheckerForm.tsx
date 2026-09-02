@@ -73,6 +73,7 @@ export default function WritingCheckerForm() {
   }
 
   function handleQuestionPaste(e: React.ClipboardEvent) {
+    if (!isAcademic) return
     const items = Array.from(e.clipboardData?.items ?? [])
     const imageItem = items.find(i => i.type.startsWith('image/'))
     if (imageItem) {
@@ -155,8 +156,8 @@ export default function WritingCheckerForm() {
   const questionPlaceholder = isAcademic
     ? 'Mô tả thêm biểu đồ nếu cần (không bắt buộc nếu đã có ảnh)…'
     : taskType === 'task2'
-    ? 'Dán đề bài IELTS vào đây…\n\nVí dụ: Some people believe that universities should focus on practical skills rather than academic knowledge. To what extent do you agree or disagree?'
-    : 'Dán đề bài IELTS vào đây…\n\nVí dụ: You recently bought a product from an online shop. Write a letter to the company. In your letter: describe what you bought, explain the problem, say what you would like them to do.'
+    ? 'Ví dụ: Some people believe that universities should focus on practical skills rather than academic knowledge. To what extent do you agree or disagree?'
+    : 'Ví dụ: You recently bought a product from an online shop. Write a letter to the company. In your letter: describe what you bought, explain the problem, say what you would like them to do.'
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 6, minHeight: 0, overflow: 'hidden' }}>
