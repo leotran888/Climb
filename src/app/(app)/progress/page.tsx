@@ -241,6 +241,14 @@ export default async function ProgressPage() {
 
   const overallTrend = calcTrend(overallBands)
 
+  // Best submission (for subtitle of "Band cao nhất")
+  const bestItem = graded.reduce((best, g) => g.overall > best.overall ? g : best, graded[0])
+  function taskShort(taskType: string | null): string {
+    if (taskType === 'task2') return 'Task 2'
+    if (taskType === 'academic_task1' || taskType === 'general_task1') return 'Task 1'
+    return ''
+  }
+
   const seenIds = new Set<string>()
   const typeCounts = new Map<string, number>()
   for (const g of graded) {
@@ -364,10 +372,10 @@ export default async function ProgressPage() {
           </p>
           {overallTrend ? (
             <p style={{ fontSize: 11, fontWeight: 700, color: overallTrend.color }}>
-              {overallTrend.arrow} {overallTrend.delta > 0 ? '+' : ''}{overallTrend.delta.toFixed(1)} gần đây
+              {overallTrend.arrow} {overallTrend.delta > 0 ? '+' : ''}{overallTrend.delta.toFixed(1)} tháng này
             </p>
           ) : (
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>{totalChecked} bài đã nộp</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>{totalChecked} bài đã chấm</p>
           )}
         </div>
 
@@ -377,7 +385,9 @@ export default async function ProgressPage() {
           <p style={{ fontSize: 36, fontWeight: 900, color: '#16a344', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
             {Number(highestBand).toFixed(1)}
           </p>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>Kỷ lục của bạn</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>
+            {[taskShort(bestItem.taskType), formatShort(bestItem.submittedAt)].filter(Boolean).join(' · ')}
+          </p>
         </div>
 
         {/* Trung bình */}
@@ -386,7 +396,7 @@ export default async function ProgressPage() {
           <p style={{ fontSize: 36, fontWeight: 900, color: '#192e1e', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
             {Number(averageBand).toFixed(1)}
           </p>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>Qua {totalChecked} bài</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>Từ {totalChecked} bài</p>
         </div>
 
         {/* Mục tiêu */}
@@ -395,9 +405,9 @@ export default async function ProgressPage() {
           <p style={{ fontSize: 36, fontWeight: 900, color: '#d97706', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
             {targetBand ? Number(targetBand).toFixed(1) : '—'}
           </p>
-          {targetBand && progressPct !== null ? (
-            <p style={{ fontSize: 11, fontWeight: 700, color: progressPct >= 100 ? '#16a344' : '#d97706' }}>
-              {progressPct >= 100 ? '🎉 Đã đạt!' : `${Math.round(progressPct)}% đạt được`}
+          {targetBand ? (
+            <p style={{ fontSize: 11, fontWeight: 700, color: currentBand >= targetBand ? '#16a344' : '#d97706' }}>
+              {currentBand >= targetBand ? '🎉 Đã đạt!' : `Còn ${(targetBand - currentBand).toFixed(1)} band`}
             </p>
           ) : (
             <Link href="/profile" style={{ fontSize: 11, fontWeight: 700, color: '#16a344', textDecoration: 'none' }}>Đặt mục tiêu →</Link>
