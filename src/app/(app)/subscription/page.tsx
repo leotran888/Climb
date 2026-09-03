@@ -168,7 +168,7 @@ export default async function SubscriptionPage() {
   const currentIdx  = PLAN_ORDER.indexOf(currentSlug)
 
   return (
-    <div style={{ maxWidth: 740, margin: '0 auto', padding: '20px 24px 64px', fontFamily: FONT, color: TEXT }}>
+    <div style={{ paddingBottom: 48, fontFamily: FONT, color: TEXT }}>
 
       {/* ── Header ─────────────────────────────── */}
       <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: G, marginBottom: 6 }}>
