@@ -279,16 +279,16 @@ export default function LandingPage() {
       {/* ═══ ABOUT ═══ */}
       <div className={s.aboutWrap}>
         <div>
-          <div className={s.aboutTag}>✦ Về Climb IELTS</div>
-          <h2 className={s.h2}>Xây riêng cho<br/>học viên Việt</h2>
-          <p style={{marginTop:'14px'}}>Grammarly sửa ngữ pháp tiếng Anh chung chung. Các tool IELTS nước ngoài không hiểu tại sao người Việt mắc lỗi đó. Climb được thiết kế từ đầu để hiểu context tiếng Việt — không dịch từ tiếng Anh sang.</p>
-          <p>Mỗi feedback của Climb được viết để bạn vừa sửa được lỗi hiện tại, vừa không mắc lại lần sau.</p>
+          <div className={s.aboutTag}>✦ Sứ mệnh của Climb</div>
+          <h2 className={s.h2}>IELTS Writing không nên<br/>chỉ dành cho người có tiền học thầy</h2>
+          <p style={{marginTop:'14px'}}>Climb ra đời với một mục tiêu: giúp bất kỳ học viên Việt nào cũng có thể luyện Writing nghiêm túc — không phụ thuộc vào gia sư, không phụ thuộc vào trung tâm.</p>
+          <p>Không chỉ chấm bài — Climb là cả một hệ thống: bài mẫu cải thiện đúng band mục tiêu, kho 1.350+ từ vựng · writing phrases · common mistakes, và kiến thức Writing từ A đến Z. Mọi thứ bạn cần để tự học nghiêm túc, trong tầm tay.</p>
           <div className={s.aboutStats}>
             <div><div className={s.statN}>10k+</div><div className={s.statL}>Bài đã chấm</div></div>
             <div><div className={s.statN}>4.8★</div><div className={s.statL}>Đánh giá</div></div>
             <div><div className={s.statN}>18</div><div className={s.statL}>IELTS Topics</div></div>
           </div>
-          <Link href="/register" className={s.aboutCta}>Tìm hiểu thêm về Climb →</Link>
+          <Link href="/register" className={s.aboutCta}>Bắt đầu ngay — miễn phí →</Link>
         </div>
         <div className={s.aboutMascot}>
           <div className={s.sp} style={{position:'absolute',top:'-5px',left:'8%',animationDelay:'.4s',color:'var(--accent)'}}>✦</div>
