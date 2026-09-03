@@ -189,9 +189,9 @@ export default function LandingPage() {
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Smart Vocabulary</div>
-              <div className={s.fcTitle}>Từ vựng từ lỗi của chính bài bạn viết</div>
-              <div className={s.fcDesc}>Mỗi từ bạn dùng sai hoặc diễn đạt yếu đều được lưu thành flashcard. Học từ đúng ngữ cảnh mình đã mắc — nhớ lâu hơn gấp 3.</div>
+              <div className={s.fcCat}>18 IELTS Topics</div>
+              <div className={s.fcTitle}>Kho từ vựng học thuật 18 chủ đề Writing</div>
+              <div className={s.fcDesc}>Từ vựng được biên soạn theo từng chủ đề IELTS: Environment, Technology, Education... Học có hệ thống, lưu flashcard, không bỏ sót từ quan trọng nào.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
