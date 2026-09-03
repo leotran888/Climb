@@ -286,7 +286,7 @@
 
 /* ── PRICING ── */
 .pricing { padding: 80px 64px; }
-.pg { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 44px; }
+.pg { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-top: 44px; }
 .pc {
   border: 2px solid rgba(22,163,68,.14);
   border-radius: var(--r); padding: 32px 28px;
@@ -302,6 +302,13 @@
 .pcBadge {
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
   background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 900;
+  padding: 5px 18px; border-radius: 50px;
+  letter-spacing: .06em; white-space: nowrap;
+}
+.pcBadgeAmber {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--warm); color: #fff;
   font-size: 10px; font-weight: 900;
   padding: 5px 18px; border-radius: 50px;
   letter-spacing: .06em; white-space: nowrap;
@@ -405,12 +412,15 @@
   .features, .pricing, .footer { padding-left: 24px; padding-right: 24px; }
   .cards { grid-template-columns: 1fr 1fr; }
   .aboutWrap { grid-template-columns: 1fr; margin: 0 16px; padding: 48px 28px; gap: 36px; }
-  .pg { grid-template-columns: 1fr; }
+  .pg { grid-template-columns: 1fr 1fr; }
+  .pg > *:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .footerTop { flex-direction: column; }
   .nav { padding: 0 20px; }
   .navLinks { display: none; }
 }
 @media (max-width: 500px) {
+  .pg { grid-template-columns: 1fr; }
+  .pg > *:last-child:nth-child(odd) { grid-column: unset; }
   .cards { grid-template-columns: 1fr 1fr; gap: 10px; }
   .fcTop { padding: 16px 14px 10px; }
   .fcTitle { font-size: 14px; }

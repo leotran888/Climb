@@ -320,51 +320,67 @@ export default function LandingPage() {
       <section className={s.pricing} id="pricing">
         <div className={s.sectionTag}>✦ Học phí</div>
         <h2 className={s.h2}>Đầu tư vào band score<br/>không phải vào thầy cô</h2>
-        <p className={s.sectionSub}>Học phí thầy 1-1: 300–500k/giờ. Climb Pro: 99.000đ/tháng, luyện không giới hạn.</p>
+        <p className={s.sectionSub}>Học phí thầy 1-1: 300–500k/giờ. Climb Starter: 99.000đ/tháng · Pro không giới hạn: 229.000đ/tháng.</p>
 
         <div className={s.pg}>
+          {/* Free */}
           <div className={s.pc}>
             <div className={s.pcName}>Free</div>
             <div className={s.pcPrice}>0<span className={s.unit}>đ</span></div>
             <div className={s.pcPer}>mãi mãi · 3 bài / tháng</div>
             <ul className={s.pcFeats}>
-              <li>3 bài chấm / tháng</li>
+              <li>Chấm Writing Task 1 &amp; 2</li>
               <li>Band score 4 tiêu chí</li>
               <li>Giải thích lỗi cơ bản</li>
-              <li className={s.off}>Upgraded Essay</li>
-              <li className={s.off}>Kho từ vựng 18 topic</li>
-              <li className={s.off}>Progress tracking</li>
+              <li className={s.off}>Bài mẫu cải thiện</li>
+              <li className={s.off}>Kho từ vựng 18 chủ đề</li>
+              <li className={s.off}>Biểu đồ tiến độ</li>
             </ul>
             <Link href="/register" className={s.pcBtn} style={{display:'block',textAlign:'center',textDecoration:'none'}}>Bắt đầu miễn phí</Link>
           </div>
 
-          <div className={`${s.pc} ${s.best}`}>
-            <div className={s.pcBadge}>PHỔ BIẾN NHẤT</div>
-            <div className={s.pcName}>Pro</div>
+          {/* Starter */}
+          <div className={s.pc}>
+            <div className={s.pcName}>Starter</div>
             <div className={s.pcPrice}>99.000<span className={s.unit}>đ</span></div>
-            <div className={s.pcPer}>/tháng · bài không giới hạn</div>
+            <div className={s.pcPer}>/tháng · 10 bài / tháng</div>
             <ul className={s.pcFeats}>
-              <li>Bài không giới hạn</li>
-              <li>Band score 4 tiêu chí</li>
-              <li>Giải thích lỗi chi tiết</li>
-              <li>Upgraded Essay</li>
-              <li>Kho từ vựng 18 topic</li>
-              <li className={s.off}>Progress tracking</li>
+              <li>Chấm Writing Task 1 &amp; 2</li>
+              <li>Bài mẫu cải thiện</li>
+              <li>Kho từ vựng 18 chủ đề</li>
+              <li>Lưu từ &amp; flashcard</li>
+              <li>Biểu đồ tiến độ</li>
+              <li className={s.off}>Kiến thức viết Writing</li>
+            </ul>
+            <Link href="/register" className={s.pcBtn} style={{display:'block',textAlign:'center',textDecoration:'none'}}>Đăng ký Starter</Link>
+          </div>
+
+          {/* Pro */}
+          <div className={`${s.pc} ${s.best}`}>
+            <div className={s.pcBadge}>🔥 PHỔ BIẾN NHẤT</div>
+            <div className={s.pcName}>Pro</div>
+            <div className={s.pcPrice}>229.000<span className={s.unit}>đ</span></div>
+            <div className={s.pcPer}>/tháng · không giới hạn bài</div>
+            <ul className={s.pcFeats}>
+              <li>Tất cả tính năng Starter</li>
+              <li>Kiến thức viết đầy đủ</li>
+              <li>Export PDF kết quả</li>
+              <li>Ưu tiên xử lý</li>
             </ul>
             <Link href="/register" className={s.pcBtn} style={{display:'block',textAlign:'center',textDecoration:'none'}}>Nâng lên Pro</Link>
           </div>
 
+          {/* Pro Yearly */}
           <div className={s.pc}>
-            <div className={s.pcName}>Yearly</div>
-            <div className={s.pcPrice}>1.490.000<span className={s.unit}>đ</span></div>
-            <div className={s.pcPer}>/năm · ~124.000đ/tháng</div>
+            <div className={s.pcBadgeAmber}>✦ TIẾT KIỆM NHẤT</div>
+            <div className={s.pcName}>Pro Yearly</div>
+            <div className={s.pcPrice}>1.790.000<span className={s.unit}>đ</span></div>
+            <div className={s.pcPer}>/năm · ~149.000đ/tháng</div>
+            <div style={{fontSize:12,fontWeight:700,color:'#d97706',marginBottom:20,marginTop:-16}}>Giảm 35% · ~4 tháng miễn phí</div>
             <ul className={s.pcFeats}>
-              <li>Bài không giới hạn</li>
-              <li>Band score 4 tiêu chí</li>
-              <li>Giải thích lỗi chi tiết</li>
-              <li>Upgraded Essay</li>
-              <li>Kho từ vựng 18 topic</li>
-              <li>Progress tracking</li>
+              <li>Tất cả tính năng Pro</li>
+              <li>Ưu tiên hỗ trợ</li>
+              <li>Tiết kiệm ~958.000đ/năm</li>
             </ul>
             <Link href="/register" className={s.pcBtn} style={{display:'block',textAlign:'center',textDecoration:'none'}}>Đăng ký Yearly</Link>
           </div>
