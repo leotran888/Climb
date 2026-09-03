@@ -321,6 +321,14 @@ export default async function SubscriptionPage() {
         })}
       </div>
 
+      {/* ── Payment history ───────────────────── */}
+      <div style={{ ...CARD, marginTop: 4, marginBottom: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 900, color: TEXT, marginBottom: 12 }}>Lịch sử thanh toán</p>
+        <div style={{ textAlign: 'center', padding: '24px 0', color: HINT, fontSize: 13, fontWeight: 600 }}>
+          Chưa có lịch sử thanh toán
+        </div>
+      </div>
+
       {/* ── Footer note ────────────────────────── */}
       <p style={{ fontSize: 12, textAlign: 'center', color: HINT, marginTop: 16, marginBottom: 20 }}>
         Để nâng cấp gói, liên hệ qua email hoặc Zalo — chúng tôi xử lý trong vòng 1 giờ.
