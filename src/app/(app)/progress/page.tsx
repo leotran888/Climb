@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import BandChart, { ChartPoint } from '@/components/BandChart'
@@ -40,6 +40,22 @@ function formatFull(iso: string) {
   })
 }
 
+function formatStartMonth(iso: string) {
+  const d = new Date(iso)
+  return `tháng ${d.getMonth() + 1} năm ${d.getFullYear()}`
+}
+
+function bandColorStr(b: number): string {
+  if (b >= 7.0) return '#16a344'
+  if (b >= 6.0) return '#3d5a47'
+  return '#d97706'
+}
+
+function pillStyle(b: number): { bg: string; color: string } {
+  if (b >= 6.0) return { bg: 'rgba(22,163,68,.12)', color: '#0f7a33' }
+  return { bg: 'rgba(245,170,0,.15)', color: '#8a6100' }
+}
+
 interface Trend {
   delta: number
   label: string
@@ -54,23 +70,9 @@ function calcTrend(values: number[]): Trend | null {
   const previous = values.slice(-(n * 2), -n)
   if (!previous.length) return null
   const delta = avg(recent) - avg(previous)
-  if (delta > 0.25)  return { delta, label: 'Cải thiện',  color: 'text-emerald-600', arrow: '↑' }
-  if (delta < -0.25) return { delta, label: 'Cần chú ý',  color: 'text-red-500',     arrow: '↓' }
-  return              { delta, label: 'Ổn định',    color: 'text-slate-500',   arrow: '→' }
-}
-
-function bandColor(b: number) {
-  if (b >= 7.5) return 'text-emerald-600'
-  if (b >= 6.5) return 'text-blue-600'
-  if (b >= 5.5) return 'text-amber-500'
-  return 'text-red-500'
-}
-
-function bandBg(b: number) {
-  if (b >= 7.5) return 'bg-emerald-50 border-emerald-100'
-  if (b >= 6.5) return 'bg-blue-50 border-blue-100'
-  if (b >= 5.5) return 'bg-amber-50 border-amber-100'
-  return 'bg-red-50 border-red-100'
+  if (delta > 0.25)  return { delta, label: 'Cải thiện',  color: '#16a344', arrow: '↑' }
+  if (delta < -0.25) return { delta, label: 'Cần chú ý',  color: '#d97706', arrow: '↓' }
+  return              { delta, label: 'Ổn định',    color: '#7a9e87', arrow: '→' }
 }
 
 // ── Static config ──────────────────────────────────────────────────────────
@@ -132,8 +134,6 @@ export default async function ProgressPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // ── Fetch ────────────────────────────────────────────────────────────────
-  // Two separate queries avoids embedded-join RLS issues
   const [submissionsRes, profileRes] = await Promise.all([
     supabase
       .from('writing_submissions')
@@ -151,7 +151,6 @@ export default async function ProgressPage() {
   const profile = profileRes.data
   const totalSubmitted = allSubmissions.length
 
-  // Fetch writing_results for these submissions
   const submissionIds = allSubmissions.map(s => s.id)
   const { data: rawResults } = submissionIds.length > 0
     ? await supabase
@@ -160,12 +159,10 @@ export default async function ProgressPage() {
         .in('submission_id', submissionIds)
     : { data: [] }
 
-  // Map resultId by submission_id
   const resultMap = new Map(
     (rawResults ?? []).map(r => [r.submission_id as string, r])
   )
 
-  // Build graded list (ordered by submitted_at from submissions query)
   const graded: GradedItem[] = []
   for (const s of allSubmissions) {
     const r = resultMap.get(s.id)
@@ -192,26 +189,20 @@ export default async function ProgressPage() {
   // ── Empty state ──────────────────────────────────────────────────────────
   if (totalChecked === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] p-6">
-        <div className="bg-white rounded-2xl shadow-2xl border-2 border-emerald-600 p-12 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: 24 }}>
+        <div style={{ background: '#fff', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 20, padding: '48px 36px', maxWidth: 420, width: '100%', textAlign: 'center' }}>
+          <div style={{ width: 56, height: 56, background: 'rgba(22,163,68,.1)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a344" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Chưa có dữ liệu tiến độ</h2>
-          <p className="text-slate-500 text-sm mb-6">
+          <h2 style={{ fontSize: 18, fontWeight: 900, color: '#192e1e', marginBottom: 8 }}>Chưa có dữ liệu tiến độ</h2>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#7a9e87', marginBottom: 24, lineHeight: 1.6 }}>
             {totalSubmitted > 0
-              ? `Bạn đã nộp ${totalSubmitted} bài, nhưng chưa có bài nào được chấm. Hãy chờ kết quả chấm điểm.`
+              ? `Bạn đã nộp ${totalSubmitted} bài, nhưng chưa có bài nào được chấm.`
               : 'Hãy nộp và chấm bài viết đầu tiên để theo dõi tiến độ của bạn.'}
           </p>
-          <Link
-            href="/writing"
-            className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
+          <Link href="/writing" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#16a344', color: '#fff', borderRadius: 50, padding: '10px 24px', fontWeight: 900, fontSize: 13, textDecoration: 'none' }}>
             Viết bài ngay
           </Link>
         </div>
@@ -224,9 +215,7 @@ export default async function ProgressPage() {
   const currentBand  = graded[graded.length - 1].overall
   const highestBand  = Math.max(...overallBands)
   const averageBand  = Math.round(avg(overallBands) * 10) / 10
-  const lastUpdated  = graded[graded.length - 1].submittedAt
 
-  // Chart data
   const chartData: ChartPoint[] = graded.map(g => ({
     date:           g.submittedAt,
     band:           g.overall,
@@ -235,7 +224,6 @@ export default async function ProgressPage() {
     taskType:       g.taskType,
   }))
 
-  // Criterion stats
   const CRIT_PROP: Record<CriterionKey, 'tr' | 'cc' | 'lr' | 'gr'> = {
     task_achievement:   'tr',
     coherence_cohesion: 'cc',
@@ -248,13 +236,11 @@ export default async function ProgressPage() {
     const highest = Math.max(...vals)
     const mean    = Math.round(avg(vals) * 10) / 10
     const trend   = calcTrend(vals)
-    return { key, label, short, current, highest, average: mean, trend, values: vals }
+    return { key, label, short, current, highest, average: mean, trend }
   })
 
-  // Overall trend
   const overallTrend = calcTrend(overallBands)
 
-  // Corrections aggregation (deduplicated by resultId)
   const seenIds = new Set<string>()
   const typeCounts = new Map<string, number>()
   for (const g of graded) {
@@ -276,7 +262,6 @@ export default async function ProgressPage() {
       pct: totalErrors > 0 ? Math.round((count / Math.max(...typeCounts.values())) * 100) : 0,
     }))
 
-  // Personal bests
   const bests = {
     overall: highestBand,
     tr: Math.max(...graded.map(g => g.tr)),
@@ -285,27 +270,22 @@ export default async function ProgressPage() {
     gr: Math.max(...graded.map(g => g.gr)),
   }
 
-  // Priority improvements (algorithmic)
   const weakestCrit = [...criterionStats].sort((a, b) => a.average - b.average)[0]
   const topErrorType = topErrors[0]?.type ?? null
 
-  interface Priority { num: number; icon: string; title: string; subtitle: string; action: string }
+  interface Priority { num: number; title: string; subtitle: string; action: string }
   const priorities: Priority[] = []
 
-  // Priority 1: weakest criterion
   priorities.push({
     num: 1,
-    icon: '🎯',
     title: `Cải thiện ${weakestCrit.label}`,
     subtitle: `Điểm TB: ${weakestCrit.average} — tiêu chí yếu nhất của bạn`,
     action: CRITERION_ADVICE[weakestCrit.key].action,
   })
 
-  // Priority 2: most common error
   if (topErrorType && ERROR_ADVICE[topErrorType]) {
     priorities.push({
       num: 2,
-      icon: '📝',
       title: `Giảm lỗi ${topErrors[0].label}`,
       subtitle: `${topErrors[0].count} lần xuất hiện — lỗi phổ biến nhất`,
       action: ERROR_ADVICE[topErrorType],
@@ -313,330 +293,334 @@ export default async function ProgressPage() {
   } else {
     priorities.push({
       num: 2,
-      icon: '📖',
       title: 'Mở rộng từ vựng học thuật',
       subtitle: 'Tăng tốc độ cải thiện LR score',
       action: 'Học 10 collocations IELTS mỗi ngày theo chủ đề: environment, technology, society. Dùng chúng trong bài viết tiếp theo.',
     })
   }
 
-  // Priority 3: trend or target
   if (overallTrend?.label === 'Cần chú ý') {
     priorities.push({
       num: 3,
-      icon: '⚠️',
       title: 'Duy trì tính ổn định',
       subtitle: `Điểm giảm ${Math.abs(overallTrend.delta).toFixed(2)} trong 3 bài gần nhất`,
-      action: 'Viết bài đều đặn hơn và xem lại kết quả chấm điểm kỹ trước khi nộp bài tiếp theo. Đừng vội — chất lượng hơn số lượng.',
+      action: 'Viết bài đều đặn hơn và xem lại kết quả chấm điểm kỹ trước khi nộp bài tiếp theo.',
     })
   } else if (targetBand && currentBand < targetBand) {
-    const gap = targetBand - currentBand
     priorities.push({
       num: 3,
-      icon: '🏆',
       title: `Hướng tới Band ${targetBand}`,
-      subtitle: `Còn cách mục tiêu ${gap.toFixed(1)} band`,
-      action: `Để đạt Band ${targetBand}, tập trung tăng điểm ${weakestCrit.label} trước — đây là tiêu chí ảnh hưởng nhiều nhất đến điểm tổng của bạn.`,
+      subtitle: `Còn cách mục tiêu ${(targetBand - currentBand).toFixed(1)} band`,
+      action: `Để đạt Band ${targetBand}, tập trung tăng điểm ${weakestCrit.label} trước — đây là tiêu chí ảnh hưởng nhiều nhất đến điểm tổng.`,
     })
   } else {
     priorities.push({
       num: 3,
-      icon: '✨',
       title: 'Duy trì đà cải thiện',
       subtitle: overallTrend?.label === 'Cải thiện' ? 'Bạn đang tiến bộ tốt!' : 'Giữ vững phong độ',
-      action: 'Nộp thêm bài mỗi tuần để giữ đà. Thử đặt mục tiêu cao hơn 0.5 band so với điểm hiện tại để có thêm động lực.',
+      action: 'Nộp thêm bài mỗi tuần để giữ đà. Thử đặt mục tiêu cao hơn 0.5 band so với điểm hiện tại.',
     })
   }
 
-  // Recent 10 (newest first)
   const recent = [...graded].reverse().slice(0, 10)
 
-  // Progress toward target
   const progressPct = targetBand && targetBand > 4
     ? Math.min(100, Math.max(0, ((currentBand - 4) / (targetBand - 4)) * 100))
     : null
 
+  const currentBandColor = (targetBand && currentBand < targetBand) ? '#d97706' : '#16a344'
+
+  const CARD: React.CSSProperties = {
+    background: '#fff',
+    border: '1.5px solid rgba(22,163,68,.13)',
+    borderRadius: 16,
+    padding: '20px 20px',
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6">
+    <div style={{ paddingTop: 20, paddingBottom: 48, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Tiến độ của bạn</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            {totalChecked} bài đã chấm · Cập nhật: {formatFull(lastUpdated)}
+      {/* Header */}
+      <div style={{ marginBottom: 6 }}>
+        <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: '#16a344', marginBottom: 6 }}>
+          ✦ Theo dõi tiến độ
+        </p>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#192e1e', letterSpacing: '-.02em', lineHeight: 1.1, marginBottom: 4 }}>
+          Tiến độ của bạn
+        </h1>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#3d5a47' }}>
+          {totalChecked} bài đã chấm · Bắt đầu từ {formatStartMonth(graded[0].submittedAt)}
+        </p>
+      </div>
+
+      {/* 4 Stat cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+        {/* Band hiện tại */}
+        <div style={CARD}>
+          <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#7a9e87', marginBottom: 8 }}>Band hiện tại</p>
+          <p style={{ fontSize: 36, fontWeight: 900, color: currentBandColor, lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
+            {Number(currentBand).toFixed(1)}
           </p>
-        </div>
-
-        {/* Overview cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { label: 'Điểm hiện tại', value: currentBand,  highlight: true },
-            { label: 'Điểm cao nhất', value: highestBand,  highlight: false },
-            { label: 'Điểm trung bình', value: averageBand, highlight: false },
-            { label: 'Bài đã chấm',   value: totalChecked, highlight: false, unit: 'bài' },
-            { label: 'Tổng bài nộp',  value: totalSubmitted, highlight: false, unit: 'bài' },
-            { label: 'Mục tiêu',      value: targetBand ?? '—', highlight: false, isTarget: true },
-          ].map(card => (
-            <div
-              key={card.label}
-              className="bg-white rounded-2xl border-2 border-emerald-600 p-4 flex flex-col gap-1 shadow-2xl"
-            >
-              <span className="text-xs text-slate-500 font-medium leading-tight">{card.label}</span>
-              <span className={`text-2xl font-black leading-none ${
-                card.isTarget ? 'text-amber-500' :
-                card.highlight ? 'text-emerald-600' :
-                typeof card.value === 'number' ? bandColor(card.value as number) :
-                'text-slate-700'
-              }`}>
-                {card.value}
-                {card.unit && <span className="text-xs font-normal text-slate-400 ml-1">{card.unit}</span>}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Target progress bar */}
-        {progressPct !== null && targetBand && (
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
-            <div className="flex items-center justify-between mb-3 text-sm">
-              <span className="font-semibold text-slate-700">Tiến độ đến mục tiêu Band {targetBand}</span>
-              <span className="text-slate-500">
-                Hiện tại <span className={`font-bold ${bandColor(currentBand)}`}>{currentBand}</span>
-                {' → '}
-                Mục tiêu <span className="font-bold text-amber-500">{targetBand}</span>
-              </span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <p className="text-xs text-slate-400 mt-2">
-              {progressPct >= 100
-                ? '🎉 Bạn đã đạt mục tiêu!'
-                : `Còn ${(targetBand - currentBand).toFixed(1)} band — ${Math.round(100 - progressPct)}% còn lại`}
+          {overallTrend ? (
+            <p style={{ fontSize: 11, fontWeight: 700, color: overallTrend.color }}>
+              {overallTrend.arrow} {overallTrend.delta > 0 ? '+' : ''}{overallTrend.delta.toFixed(1)} gần đây
             </p>
-          </div>
-        )}
-
-        {/* Band Chart */}
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
-          <h2 className="text-base font-bold text-slate-800 mb-4">Biểu đồ tiến độ điểm IELTS</h2>
-          <BandChart data={chartData} targetBand={targetBand} />
+          ) : (
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>{totalChecked} bài đã nộp</p>
+          )}
         </div>
 
-        {/* Criterion Progress */}
-        <div>
-          <h2 className="text-base font-bold text-slate-800 mb-3">Tiến độ theo tiêu chí</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {criterionStats.map(({ key, label, short, current, highest, average, trend }) => (
-              <div key={key} className="bg-white rounded-2xl border-2 border-emerald-600 p-4 shadow-2xl">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{short}</span>
-                  {trend ? (
-                    <span className={`text-xs font-semibold ${trend.color}`}>
-                      {trend.arrow} {trend.label}
+        {/* Band cao nhất */}
+        <div style={CARD}>
+          <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#7a9e87', marginBottom: 8 }}>Band cao nhất</p>
+          <p style={{ fontSize: 36, fontWeight: 900, color: '#16a344', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
+            {Number(highestBand).toFixed(1)}
+          </p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>Kỷ lục của bạn</p>
+        </div>
+
+        {/* Trung bình */}
+        <div style={CARD}>
+          <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#7a9e87', marginBottom: 8 }}>Trung bình</p>
+          <p style={{ fontSize: 36, fontWeight: 900, color: '#192e1e', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
+            {Number(averageBand).toFixed(1)}
+          </p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>Qua {totalChecked} bài</p>
+        </div>
+
+        {/* Mục tiêu */}
+        <div style={CARD}>
+          <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#7a9e87', marginBottom: 8 }}>Mục tiêu</p>
+          <p style={{ fontSize: 36, fontWeight: 900, color: '#d97706', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
+            {targetBand ? Number(targetBand).toFixed(1) : '—'}
+          </p>
+          {targetBand && progressPct !== null ? (
+            <p style={{ fontSize: 11, fontWeight: 700, color: progressPct >= 100 ? '#16a344' : '#d97706' }}>
+              {progressPct >= 100 ? '🎉 Đã đạt!' : `${Math.round(progressPct)}% đạt được`}
+            </p>
+          ) : (
+            <Link href="/profile" style={{ fontSize: 11, fontWeight: 700, color: '#16a344', textDecoration: 'none' }}>Đặt mục tiêu →</Link>
+          )}
+        </div>
+      </div>
+
+      {/* Band chart */}
+      <div style={CARD}>
+        <p style={{ fontSize: 13, fontWeight: 900, color: '#192e1e', marginBottom: 14 }}>Band score theo thời gian</p>
+        <BandChart data={chartData} targetBand={targetBand} />
+      </div>
+
+      {/* Criteria cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+        {criterionStats.map(({ key, label, short, current, highest, average, trend }) => (
+          <div key={key} style={CARD}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#7a9e87' }}>{short}</span>
+              {trend ? (
+                <span style={{ fontSize: 11, fontWeight: 800, color: trend.color }}>
+                  {trend.arrow} {trend.delta > 0 ? '+' : ''}{trend.delta.toFixed(1)}
+                </span>
+              ) : (
+                <span style={{ fontSize: 11, color: '#b0c4b8' }}>—</span>
+              )}
+            </div>
+            <div style={{ fontSize: 34, fontWeight: 900, color: bandColorStr(current), lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 4 }}>
+              {Number(current).toFixed(1)}
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#3d5a47', marginBottom: 12 }}>{label}</div>
+            <div style={{ display: 'flex', gap: 12, borderTop: '1px solid rgba(22,163,68,.1)', paddingTop: 10 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>
+                Cao nhất: <b style={{ color: '#192e1e', fontWeight: 800 }}>{Number(highest).toFixed(1)}</b>
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>
+                TB: <b style={{ color: '#192e1e', fontWeight: 800 }}>{Number(average).toFixed(1)}</b>
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Errors + Priorities */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+
+        {/* Common errors */}
+        <div style={CARD}>
+          <p style={{ fontSize: 13, fontWeight: 900, color: '#192e1e', marginBottom: 16 }}>Lỗi thường gặp</p>
+          {topErrors.length === 0 ? (
+            <p style={{ fontSize: 13, color: '#7a9e87', fontWeight: 600 }}>Chưa đủ dữ liệu.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {topErrors.map(({ type, label, count, pct }, i) => (
+                <div key={type}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#192e1e' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#7a9e87', marginRight: 6 }}>#{i + 1}</span>{label}
                     </span>
-                  ) : (
-                    <span className="text-xs text-slate-300">—</span>
-                  )}
-                </div>
-                <div className={`text-3xl font-black ${bandColor(current)} mb-1`}>{current}</div>
-                <div className="text-xs text-slate-400 font-medium leading-tight mb-2">{label}</div>
-                <div className="flex gap-3 text-xs text-slate-500 border-t border-slate-50 pt-2">
-                  <span>TB <span className="font-semibold text-slate-700">{average}</span></span>
-                  <span>Best <span className={`font-semibold ${bandColor(highest)}`}>{highest}</span></span>
-                </div>
-                {trend && (
-                  <div className="text-xs text-slate-400 mt-1.5">
-                    {trend.delta > 0 ? '+' : ''}{trend.delta.toFixed(2)} (3 bài gần nhất)
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#3d5a47', fontVariantNumeric: 'tabular-nums' }}>{count}</span>
                   </div>
-                )}
+                  <div style={{ height: 6, background: 'rgba(22,163,68,.08)', borderRadius: 50, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: 'rgba(245,170,0,.6)', borderRadius: 50 }} />
+                  </div>
+                </div>
+              ))}
+              <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87', paddingTop: 4 }}>
+                Tổng {totalErrors} lỗi trong {totalChecked} bài đã chấm.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Priorities */}
+        <div style={CARD}>
+          <p style={{ fontSize: 13, fontWeight: 900, color: '#192e1e', marginBottom: 16 }}>Ưu tiên cải thiện</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {priorities.map(p => (
+              <div key={p.num} style={{ display: 'flex', gap: 12 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 50, background: '#16a344', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff', fontSize: 11, fontWeight: 900 }}>
+                  {p.num}
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#192e1e', marginBottom: 2 }}>{p.title}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87', marginBottom: 4 }}>{p.subtitle}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#3d5a47', lineHeight: 1.5 }}>{p.action}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Recent table */}
+      <div style={CARD}>
+        <p style={{ fontSize: 13, fontWeight: 900, color: '#192e1e', marginBottom: 16 }}>Kết quả gần đây</p>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr>
+                {['Ngày', 'Chủ đề', 'Overall', 'TR', 'CC', 'LR', 'GR', ''].map(h => (
+                  <th key={h} style={{ textAlign: h === 'Overall' || h === 'TR' || h === 'CC' || h === 'LR' || h === 'GR' ? 'center' : h === '' ? 'right' : 'left', paddingBottom: 10, paddingRight: h !== '' ? 12 : 0, fontSize: 10, fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', color: '#7a9e87', whiteSpace: 'nowrap' }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {recent.map((g, idx) => {
+                const bp = pillStyle(g.overall)
+                return (
+                  <tr key={g.resultId} style={{ borderTop: idx === 0 ? '1px solid rgba(22,163,68,.1)' : '1px solid rgba(22,163,68,.07)' }}>
+                    <td style={{ padding: '10px 12px 10px 0', color: '#7a9e87', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', fontSize: 12, fontWeight: 600 }}>
+                      {formatFull(g.submittedAt)}
+                    </td>
+                    <td style={{ padding: '10px 12px 10px 0', maxWidth: 200 }}>
+                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#192e1e', fontWeight: 600 }}>
+                        {g.question?.slice(0, 55) ?? 'Không có đề bài'}
+                        {(g.question?.length ?? 0) > 55 ? '…' : ''}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                      <span style={{ background: bp.bg, color: bp.color, fontWeight: 800, fontSize: 12, padding: '3px 10px', borderRadius: 50, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                        {Number(g.overall).toFixed(1)}
+                      </span>
+                    </td>
+                    {[g.tr, g.cc, g.lr, g.gr].map((v, i) => (
+                      <td key={i} style={{ padding: '10px 12px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, fontWeight: 700, color: '#3d5a47' }}>
+                        {Number(v).toFixed(1)}
+                      </td>
+                    ))}
+                    <td style={{ padding: '10px 0 10px 12px', textAlign: 'right' }}>
+                      <Link href={`/writing/result/${g.submissionId}`} style={{ fontSize: 12, fontWeight: 800, color: '#16a344', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                        Xem →
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Personal best + Target */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+
+        {/* Personal best */}
+        <div style={CARD}>
+          <p style={{ fontSize: 13, fontWeight: 900, color: '#192e1e', marginBottom: 14 }}>Kỷ lục cá nhân</p>
+          {/* Overall */}
+          <div style={{ background: 'rgba(22,163,68,.08)', border: '1.5px solid rgba(22,163,68,.18)', borderRadius: 12, padding: '16px 18px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#3d5a47', marginBottom: 4 }}>Overall</div>
+              <div style={{ fontSize: 38, fontWeight: 900, color: '#16a344', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{Number(bests.overall).toFixed(1)}</div>
+            </div>
+            <div style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: '#3d5a47', textAlign: 'right' }}>Kỷ lục<br/>cao nhất</div>
+          </div>
+          {/* 2x2 criteria */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[
+              { short: 'TR', label: 'Task Response',         val: bests.tr },
+              { short: 'CC', label: 'Coherence & Cohesion',  val: bests.cc },
+              { short: 'LR', label: 'Lexical Resource',       val: bests.lr },
+              { short: 'GR', label: 'Grammatical Accuracy',   val: bests.gr },
+            ].map(({ short, label, val }) => (
+              <div key={short} style={{ background: '#f3f8f4', border: '1.5px solid rgba(22,163,68,.13)', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: '#7a9e87', marginBottom: 4 }}>{short}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: bandColorStr(val), lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 2 }}>{Number(val).toFixed(1)}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#7a9e87' }}>{label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Weaknesses + Priorities */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-          {/* Common errors */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
-            <h2 className="text-base font-bold text-slate-800 mb-4">Lỗi thường gặp</h2>
-            {topErrors.length === 0 ? (
-              <p className="text-sm text-slate-400">Chưa đủ dữ liệu.</p>
-            ) : (
-              <div className="space-y-2.5">
-                {topErrors.map(({ type, label, count, pct }, i) => (
-                  <div key={type}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-slate-700 font-medium">
-                        <span className="text-slate-400 mr-1.5">#{i + 1}</span>{label}
-                      </span>
-                      <span className="text-xs font-bold text-slate-500 tabular-nums">{count}</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="h-full bg-amber-400 rounded-full"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
+        {/* Target */}
+        <div style={CARD}>
+          <p style={{ fontSize: 13, fontWeight: 900, color: '#192e1e', marginBottom: 14 }}>Mục tiêu IELTS</p>
+          {targetBand ? (
+            <>
+              {/* Amber target box */}
+              <div style={{ background: 'rgba(245,170,0,.08)', border: '1.5px solid rgba(245,170,0,.25)', borderRadius: 14, padding: '18px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ fontSize: 48, fontWeight: 900, color: '#d97706', lineHeight: 1, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                  {Number(targetBand).toFixed(1)}
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#3d5a47', marginBottom: 6 }}>
+                    {currentBand >= targetBand ? '🎉 Bạn đã đạt mục tiêu!' : `Còn cách ${(targetBand - currentBand).toFixed(1)} band`}
                   </div>
-                ))}
-                <p className="text-xs text-slate-400 pt-1">Tổng {totalErrors} lỗi trong {totalChecked} bài đã chấm.</p>
-              </div>
-            )}
-          </div>
-
-          {/* Priorities */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
-            <h2 className="text-base font-bold text-slate-800 mb-4">Ưu tiên cải thiện</h2>
-            <div className="space-y-4">
-              {priorities.map(p => (
-                <div key={p.num} className="flex gap-3">
-                  <div className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-sm">{p.icon}</span>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-slate-800">{p.title}</div>
-                    <div className="text-xs text-slate-400 mb-1">{p.subtitle}</div>
-                    <div className="text-xs text-slate-600 leading-relaxed">{p.action}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87', lineHeight: 1.5 }}>
+                    Tiêu chí yếu nhất: <b style={{ color: '#3d5a47' }}>{weakestCrit.label}</b> ({Number(weakestCrit.average).toFixed(1)})
                   </div>
                 </div>
-              ))}
+              </div>
+              {/* Progress bar */}
+              {progressPct !== null && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, color: '#7a9e87', marginBottom: 6 }}>
+                    <span>Band {Number(currentBand).toFixed(1)}</span>
+                    <span>Band {Number(targetBand).toFixed(1)}</span>
+                  </div>
+                  <div style={{ height: 8, background: 'rgba(22,163,68,.1)', borderRadius: 50, overflow: 'hidden', marginBottom: 6 }}>
+                    <div style={{ height: '100%', width: `${progressPct}%`, background: progressPct >= 100 ? '#16a344' : '#d97706', borderRadius: 50, transition: 'width .5s' }} />
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>
+                    {progressPct >= 100 ? '🎉 Đã hoàn thành mục tiêu!' : `${Math.round(progressPct)}% đã đạt được`}
+                  </div>
+                </>
+              )}
+              <Link href="/profile" style={{ display: 'inline-block', marginTop: 14, fontSize: 12, fontWeight: 700, color: '#16a344', textDecoration: 'none' }}>
+                Thay đổi mục tiêu →
+              </Link>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#7a9e87', marginBottom: 14 }}>Chưa đặt mục tiêu band.</p>
+              <Link href="/profile" style={{ fontSize: 13, fontWeight: 800, color: '#16a344', textDecoration: 'none' }}>
+                Đặt mục tiêu trong Profile →
+              </Link>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* Recent Assessments */}
-        <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
-          <h2 className="text-base font-bold text-slate-800 mb-4">Kết quả gần đây</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs text-slate-400 uppercase tracking-wide">
-                  <th className="text-left pb-3 pr-4 font-semibold">Ngày</th>
-                  <th className="text-left pb-3 pr-4 font-semibold">Chủ đề</th>
-                  <th className="text-center pb-3 pr-3 font-semibold">Overall</th>
-                  <th className="text-center pb-3 pr-3 font-semibold">TR</th>
-                  <th className="text-center pb-3 pr-3 font-semibold">CC</th>
-                  <th className="text-center pb-3 pr-3 font-semibold">LR</th>
-                  <th className="text-center pb-3 pr-3 font-semibold">GR</th>
-                  <th className="text-right pb-3 font-semibold"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {recent.map(g => (
-                  <tr key={g.resultId} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 pr-4 text-slate-500 whitespace-nowrap tabular-nums text-xs">
-                      {formatFull(g.submittedAt)}
-                    </td>
-                    <td className="py-3 pr-4 text-slate-700 max-w-[180px]">
-                      <span className="line-clamp-1 block">
-                        {g.question?.slice(0, 60) ?? 'Không có đề bài'}
-                        {(g.question?.length ?? 0) > 60 ? '…' : ''}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-3 text-center">
-                      <span className={`font-bold tabular-nums ${bandColor(g.overall)}`}>{g.overall}</span>
-                    </td>
-                    <td className="py-3 pr-3 text-center text-slate-600 tabular-nums text-xs font-medium">{g.tr}</td>
-                    <td className="py-3 pr-3 text-center text-slate-600 tabular-nums text-xs font-medium">{g.cc}</td>
-                    <td className="py-3 pr-3 text-center text-slate-600 tabular-nums text-xs font-medium">{g.lr}</td>
-                    <td className="py-3 pr-3 text-center text-slate-600 tabular-nums text-xs font-medium">{g.gr}</td>
-                    <td className="py-3 text-right">
-                      <Link
-                        href={`/writing/result/${g.submissionId}`}
-                        className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold whitespace-nowrap"
-                      >
-                        Xem →
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Personal Best + Target */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-          {/* Personal Best */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
-            <h2 className="text-base font-bold text-slate-800 mb-4">Kỷ lục cá nhân</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className={`rounded-xl border p-4 shadow-2xl ${bandBg(bests.overall)}`}>
-                <div className="text-xs text-slate-500 mb-1">Overall</div>
-                <div className={`text-3xl font-black ${bandColor(bests.overall)}`}>{bests.overall}</div>
-              </div>
-              {[
-                { label: 'Task Response',          val: bests.tr },
-                { label: 'Coherence & Cohesion',   val: bests.cc },
-                { label: 'Lexical Resource',        val: bests.lr },
-                { label: 'Grammatical Accuracy',    val: bests.gr },
-              ].map(({ label, val }) => (
-                <div key={label} className="rounded-xl border-2 border-emerald-600 bg-slate-50/70 p-3">
-                  <div className="text-xs text-slate-500 mb-1 leading-tight">{label}</div>
-                  <div className={`text-xl font-black ${bandColor(val)}`}>{val}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Target band info */}
-          <div className="bg-white rounded-2xl border-2 border-emerald-600 p-5 shadow-2xl">
-            <h2 className="text-base font-bold text-slate-800 mb-4">Mục tiêu IELTS</h2>
-            {targetBand ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-2xl bg-amber-50 border border-amber-100 flex flex-col items-center justify-center">
-                    <span className="text-xs text-amber-600 font-semibold">Mục tiêu</span>
-                    <span className="text-3xl font-black text-amber-500">{targetBand}</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm text-slate-600">
-                      {currentBand >= targetBand ? (
-                        <span className="text-emerald-600 font-semibold">🎉 Bạn đã đạt mục tiêu!</span>
-                      ) : (
-                        <>
-                          Cần tăng thêm{' '}
-                          <span className="font-bold text-slate-800">
-                            {(targetBand - currentBand).toFixed(1)} band
-                          </span>{' '}
-                          từ điểm hiện tại.
-                        </>
-                      )}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-2 leading-relaxed">
-                      Tiêu chí yếu nhất hiện tại là{' '}
-                      <span className="font-semibold text-slate-600">{weakestCrit.label}</span>{' '}
-                      ({weakestCrit.average}). Cải thiện tiêu chí này sẽ có tác động lớn nhất đến điểm tổng.
-                    </div>
-                  </div>
-                </div>
-                <Link
-                  href="/profile"
-                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  Thay đổi mục tiêu →
-                </Link>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-slate-400 mb-3">Bạn chưa đặt mục tiêu band.</p>
-                <Link
-                  href="/profile"
-                  className="inline-flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 font-semibold"
-                >
-                  Đặt mục tiêu trong Profile →
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+      </div>
 
     </div>
   )

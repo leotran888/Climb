@@ -80,25 +80,24 @@ function showXLabel(i: number, total: number) {
   return i % Math.ceil(total / 5) === 0
 }
 
+const FONT = "'Nunito',system-ui,sans-serif"
+
 export default function BandChart({ data, targetBand }: BandChartProps) {
   const [range,      setRange]      = useState<'7d' | '30d' | 'all'>('all')
   const [metric,     setMetric]     = useState<'band' | 'time'>('band')
   const [taskFilter, setTaskFilter] = useState<'all' | 'task1' | 'task2'>('all')
   const [hoverId,    setHoverId]    = useState<number | null>(null)
 
-  // Filtered data pools
-  const byRange = filterByRange(data, range)
-  const filtered = filterByTask(byRange, taskFilter)
+  const byRange   = filterByRange(data, range)
+  const filtered  = filterByTask(byRange, taskFilter)
   const timeFiltered = filtered.filter(d => d.completionTime != null && d.completionTime > 0)
 
-  // ── Band chart geometry ────────────────────────────────────────────────────
   const bandPts  = filtered.map((_, i) => ({ x: xCoord(i, filtered.length), y: yBand(filtered[i].band) }))
   const bandLine = smoothPath(bandPts)
   const bandArea = bandPts.length > 1
     ? bandLine + ` L ${bandPts[bandPts.length - 1].x} ${PAD.top + PH} L ${bandPts[0].x} ${PAD.top + PH} Z`
     : ''
 
-  // ── Time chart geometry ────────────────────────────────────────────────────
   const timeMins  = timeFiltered.map(d => (d.completionTime ?? 0) / 60)
   const rawMin    = timeMins.length > 0 ? Math.min(...timeMins) : 0
   const rawMax    = timeMins.length > 0 ? Math.max(...timeMins) : 60
@@ -117,28 +116,47 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
     ? timeLine + ` L ${timePts[timePts.length - 1].x} ${PAD.top + PH} L ${timePts[0].x} ${PAD.top + PH} Z`
     : ''
 
-  // ── Time summary stats ─────────────────────────────────────────────────────
   const hasTime  = timeFiltered.length > 0
   const avgSecs  = hasTime ? timeFiltered.reduce((a, d) => a + (d.completionTime ?? 0), 0) / timeFiltered.length : 0
   const fastSecs = hasTime ? Math.min(...timeFiltered.map(d => d.completionTime ?? Infinity)) : 0
   const lateSecs = hasTime ? (timeFiltered[timeFiltered.length - 1].completionTime ?? 0) : 0
 
-  // Active data length for empty-state check
   const activeData = metric === 'band' ? filtered : timeFiltered
+
+  const btnMetricActive: React.CSSProperties = {
+    padding: '5px 14px', borderRadius: 50, fontSize: 11, fontWeight: 800,
+    border: '1.5px solid #16a344', background: '#16a344', color: '#fff', cursor: 'pointer',
+  }
+  const btnMetricInactive: React.CSSProperties = {
+    padding: '5px 14px', borderRadius: 50, fontSize: 11, fontWeight: 800,
+    border: '1.5px solid rgba(22,163,68,.2)', background: '#fff', color: '#3d5a47', cursor: 'pointer',
+  }
+  const btnRangeActive: React.CSSProperties = {
+    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
+    border: '1.5px solid #16a344', background: 'rgba(22,163,68,.08)', color: '#16a344', cursor: 'pointer',
+  }
+  const btnRangeInactive: React.CSSProperties = {
+    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
+    border: '1.5px solid rgba(22,163,68,.15)', background: '#fff', color: '#7a9e87', cursor: 'pointer',
+  }
+  const btnTaskActive: React.CSSProperties = {
+    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
+    border: '1.5px solid #3d5a47', background: '#3d5a47', color: '#fff', cursor: 'pointer',
+  }
+  const btnTaskInactive: React.CSSProperties = {
+    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
+    border: '1.5px solid rgba(22,163,68,.15)', background: '#fff', color: '#7a9e87', cursor: 'pointer',
+  }
 
   return (
     <div>
       {/* Metric toggle */}
-      <div className="flex items-center gap-1.5 mb-3">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         {(['band', 'time'] as const).map(m => (
           <button
             key={m}
             onClick={() => { setMetric(m); setHoverId(null) }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              metric === m
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-            }`}
+            style={metric === m ? btnMetricActive : btnMetricInactive}
           >
             {m === 'band' ? 'Điểm IELTS' : 'Thời gian làm bài'}
           </button>
@@ -146,32 +164,24 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
       </div>
 
       {/* Filters row */}
-      <div className="flex items-center gap-1.5 mb-4 flex-wrap">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
         {(['7d', '30d', 'all'] as const).map(r => (
           <button
             key={r}
             onClick={() => { setRange(r); setHoverId(null) }}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-              range === r
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-            }`}
+            style={range === r ? btnRangeActive : btnRangeInactive}
           >
             {r === '7d' ? '7 ngày' : r === '30d' ? '30 ngày' : 'Tất cả'}
           </button>
         ))}
 
-        <div className="w-px h-4 bg-slate-200 mx-0.5" />
+        <div style={{ width: 1, height: 16, background: 'rgba(22,163,68,.2)', margin: '0 2px' }} />
 
         {(['all', 'task1', 'task2'] as const).map(t => (
           <button
             key={t}
             onClick={() => { setTaskFilter(t); setHoverId(null) }}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-              taskFilter === t
-                ? 'bg-slate-700 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-            }`}
+            style={taskFilter === t ? btnTaskActive : btnTaskInactive}
           >
             {t === 'all' ? 'Tất cả' : t === 'task1' ? 'Task 1' : 'Task 2'}
           </button>
@@ -180,24 +190,24 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
 
       {/* Time summary stats */}
       {metric === 'time' && hasTime && (
-        <div className="flex items-center gap-5 mb-4 px-1">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16, paddingLeft: 4 }}>
           {[
             { label: 'Average', secs: avgSecs },
             { label: 'Fastest', secs: fastSecs },
             { label: 'Latest',  secs: lateSecs },
           ].map(s => (
-            <div key={s.label} className="text-xs text-slate-500">
-              <span className="text-slate-400">{s.label}: </span>
-              <span className="font-bold text-slate-700">{formatTime(Math.round(s.secs))}</span>
+            <div key={s.label} style={{ fontSize: 12, color: '#7a9e87' }}>
+              {s.label}:{' '}
+              <span style={{ fontWeight: 800, color: '#192e1e' }}>{formatTime(Math.round(s.secs))}</span>
             </div>
           ))}
-          <span className="text-xs text-slate-400 ml-auto">{timeFiltered.length} bài có dữ liệu</span>
+          <span style={{ fontSize: 12, color: '#7a9e87', marginLeft: 'auto' }}>{timeFiltered.length} bài có dữ liệu</span>
         </div>
       )}
 
       {/* Empty state */}
       {activeData.length < 2 ? (
-        <div className="flex items-center justify-center bg-slate-50 rounded-xl h-52 text-slate-400 text-sm">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(22,163,68,.04)', borderRadius: 14, height: 208, fontSize: 13, fontWeight: 600, color: '#7a9e87' }}>
           {metric === 'time' && timeFiltered.length === 0
             ? 'Chưa có bài nào nhập thời gian làm bài'
             : activeData.length === 0
@@ -207,8 +217,8 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
       ) : metric === 'band' ? (
 
         /* ── BAND CHART ─────────────────────────────────────────────────── */
-        <div className="w-full overflow-hidden">
-          <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto select-none" style={{ maxHeight: 270 }}>
+        <div style={{ width: '100%', overflow: 'hidden' }}>
+          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', userSelect: 'none', maxHeight: 270 }}>
             <defs>
               <linearGradient id="bandAreaFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%"   stopColor="#16a344" stopOpacity="0.12" />
@@ -216,23 +226,21 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               </linearGradient>
             </defs>
 
-            {/* Grid */}
             {[4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9].map(v => (
               <line key={v} x1={PAD.left} x2={W - PAD.right} y1={yBand(v)} y2={yBand(v)}
-                stroke={Number.isInteger(v) ? '#e2e8f0' : '#f1f5f9'}
+                stroke={Number.isInteger(v) ? 'rgba(22,163,68,.1)' : 'rgba(22,163,68,.05)'}
                 strokeWidth={Number.isInteger(v) ? 1 : 0.5} />
             ))}
             {[4, 5, 6, 7, 8, 9].map(v => (
               <text key={v} x={PAD.left - 10} y={yBand(v) + 4} textAnchor="end"
-                fontSize={11} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">{v}</text>
+                fontSize={11} fill="#7a9e87" fontFamily={FONT}>{v}</text>
             ))}
 
-            {/* Target band */}
             {targetBand && targetBand >= Y_MIN_BAND && targetBand <= Y_MAX_BAND && (
               <>
                 <line x1={PAD.left} x2={W - PAD.right} y1={yBand(targetBand)} y2={yBand(targetBand)}
                   stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="6 4" opacity={0.7} />
-                <text x={W - PAD.right + 4} y={yBand(targetBand) + 4} fontSize={10} fill="#f59e0b" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+                <text x={W - PAD.right + 4} y={yBand(targetBand) + 4} fontSize={10} fill="#f59e0b" fontFamily={FONT}>
                   {targetBand}
                 </text>
               </>
@@ -241,7 +249,6 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
             <path d={bandArea} fill="url(#bandAreaFill)" />
             <path d={bandLine} fill="none" stroke="#16a344" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
 
-            {/* Points */}
             {bandPts.map((pt, i) => (
               <g key={i} onMouseEnter={() => setHoverId(i)} onMouseLeave={() => setHoverId(null)}>
                 <circle cx={pt.x} cy={pt.y} r={16} fill="transparent" style={{ cursor: 'pointer' }} />
@@ -250,7 +257,6 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               </g>
             ))}
 
-            {/* Tooltip */}
             {hoverId !== null && bandPts[hoverId] && (() => {
               const pt = bandPts[hoverId]
               const d  = filtered[hoverId]
@@ -260,15 +266,15 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               const ty = Math.max(PAD.top, pt.y - th - 10)
               return (
                 <g style={{ pointerEvents: 'none' }}>
-                  <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#1e293b" opacity={0.92} />
-                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+                  <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#192e1e" opacity={0.92} />
+                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily={FONT}>
                     Band {d.band}
                   </text>
-                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
                     {d.label} · {taskLabel(d.taskType)}
                   </text>
                   {hasT && (
-                    <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+                    <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily={FONT}>
                       {formatTime(d.completionTime!)}
                     </text>
                   )}
@@ -276,9 +282,8 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               )
             })()}
 
-            {/* X labels */}
             {filtered.map((d, i) => !showXLabel(i, filtered.length) ? null : (
-              <text key={i} x={bandPts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+              <text key={i} x={bandPts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
                 {d.label}
               </text>
             ))}
@@ -288,8 +293,8 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
       ) : (
 
         /* ── TIME CHART ─────────────────────────────────────────────────── */
-        <div className="w-full overflow-hidden">
-          <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto select-none" style={{ maxHeight: 270 }}>
+        <div style={{ width: '100%', overflow: 'hidden' }}>
+          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', userSelect: 'none', maxHeight: 270 }}>
             <defs>
               <linearGradient id="timeAreaFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%"   stopColor="#16a344" stopOpacity="0.12" />
@@ -297,21 +302,19 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               </linearGradient>
             </defs>
 
-            {/* Grid */}
             {timeYLabels.map(v => (
               <line key={v} x1={PAD.left} x2={W - PAD.right}
                 y1={yTime(v, Y_T_MIN, Y_T_MAX)} y2={yTime(v, Y_T_MIN, Y_T_MAX)}
-                stroke="#e2e8f0" strokeWidth={1} />
+                stroke="rgba(22,163,68,.1)" strokeWidth={1} />
             ))}
             {timeYLabels.map(v => (
               <text key={v} x={PAD.left - 10} y={yTime(v, Y_T_MIN, Y_T_MAX) + 4} textAnchor="end"
-                fontSize={11} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">{v}m</text>
+                fontSize={11} fill="#7a9e87" fontFamily={FONT}>{v}m</text>
             ))}
 
             <path d={timeArea} fill="url(#timeAreaFill)" />
             <path d={timeLine} fill="none" stroke="#16a344" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
 
-            {/* Points */}
             {timePts.map((pt, i) => (
               <g key={i} onMouseEnter={() => setHoverId(i)} onMouseLeave={() => setHoverId(null)}>
                 <circle cx={pt.x} cy={pt.y} r={16} fill="transparent" style={{ cursor: 'pointer' }} />
@@ -320,7 +323,6 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               </g>
             ))}
 
-            {/* Tooltip */}
             {hoverId !== null && timePts[hoverId] && (() => {
               const pt = timePts[hoverId]
               const d  = timeFiltered[hoverId]
@@ -329,23 +331,22 @@ export default function BandChart({ data, targetBand }: BandChartProps) {
               const ty = Math.max(PAD.top, pt.y - th - 10)
               return (
                 <g style={{ pointerEvents: 'none' }}>
-                  <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#1e293b" opacity={0.92} />
-                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+                  <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#192e1e" opacity={0.92} />
+                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily={FONT}>
                     {formatTime(d.completionTime!)}
                   </text>
-                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
                     {d.label} · {taskLabel(d.taskType)}
                   </text>
-                  <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+                  <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily={FONT}>
                     Band {d.band}
                   </text>
                 </g>
               )
             })()}
 
-            {/* X labels */}
             {timeFiltered.map((d, i) => !showXLabel(i, timeFiltered.length) ? null : (
-              <text key={i} x={timePts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="'Be Vietnam Pro',system-ui,sans-serif">
+              <text key={i} x={timePts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
                 {d.label}
               </text>
             ))}
