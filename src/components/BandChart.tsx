@@ -6,59 +6,38 @@ export interface ChartPoint {
   date: string
   band: number
   label: string
-  completionTime?: number | null  // seconds
+  completionTime?: number | null
   taskType?: string | null
 }
 
 interface BandChartProps {
   data: ChartPoint[]
   targetBand: number | null
+  mode?: 'band' | 'time'
 }
 
 const W = 800, H = 270
-const PAD = { top: 24, right: 40, bottom: 44, left: 56 }
+const PAD = { top: 32, right: 48, bottom: 44, left: 56 }
 const PW = W - PAD.left - PAD.right
 const PH = H - PAD.top - PAD.bottom
-const Y_MIN_BAND = 4.0, Y_MAX_BAND = 9.0
-
-function yBand(band: number) {
-  return PAD.top + PH - ((band - Y_MIN_BAND) / (Y_MAX_BAND - Y_MIN_BAND)) * PH
-}
-
-function yTime(mins: number, yMin: number, yMax: number) {
-  if (yMax === yMin) return PAD.top + PH / 2
-  return PAD.top + PH - ((mins - yMin) / (yMax - yMin)) * PH
-}
+const FONT = "'Nunito',system-ui,sans-serif"
 
 function xCoord(i: number, total: number) {
   if (total <= 1) return PAD.left + PW / 2
   return PAD.left + (i / (total - 1)) * PW
 }
 
-function smoothPath(pts: { x: number; y: number }[]) {
+function straightPath(pts: { x: number; y: number }[]) {
   if (pts.length === 0) return ''
-  if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`
   let d = `M ${pts[0].x} ${pts[0].y}`
-  for (let i = 1; i < pts.length; i++) {
-    const p = pts[i - 1], c = pts[i]
-    const mx = (p.x + c.x) / 2
-    d += ` C ${mx} ${p.y} ${mx} ${c.y} ${c.x} ${c.y}`
-  }
+  for (let i = 1; i < pts.length; i++) d += ` L ${pts[i].x} ${pts[i].y}`
   return d
 }
 
-function filterByRange(data: ChartPoint[], range: string) {
-  if (range === 'all') return data
-  const days = range === '7d' ? 7 : 30
+function filterByMonths(data: ChartPoint[], months: number) {
   const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() - days)
+  cutoff.setMonth(cutoff.getMonth() - months)
   return data.filter(d => new Date(d.date) >= cutoff)
-}
-
-function filterByTask(data: ChartPoint[], task: string) {
-  if (task === 'all') return data
-  if (task === 'task1') return data.filter(d => d.taskType === 'academic_task1' || d.taskType === 'general_task1')
-  return data.filter(d => d.taskType === 'task2')
 }
 
 function formatTime(seconds: number) {
@@ -80,297 +59,244 @@ function showXLabel(i: number, total: number) {
   return i % Math.ceil(total / 5) === 0
 }
 
-const FONT = "'Nunito',system-ui,sans-serif"
+export default function BandChart({ data, targetBand, mode = 'band' }: BandChartProps) {
+  const [range, setRange]   = useState<'3m' | '6m'>('3m')
+  const [hoverId, setHoverId] = useState<number | null>(null)
 
-export default function BandChart({ data, targetBand }: BandChartProps) {
-  const [range,      setRange]      = useState<'7d' | '30d' | 'all'>('all')
-  const [metric,     setMetric]     = useState<'band' | 'time'>('band')
-  const [taskFilter, setTaskFilter] = useState<'all' | 'task1' | 'task2'>('all')
-  const [hoverId,    setHoverId]    = useState<number | null>(null)
+  // ── BAND CHART ──────────────────────────────────────────────────────────
+  if (mode === 'band') {
+    const raw      = filterByMonths(data, range === '6m' ? 6 : 3)
+    const filtered = raw.length >= 2 ? raw : data   // fallback to all
 
-  const byRange   = filterByRange(data, range)
-  const filtered  = filterByTask(byRange, taskFilter)
-  const timeFiltered = filtered.filter(d => d.completionTime != null && d.completionTime > 0)
+    // Dynamic Y scale
+    const bandVals  = filtered.map(d => d.band)
+    const hasTarget = targetBand != null && targetBand >= 4 && targetBand <= 9
+    const dataMin   = Math.min(...bandVals, hasTarget ? targetBand! : 9)
+    const dataMax   = Math.max(...bandVals, hasTarget ? targetBand! : 4)
+    const yMin      = Math.max(4.0, Math.floor((dataMin - 0.5) * 2) / 2)
+    const yMax      = Math.min(9.0, Math.ceil((dataMax  + 0.5) * 2) / 2)
+    const yFn       = (b: number) => PAD.top + PH - ((b - yMin) / (yMax - yMin)) * PH
 
-  const bandPts  = filtered.map((_, i) => ({ x: xCoord(i, filtered.length), y: yBand(filtered[i].band) }))
-  const bandLine = smoothPath(bandPts)
-  const bandArea = bandPts.length > 1
-    ? bandLine + ` L ${bandPts[bandPts.length - 1].x} ${PAD.top + PH} L ${bandPts[0].x} ${PAD.top + PH} Z`
-    : ''
+    const gridVals: number[] = []
+    for (let v = yMin; v <= yMax + 0.01; v = Math.round((v + 0.5) * 10) / 10) gridVals.push(v)
 
-  const timeMins  = timeFiltered.map(d => (d.completionTime ?? 0) / 60)
-  const rawMin    = timeMins.length > 0 ? Math.min(...timeMins) : 0
-  const rawMax    = timeMins.length > 0 ? Math.max(...timeMins) : 60
-  const Y_T_MIN   = Math.max(0, Math.floor(rawMin / 10) * 10 - 10)
-  const Y_T_MAX   = Math.max(Y_T_MIN + 10, Math.ceil(rawMax / 10) * 10 + 10)
+    const pts  = filtered.map((_, i) => ({ x: xCoord(i, filtered.length), y: yFn(filtered[i].band) }))
+    const line = straightPath(pts)
+    const area = pts.length > 1
+      ? line + ` L ${pts[pts.length - 1].x} ${PAD.top + PH} L ${pts[0].x} ${PAD.top + PH} Z`
+      : ''
 
-  const timeYLabels: number[] = []
-  for (let m = Y_T_MIN; m <= Y_T_MAX; m += 10) timeYLabels.push(m)
+    const btnA: React.CSSProperties = { padding: '5px 16px', borderRadius: 50, fontSize: 12, fontWeight: 800, border: '1.5px solid #16a344', background: '#16a344', color: '#fff', cursor: 'pointer' }
+    const btnI: React.CSSProperties = { padding: '5px 16px', borderRadius: 50, fontSize: 12, fontWeight: 800, border: '1.5px solid rgba(22,163,68,.25)', background: '#fff', color: '#3d5a47', cursor: 'pointer' }
 
-  const timePts  = timeFiltered.map((d, i) => ({
-    x: xCoord(i, timeFiltered.length),
-    y: yTime((d.completionTime ?? 0) / 60, Y_T_MIN, Y_T_MAX),
-  }))
-  const timeLine = smoothPath(timePts)
-  const timeArea = timePts.length > 1
-    ? timeLine + ` L ${timePts[timePts.length - 1].x} ${PAD.top + PH} L ${timePts[0].x} ${PAD.top + PH} Z`
-    : ''
+    return (
+      <div>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <p style={{ fontSize: 14, fontWeight: 900, color: '#192e1e' }}>Band score theo thời gian</p>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(['3m', '6m'] as const).map(r => (
+              <button key={r} onClick={() => { setRange(r); setHoverId(null) }} style={range === r ? btnA : btnI}>
+                {r === '3m' ? '3 tháng' : '6 tháng'}
+              </button>
+            ))}
+          </div>
+        </div>
 
-  const hasTime  = timeFiltered.length > 0
-  const avgSecs  = hasTime ? timeFiltered.reduce((a, d) => a + (d.completionTime ?? 0), 0) / timeFiltered.length : 0
-  const fastSecs = hasTime ? Math.min(...timeFiltered.map(d => d.completionTime ?? Infinity)) : 0
-  const lateSecs = hasTime ? (timeFiltered[timeFiltered.length - 1].completionTime ?? 0) : 0
+        {filtered.length < 2 ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(22,163,68,.04)', borderRadius: 14, height: 208, fontSize: 13, fontWeight: 600, color: '#7a9e87' }}>
+            Chưa đủ dữ liệu để hiển thị
+          </div>
+        ) : (
+          <div style={{ width: '100%', overflow: 'hidden' }}>
+            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', userSelect: 'none', maxHeight: 270 }}>
+              <defs>
+                <linearGradient id="bandAreaFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor="#16a344" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#16a344" stopOpacity="0.02" />
+                </linearGradient>
+              </defs>
 
-  const activeData = metric === 'band' ? filtered : timeFiltered
+              {/* Y grid + labels */}
+              {gridVals.map(v => (
+                <g key={v}>
+                  <line x1={PAD.left} x2={W - PAD.right} y1={yFn(v)} y2={yFn(v)} stroke="rgba(22,163,68,.1)" strokeWidth={1} />
+                  <text x={PAD.left - 8} y={yFn(v) + 4} textAnchor="end" fontSize={11} fill="#7a9e87" fontFamily={FONT}>{v}</text>
+                </g>
+              ))}
 
-  const btnMetricActive: React.CSSProperties = {
-    padding: '5px 14px', borderRadius: 50, fontSize: 11, fontWeight: 800,
-    border: '1.5px solid #16a344', background: '#16a344', color: '#fff', cursor: 'pointer',
+              {/* Target dashed line */}
+              {hasTarget && (
+                <g>
+                  <line x1={PAD.left} x2={W - PAD.right} y1={yFn(targetBand!)} y2={yFn(targetBand!)}
+                    stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="6 4" opacity={0.85} />
+                  <text x={PAD.left + 8} y={yFn(targetBand!) - 5}
+                    fontSize={10} fontWeight="700" fill="#f59e0b" fontFamily={FONT}>
+                    Mục tiêu {targetBand}
+                  </text>
+                </g>
+              )}
+
+              {/* Area + line */}
+              <path d={area} fill="url(#bandAreaFill)" />
+              <path d={line} fill="none" stroke="#16a344" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+
+              {/* Points */}
+              {pts.map((pt, i) => {
+                const isLast = i === pts.length - 1
+                const isHov  = hoverId === i
+                return (
+                  <g key={i} onMouseEnter={() => setHoverId(i)} onMouseLeave={() => setHoverId(null)}>
+                    <circle cx={pt.x} cy={pt.y} r={16} fill="transparent" style={{ cursor: 'pointer' }} />
+                    {(isHov || isLast) ? (
+                      <circle cx={pt.x} cy={pt.y} r={isHov ? 6 : 5} fill="#16a344" stroke="#fff" strokeWidth={2} />
+                    ) : (
+                      <circle cx={pt.x} cy={pt.y} r={3.5} fill="#fff" stroke="#16a344" strokeWidth={1.5} />
+                    )}
+                  </g>
+                )
+              })}
+
+              {/* Tooltip */}
+              {hoverId !== null && pts[hoverId] && (() => {
+                const pt  = pts[hoverId]
+                const d   = filtered[hoverId]
+                const hasT = (d.completionTime ?? 0) > 0
+                const tw = hasT ? 140 : 110, th = hasT ? 58 : 44
+                const tx = Math.max(PAD.left, Math.min(pt.x - tw / 2, W - PAD.right - tw))
+                const ty = Math.max(PAD.top, pt.y - th - 10)
+                return (
+                  <g style={{ pointerEvents: 'none' }}>
+                    <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#192e1e" opacity={0.92} />
+                    <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily={FONT}>
+                      Band {d.band}
+                    </text>
+                    <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
+                      {d.label} · {taskLabel(d.taskType)}
+                    </text>
+                    {hasT && (
+                      <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily={FONT}>
+                        {formatTime(d.completionTime!)}
+                      </text>
+                    )}
+                  </g>
+                )
+              })()}
+
+              {/* X labels */}
+              {filtered.map((d, i) => !showXLabel(i, filtered.length) ? null : (
+                <text key={i} x={pts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
+                  {d.label}
+                </text>
+              ))}
+            </svg>
+          </div>
+        )}
+      </div>
+    )
   }
-  const btnMetricInactive: React.CSSProperties = {
-    padding: '5px 14px', borderRadius: 50, fontSize: 11, fontWeight: 800,
-    border: '1.5px solid rgba(22,163,68,.2)', background: '#fff', color: '#3d5a47', cursor: 'pointer',
-  }
-  const btnRangeActive: React.CSSProperties = {
-    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
-    border: '1.5px solid #16a344', background: 'rgba(22,163,68,.08)', color: '#16a344', cursor: 'pointer',
-  }
-  const btnRangeInactive: React.CSSProperties = {
-    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
-    border: '1.5px solid rgba(22,163,68,.15)', background: '#fff', color: '#7a9e87', cursor: 'pointer',
-  }
-  const btnTaskActive: React.CSSProperties = {
-    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
-    border: '1.5px solid #3d5a47', background: '#3d5a47', color: '#fff', cursor: 'pointer',
-  }
-  const btnTaskInactive: React.CSSProperties = {
-    padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700,
-    border: '1.5px solid rgba(22,163,68,.15)', background: '#fff', color: '#7a9e87', cursor: 'pointer',
-  }
+
+  // ── TIME BAR CHART ──────────────────────────────────────────────────────
+  const timeData = data.filter(d => d.completionTime != null && d.completionTime > 0)
+  const timeMins = timeData.map(d => (d.completionTime ?? 0) / 60)
+  const hasTime  = timeData.length > 0
+  const avgSecs  = hasTime ? timeData.reduce((a, d) => a + (d.completionTime ?? 0), 0) / timeData.length : 0
+  const avgMins  = avgSecs / 60
+  const maxMins  = hasTime ? Math.max(...timeMins) : 60
+  const Y_BAR_MAX = Math.max(60, Math.ceil(maxMins / 15) * 15)
+  const yBarFn   = (m: number) => PAD.top + PH - (m / Y_BAR_MAX) * PH
+  const barLabels: number[] = []
+  for (let v = 15; v <= Y_BAR_MAX; v += 15) barLabels.push(v)
+  const n       = timeData.length
+  const barSlot = n > 0 ? PW / n : PW
+  const barW    = Math.min(36, barSlot * 0.58)
+  const xCenter = (i: number) => PAD.left + i * barSlot + barSlot / 2
 
   return (
     <div>
-      {/* Metric toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-        {(['band', 'time'] as const).map(m => (
-          <button
-            key={m}
-            onClick={() => { setMetric(m); setHoverId(null) }}
-            style={metric === m ? btnMetricActive : btnMetricInactive}
-          >
-            {m === 'band' ? 'Điểm IELTS' : 'Thời gian làm bài'}
-          </button>
-        ))}
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <p style={{ fontSize: 14, fontWeight: 900, color: '#192e1e' }}>Thời gian làm bài</p>
+        {hasTime && <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87' }}>phút · {n} bài gần nhất</p>}
       </div>
 
-      {/* Filters row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-        {(['7d', '30d', 'all'] as const).map(r => (
-          <button
-            key={r}
-            onClick={() => { setRange(r); setHoverId(null) }}
-            style={range === r ? btnRangeActive : btnRangeInactive}
-          >
-            {r === '7d' ? '7 ngày' : r === '30d' ? '30 ngày' : 'Tất cả'}
-          </button>
-        ))}
-
-        <div style={{ width: 1, height: 16, background: 'rgba(22,163,68,.2)', margin: '0 2px' }} />
-
-        {(['all', 'task1', 'task2'] as const).map(t => (
-          <button
-            key={t}
-            onClick={() => { setTaskFilter(t); setHoverId(null) }}
-            style={taskFilter === t ? btnTaskActive : btnTaskInactive}
-          >
-            {t === 'all' ? 'Tất cả' : t === 'task1' ? 'Task 1' : 'Task 2'}
-          </button>
-        ))}
-      </div>
-
-
-      {/* Empty state */}
-      {activeData.length < 2 ? (
+      {!hasTime ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(22,163,68,.04)', borderRadius: 14, height: 208, fontSize: 13, fontWeight: 600, color: '#7a9e87' }}>
-          {metric === 'time' && timeFiltered.length === 0
-            ? 'Chưa có bài nào nhập thời gian làm bài'
-            : activeData.length === 0
-            ? 'Không có dữ liệu trong khoảng thời gian này'
-            : 'Cần ít nhất 2 bài để vẽ biểu đồ'}
+          Chưa có bài nào nhập thời gian làm bài
         </div>
-      ) : metric === 'band' ? (
-
-        /* ── BAND CHART ─────────────────────────────────────────────────── */
+      ) : (
         <div style={{ width: '100%', overflow: 'hidden' }}>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', userSelect: 'none', maxHeight: 270 }}>
-            <defs>
-              <linearGradient id="bandAreaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#16a344" stopOpacity="0.12" />
-                <stop offset="100%" stopColor="#16a344" stopOpacity="0.01" />
-              </linearGradient>
-            </defs>
-
-            {[4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9].map(v => (
-              <line key={v} x1={PAD.left} x2={W - PAD.right} y1={yBand(v)} y2={yBand(v)}
-                stroke={Number.isInteger(v) ? 'rgba(22,163,68,.1)' : 'rgba(22,163,68,.05)'}
-                strokeWidth={Number.isInteger(v) ? 1 : 0.5} />
-            ))}
-            {[4, 5, 6, 7, 8, 9].map(v => (
-              <text key={v} x={PAD.left - 10} y={yBand(v) + 4} textAnchor="end"
-                fontSize={11} fill="#7a9e87" fontFamily={FONT}>{v}</text>
-            ))}
-
-            {targetBand && targetBand >= Y_MIN_BAND && targetBand <= Y_MAX_BAND && (
-              <>
-                <line x1={PAD.left} x2={W - PAD.right} y1={yBand(targetBand)} y2={yBand(targetBand)}
-                  stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="6 4" opacity={0.7} />
-                <text x={W - PAD.right + 4} y={yBand(targetBand) + 4} fontSize={10} fill="#f59e0b" fontFamily={FONT}>
-                  {targetBand}
-                </text>
-              </>
-            )}
-
-            <path d={bandArea} fill="url(#bandAreaFill)" />
-            <path d={bandLine} fill="none" stroke="#16a344" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-
-            {bandPts.map((pt, i) => (
-              <g key={i} onMouseEnter={() => setHoverId(i)} onMouseLeave={() => setHoverId(null)}>
-                <circle cx={pt.x} cy={pt.y} r={16} fill="transparent" style={{ cursor: 'pointer' }} />
-                <circle cx={pt.x} cy={pt.y} r={hoverId === i ? 5.5 : 3.5}
-                  fill={hoverId === i ? '#16a344' : '#fff'} stroke="#16a344" strokeWidth={2} />
+            {/* Grid */}
+            {barLabels.map(v => (
+              <g key={v}>
+                <line x1={PAD.left} x2={W - PAD.right} y1={yBarFn(v)} y2={yBarFn(v)} stroke="rgba(22,163,68,.1)" strokeWidth={1} />
+                <text x={PAD.left - 8} y={yBarFn(v) + 4} textAnchor="end" fontSize={11} fill="#7a9e87" fontFamily={FONT}>{v}&apos;</text>
               </g>
             ))}
 
-            {hoverId !== null && bandPts[hoverId] && (() => {
-              const pt = bandPts[hoverId]
-              const d  = filtered[hoverId]
-              const hasT = (d.completionTime ?? 0) > 0
-              const tw = hasT ? 140 : 110, th = hasT ? 58 : 44
-              const tx = Math.max(PAD.left, Math.min(pt.x - tw / 2, W - PAD.right - tw))
-              const ty = Math.max(PAD.top, pt.y - th - 10)
+            {/* Average line */}
+            <line x1={PAD.left} x2={W - PAD.right} y1={yBarFn(avgMins)} y2={yBarFn(avgMins)}
+              stroke="rgba(22,163,68,.75)" strokeWidth={1.5} strokeDasharray="5 4" />
+            <text x={PAD.left - 8} y={yBarFn(avgMins) + 4} textAnchor="end" fontSize={10} fontWeight="700" fill="#16a344" fontFamily={FONT}>
+              TB {Math.round(avgMins)}&apos;
+            </text>
+
+            {/* Bars */}
+            {timeData.map((d, i) => {
+              const mins    = (d.completionTime ?? 0) / 60
+              const isAmber = mins > 40
+              const bh = (mins / Y_BAR_MAX) * PH
+              const bx = xCenter(i) - barW / 2
+              const by = PAD.top + PH - bh
               return (
-                <g style={{ pointerEvents: 'none' }}>
-                  <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#192e1e" opacity={0.92} />
-                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily={FONT}>
-                    Band {d.band}
+                <g key={i} onMouseEnter={() => setHoverId(i)} onMouseLeave={() => setHoverId(null)} style={{ cursor: 'pointer' }}>
+                  <rect x={bx} y={by} width={barW} height={bh} rx={4}
+                    fill={isAmber ? 'rgba(245,170,0,.85)' : 'rgba(22,163,68,.55)'}
+                    opacity={hoverId === null || hoverId === i ? 1 : 0.55}
+                  />
+                  <text x={xCenter(i)} y={by - 5} textAnchor="middle" fontSize={10} fontWeight="700"
+                    fill={isAmber ? '#c47a00' : '#16a344'} fontFamily={FONT}>
+                    {Math.round(mins)}&apos;
                   </text>
-                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
-                    {d.label} · {taskLabel(d.taskType)}
-                  </text>
-                  {hasT && (
-                    <text x={tx + tw / 2} y={ty + 47} textAnchor="middle" fontSize={10} fill="#6ee7b7" fontFamily={FONT}>
-                      {formatTime(d.completionTime!)}
+                  {showXLabel(i, n) && (
+                    <text x={xCenter(i)} y={H - 6} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
+                      {d.label}
                     </text>
                   )}
                 </g>
               )
+            })}
+
+            {/* Tooltip */}
+            {hoverId !== null && timeData[hoverId] && (() => {
+              const d   = timeData[hoverId]
+              const mins = (d.completionTime ?? 0) / 60
+              const cx  = xCenter(hoverId)
+              const by  = yBarFn(mins)
+              const tw = 130, th = 52
+              const tx = Math.max(PAD.left, Math.min(cx - tw / 2, W - PAD.right - tw))
+              const ty = Math.max(PAD.top, by - th - 8)
+              return (
+                <g style={{ pointerEvents: 'none' }}>
+                  <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#192e1e" opacity={0.92} />
+                  <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily={FONT}>
+                    {formatTime(d.completionTime!)}
+                  </text>
+                  <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
+                    {d.label} · Band {d.band}
+                  </text>
+                  <text x={tx + tw / 2} y={ty + 45} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
+                    {taskLabel(d.taskType)}
+                  </text>
+                </g>
+              )
             })()}
-
-            {filtered.map((d, i) => !showXLabel(i, filtered.length) ? null : (
-              <text key={i} x={bandPts[i].x} y={H - 6} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
-                {d.label}
-              </text>
-            ))}
           </svg>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87', fontStyle: 'italic', marginTop: 6 }}>
+            Cột vàng: thời gian &gt;40 phút. IELTS Writing yêu cầu hoàn thành trong 60 phút (cả 2 tasks).
+          </p>
         </div>
-
-      ) : (
-
-        /* ── TIME BAR CHART ─────────────────────────────────────────────── */
-        (() => {
-          const maxMins = timeMins.length > 0 ? Math.max(...timeMins) : 60
-          const Y_BAR_MAX = Math.max(60, Math.ceil(maxMins / 15) * 15)
-          const yBarFn = (m: number) => PAD.top + PH - (m / Y_BAR_MAX) * PH
-          const barLabels: number[] = []
-          for (let v = 15; v <= Y_BAR_MAX; v += 15) barLabels.push(v)
-          const n = timeFiltered.length
-          const barSlot = n > 0 ? PW / n : PW
-          const barW = Math.min(36, barSlot * 0.58)
-          const xCenter = (i: number) => PAD.left + i * barSlot + barSlot / 2
-          const avgMins = avgSecs / 60
-          const yAvg = yBarFn(avgMins)
-          return (
-            <div style={{ width: '100%', overflow: 'hidden' }}>
-              <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', userSelect: 'none', maxHeight: 270 }}>
-                {/* Grid lines */}
-                {barLabels.map(v => (
-                  <g key={v}>
-                    <line x1={PAD.left} x2={W - PAD.right} y1={yBarFn(v)} y2={yBarFn(v)} stroke="rgba(22,163,68,.1)" strokeWidth={1} />
-                    <text x={PAD.left - 8} y={yBarFn(v) + 4} textAnchor="end" fontSize={11} fill="#7a9e87" fontFamily={FONT}>{v}&apos;</text>
-                  </g>
-                ))}
-
-                {/* Average dashed line */}
-                <line x1={PAD.left} x2={W - PAD.right} y1={yAvg} y2={yAvg}
-                  stroke="rgba(22,163,68,.75)" strokeWidth={1.5} strokeDasharray="5 4" />
-                <text x={PAD.left - 8} y={yAvg + 4} textAnchor="end" fontSize={10} fontWeight="700" fill="#16a344" fontFamily={FONT}>
-                  TB {Math.round(avgMins)}&apos;
-                </text>
-
-                {/* Top-right info */}
-                <text x={W - PAD.right} y={PAD.top - 6} textAnchor="end" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
-                  phút · {n} bài gần nhất
-                </text>
-
-                {/* Bars */}
-                {timeFiltered.map((d, i) => {
-                  const mins = (d.completionTime ?? 0) / 60
-                  const isAmber = mins > 40
-                  const bh = (mins / Y_BAR_MAX) * PH
-                  const bx = xCenter(i) - barW / 2
-                  const by = PAD.top + PH - bh
-                  return (
-                    <g key={i} onMouseEnter={() => setHoverId(i)} onMouseLeave={() => setHoverId(null)} style={{ cursor: 'pointer' }}>
-                      <rect x={bx} y={by} width={barW} height={bh} rx={4}
-                        fill={isAmber ? 'rgba(245,170,0,.85)' : 'rgba(22,163,68,.55)'}
-                        opacity={hoverId === null || hoverId === i ? 1 : 0.55}
-                      />
-                      {/* Value label above bar */}
-                      <text x={xCenter(i)} y={by - 5} textAnchor="middle" fontSize={10} fontWeight="700"
-                        fill={isAmber ? '#c47a00' : '#16a344'} fontFamily={FONT}>
-                        {Math.round(mins)}&apos;
-                      </text>
-                      {/* X label */}
-                      {showXLabel(i, n) && (
-                        <text x={xCenter(i)} y={H - 6} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
-                          {d.label}
-                        </text>
-                      )}
-                    </g>
-                  )
-                })}
-
-                {/* Hover tooltip */}
-                {hoverId !== null && timeFiltered[hoverId] && (() => {
-                  const d = timeFiltered[hoverId]
-                  const mins = (d.completionTime ?? 0) / 60
-                  const cx = xCenter(hoverId)
-                  const by = yBarFn(mins)
-                  const tw = 130, th = 52
-                  const tx = Math.max(PAD.left, Math.min(cx - tw / 2, W - PAD.right - tw))
-                  const ty = Math.max(PAD.top, by - th - 8)
-                  return (
-                    <g style={{ pointerEvents: 'none' }}>
-                      <rect x={tx} y={ty} width={tw} height={th} rx={7} fill="#192e1e" opacity={0.92} />
-                      <text x={tx + tw / 2} y={ty + 17} textAnchor="middle" fontSize={13} fontWeight="700" fill="#fff" fontFamily={FONT}>
-                        {formatTime(d.completionTime!)}
-                      </text>
-                      <text x={tx + tw / 2} y={ty + 31} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
-                        {d.label} · Band {d.band}
-                      </text>
-                      <text x={tx + tw / 2} y={ty + 45} textAnchor="middle" fontSize={10} fill="#7a9e87" fontFamily={FONT}>
-                        {taskLabel(d.taskType)}
-                      </text>
-                    </g>
-                  )
-                })()}
-              </svg>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#7a9e87', fontStyle: 'italic', marginTop: 6 }}>
-                Cột vàng: thời gian &gt;40 phút. IELTS Writing yêu cầu hoàn thành trong 60 phút (cả 2 tasks).
-              </p>
-            </div>
-          )
-        })()
       )}
     </div>
   )

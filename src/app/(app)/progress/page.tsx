@@ -417,8 +417,12 @@ export default async function ProgressPage() {
 
       {/* Band chart */}
       <div style={CARD}>
-        <p style={{ fontSize: 13, fontWeight: 900, color: '#192e1e', marginBottom: 14 }}>Band score theo thời gian</p>
-        <BandChart data={chartData} targetBand={targetBand} />
+        <BandChart data={chartData} targetBand={targetBand} mode="band" />
+      </div>
+
+      {/* Time chart */}
+      <div style={CARD}>
+        <BandChart data={chartData} targetBand={null} mode="time" />
       </div>
 
       {/* Criteria cards */}
