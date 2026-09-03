@@ -17,7 +17,7 @@ export default function LandingPage() {
         </Link>
         <nav className={s.navLinks}>
           <a href="#features">Tính năng</a>
-          <a href="#pricing">Học phí</a>
+          <a href="#pricing">Bảng giá</a>
           <a href="#about">Sứ mệnh</a>
         </nav>
         <Link href="/register" className={s.navCta}>Thử miễn phí →</Link>
