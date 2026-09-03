@@ -18,6 +18,7 @@ export default function LandingPage() {
         <nav className={s.navLinks}>
           <a href="#features">Tính năng</a>
           <a href="#pricing">Học phí</a>
+          <a href="#about">Sứ mệnh</a>
         </nav>
         <Link href="/register" className={s.navCta}>Thử miễn phí →</Link>
       </nav>
@@ -277,7 +278,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ ABOUT ═══ */}
-      <div className={s.aboutWrap}>
+      <div id="about" className={s.aboutWrap}>
         <div>
           <div className={s.aboutTag}>✦ Sứ mệnh của Climb</div>
           <h2 className={s.h2}>IELTS Writing không nên<br/>chỉ dành cho người có tiền học thầy</h2>
