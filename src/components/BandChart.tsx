@@ -148,10 +148,8 @@ export default function BandChart({ data, targetBand, mode = 'band' }: BandChart
                 return (
                   <g key={i} onMouseEnter={() => setHoverId(i)} onMouseLeave={() => setHoverId(null)}>
                     <circle cx={pt.x} cy={pt.y} r={16} fill="transparent" style={{ cursor: 'pointer' }} />
-                    {(isHov || isLast) ? (
+                    {(isHov || isLast) && (
                       <circle cx={pt.x} cy={pt.y} r={isHov ? 6 : 5} fill="#16a344" stroke="#fff" strokeWidth={2} />
-                    ) : (
-                      <circle cx={pt.x} cy={pt.y} r={3.5} fill="#fff" stroke="#16a344" strokeWidth={1.5} />
                     )}
                   </g>
                 )
