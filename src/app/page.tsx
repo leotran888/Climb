@@ -95,8 +95,8 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className={s.fcCat}>Writing AI</div>
-              <div className={s.fcTitle}>Bài viết chuẩn band mục tiêu của bạn</div>
-              <div className={s.fcDesc}>AI viết lại toàn bộ bài đạt Band bạn muốn — không chỉ chỉ lỗi.</div>
+              <div className={s.fcTitle}>AI viết lại bài đạt đúng band mục tiêu</div>
+              <div className={s.fcDesc}>Không chỉ chỉ lỗi — Climb tự viết lại toàn bộ essay ở Band 7.0 / 7.5 / 8.0 để bạn học từ bài chuẩn, không phải đoán mình nên sửa thế nào.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -123,9 +123,9 @@ export default function LandingPage() {
                   <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Vietnamese-native AI</div>
-              <div className={s.fcTitle}>Hiểu đúng lỗi của học viên Việt</div>
-              <div className={s.fcDesc}>Không mạo từ, không chia thì — AI hiểu nguyên nhân gốc rễ từ tiếng mẹ đẻ.</div>
+              <div className={s.fcCat}>Vietnamese-Native AI</div>
+              <div className={s.fcTitle}>Hiểu đúng lỗi của người học tiếng Việt</div>
+              <div className={s.fcDesc}>AI hiểu nguyên nhân gốc rễ từ tiếng mẹ đẻ — không phải liệt kê lỗi ngữ pháp chung chung. Feedback đúng bệnh, sửa được ngay, không mắc lại lần sau.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -154,8 +154,8 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className={s.fcCat}>Examiner-accurate</div>
-              <div className={s.fcTitle}>Band score đủ 4 tiêu chí như examiner thật</div>
-              <div className={s.fcDesc}>TR · CC · LR · GRA — không phải điểm grammar chung chung.</div>
+              <div className={s.fcTitle}>Chấm đủ 4 tiêu chí như examiner IELTS thật</div>
+              <div className={s.fcDesc}>TR · CC · LR · GRA — biết mình đang yếu tiêu chí nào, không phải nhận về một điểm tổng không biết cải thiện từ đâu.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -189,9 +189,9 @@ export default function LandingPage() {
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>18 IELTS Topics</div>
-              <div className={s.fcTitle}>Kho từ vựng 18 topic IELTS Writing</div>
-              <div className={s.fcDesc}>Học thuật theo chủ đề: Environment, Technology, Education... Task 1 &amp; 2.</div>
+              <div className={s.fcCat}>Smart Vocabulary</div>
+              <div className={s.fcTitle}>Từ vựng từ lỗi của chính bài bạn viết</div>
+              <div className={s.fcDesc}>Mỗi từ bạn dùng sai hoặc diễn đạt yếu đều được lưu thành flashcard. Học từ đúng ngữ cảnh mình đã mắc — nhớ lâu hơn gấp 3.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -219,8 +219,8 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className={s.fcCat}>Progress Tracking</div>
-              <div className={s.fcTitle}>Biểu đồ leo thang band score</div>
-              <div className={s.fcDesc}>Xem lịch sử band score theo bài, theo tuần — biết mình đang leo nhanh hay chậm.</div>
+              <div className={s.fcTitle}>Nhìn thấy band score leo từng bài một</div>
+              <div className={s.fcDesc}>Biểu đồ band score theo thời gian, xem mình đang cải thiện tiêu chí nào nhanh nhất — không phải tự đánh giá cảm tính.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -238,18 +238,19 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Card 6: Free — muted seafoam teal */}
-          <div className={s.fc} style={{background:'linear-gradient(180deg,#46a8a4 0%,#287a78 100%)'}}>
+          {/* Card 6: Writing Knowledge — teal */}
+          <div className={s.fc} style={{background:'linear-gradient(180deg,#3a9e8e 0%,#1e6e60 100%)'}}>
             <div className={s.fcTop}>
               <div className={s.fcIconSm}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
-                  <path d="M12 8v4l3 3" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinejoin="round"/>
+                  <path d="M2 17l10 5 10-5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 12l10 5 10-5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Bắt đầu ngay</div>
-              <div className={s.fcTitle}>Thử miễn phí — không cần thẻ</div>
-              <div className={s.fcDesc}>Bắt đầu ngay hôm nay, không cần thẻ tín dụng.</div>
+              <div className={s.fcCat}>Writing Mastery</div>
+              <div className={s.fcTitle}>Nền tảng kiến thức Writing từ A đến Z</div>
+              <div className={s.fcDesc}>Từ cách lập luận Task 2 đến phân tích biểu đồ Task 1 — kho kiến thức Writing được biên soạn riêng cho học viên IELTS Việt.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -268,7 +269,7 @@ export default function LandingPage() {
                 <ellipse cx="232" cy="120" rx="17" ry="20" fill="rgba(4,18,18,0.88)"/>
                 <circle cx="240" cy="114" r="6" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>FREE · BẮT ĐẦU NGAY</div>
+              <div className={s.fcLabel}>WRITING MASTERY · SẮP RA MẮT</div>
             </div>
           </div>
 
