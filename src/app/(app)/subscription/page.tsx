@@ -2,47 +2,133 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getUserEntitlements } from '@/lib/entitlement'
 import Link from 'next/link'
+import React from 'react'
 
-const PLAN_META: Record<string, {
-  desc: string
-  features: string[]
-  locked?: string[]
-  highlight?: boolean
-  badge?: string
-  priceLabel: string
-  priceDay?: string
-}> = {
-  free: {
-    desc: 'Làm quen với Climb, không cần cam kết.',
-    priceLabel: '0đ',
-    priceDay: 'Mãi mãi miễn phí',
-    features: ['2 lượt Writing AI/tháng', '3 topic Vocabulary', 'Lịch sử bài nộp'],
-    locked: ['18 topic Vocabulary đầy đủ'],
-  },
-  starter: {
-    desc: 'Học từ vựng bài bản, luyện Writing đều đặn.',
-    priceLabel: '99.000đ',
-    priceDay: '~3.300đ/ngày',
-    features: ['10 lượt Writing AI/tháng', '18 topic Vocabulary đầy đủ', 'Lưu từ & theo dõi tiến độ', 'Lịch sử bài nộp đầy đủ'],
-  },
-  pro: {
-    desc: 'Luyện không giới hạn, tăng band nhanh nhất.',
-    priceLabel: '199.000đ',
-    priceDay: '~6.600đ/ngày',
-    features: ['Writing AI không giới hạn', '18 topic Vocabulary đầy đủ', 'Lưu từ & theo dõi tiến độ', 'Ưu tiên xử lý nhanh hơn'],
-    highlight: true,
-    badge: '🔥 Phổ biến nhất',
-  },
-  pro_yearly: {
-    desc: 'Cam kết cả lộ trình — tiết kiệm gần 1 triệu.',
-    priceLabel: '1.490.000đ/năm',
-    priceDay: '~4.100đ/ngày · ~124k/tháng',
-    features: ['Mọi thứ trong Pro', 'Tiết kiệm 998.000đ/năm', 'Tương đương 2 tháng miễn phí', 'Ưu tiên hỗ trợ'],
-    badge: '✦ Tiết kiệm nhất',
-  },
+const G     = '#16a344'
+const GSFT  = 'rgba(22,163,68,.09)'
+const GBRD  = 'rgba(22,163,68,.13)'
+const AMBER = '#d97706'
+const AMBRD = 'rgba(217,119,6,.3)'
+const AMSFT = 'rgba(217,119,6,.08)'
+const TEXT  = '#192e1e'
+const MUTED = '#3d5a47'
+const HINT  = '#7a9e87'
+const DIV   = 'rgba(22,163,68,.1)'
+const FONT  = "'Nunito',system-ui,sans-serif"
+
+const CARD: React.CSSProperties = {
+  background: '#fff',
+  border: `1.5px solid ${GBRD}`,
+  borderRadius: 16,
+  padding: 20,
 }
 
+// Features shown in the current-plan card (full detail)
+const CURRENT_FEATURES: Record<string, string[]> = {
+  free: [
+    'Chấm Writing Task 1 & 2 · Bài mẫu cải thiện',
+    'Vocabulary 3 chủ đề',
+    'Lịch sử 30 ngày',
+  ],
+  starter: [
+    'Writing AI 10 lượt / tháng · Bài mẫu cải thiện',
+    'Vocabulary 18 chủ đề · Lưu từ & flashcard',
+    'Biểu đồ tiến độ · Lịch sử đầy đủ',
+    'Kiến thức viết Writing (cơ bản)',
+  ],
+  pro: [
+    'Writing AI không giới hạn · Bài mẫu cải thiện',
+    'Vocabulary 18 chủ đề · Lưu từ & flashcard',
+    'Kiến thức viết Writing đầy đủ',
+    'Export PDF kết quả · Ưu tiên xử lý',
+  ],
+  pro_yearly: [
+    'Writing AI không giới hạn · Bài mẫu cải thiện',
+    'Vocabulary 18 chủ đề · Lưu từ & flashcard',
+    'Kiến thức viết Writing đầy đủ',
+    'Export PDF kết quả · Ưu tiên xử lý',
+    'Ưu tiên hỗ trợ',
+  ],
+}
+
+// Plan comparison cards
+const PLANS: {
+  slug: string
+  tier: string
+  price: string
+  priceSub: string
+  priceNote?: string
+  quota: string
+  features: string[]
+  locked?: string[]
+  badge?: { label: string; amber?: boolean }
+}[] = [
+  {
+    slug: 'free',
+    tier: 'Miễn phí',
+    price: '0đ',
+    priceSub: 'Mãi mãi miễn phí',
+    quota: '3 bài / tháng',
+    features: ['Chấm Writing Task 1 & 2', 'Bài mẫu cải thiện', 'Vocabulary 3 chủ đề'],
+    locked: ['Biểu đồ tiến độ', 'Kiến thức viết Writing', 'Export PDF'],
+  },
+  {
+    slug: 'starter',
+    tier: 'Starter',
+    price: '99.000đ',
+    priceSub: '/tháng',
+    quota: '10 bài / tháng',
+    features: [
+      'Chấm Writing Task 1 & 2',
+      'Bài mẫu cải thiện',
+      'Vocabulary 18 chủ đề đầy đủ',
+      'Lưu từ & flashcard',
+      'Biểu đồ tiến độ',
+      'Kiến thức viết (cơ bản)',
+    ],
+    locked: ['Export PDF'],
+  },
+  {
+    slug: 'pro',
+    tier: 'Pro',
+    price: '229.000đ',
+    priceSub: '/tháng',
+    quota: 'Không giới hạn bài',
+    features: [
+      'Tất cả tính năng Starter',
+      'Kiến thức viết đầy đủ',
+      'Export PDF kết quả',
+      'Ưu tiên xử lý',
+    ],
+    badge: { label: '🔥 Phổ biến nhất' },
+  },
+  {
+    slug: 'pro_yearly',
+    tier: 'Pro Yearly',
+    price: '1.790.000đ',
+    priceSub: '/năm · ~149.000đ/tháng',
+    priceNote: 'Giảm 35% · ~4 tháng miễn phí',
+    quota: 'Không giới hạn bài',
+    features: [
+      'Tất cả tính năng Pro',
+      'Ưu tiên hỗ trợ',
+      'Tiết kiệm ~958.000đ/năm',
+    ],
+    badge: { label: '✦ Tiết kiệm nhất', amber: true },
+  },
+]
+
 const PLAN_ORDER = ['free', 'starter', 'pro', 'pro_yearly']
+
+function CheckDot() {
+  return (
+    <div style={{ width: 16, height: 16, borderRadius: '50%', background: GSFT, border: `1.5px solid ${G}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+        <polyline points="1,4 3,6 7,2" stroke={G} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  )
+}
 
 export default async function SubscriptionPage() {
   const supabase = await createClient()
@@ -60,186 +146,195 @@ export default async function SubscriptionPage() {
   ])
 
   type PlanRow = { name: string; description: string | null; slug: string; limits: Record<string, number> }
-  const plan = (subData as { plans?: PlanRow } | null)?.plans
+  const plan       = (subData as { plans?: PlanRow } | null)?.plans
   const currentSlug = plan?.slug ?? 'free'
-  const billingPeriod = new Date().toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })
-  const expiresAt = (subData as { expires_at?: string | null } | null)?.expires_at
+  const planName   = plan?.name ?? 'Free'
+  const expiresAt  = (subData as { expires_at?: string | null } | null)?.expires_at
+
+  const expiryShort = expiresAt
+    ? new Date(expiresAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })
+    : null
+  const expiryYear = expiresAt ? new Date(expiresAt).getFullYear() : null
+  const expiryFull = expiresAt
+    ? new Date(expiresAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
+
+  const isUnlimited = entitlements.writing.monthlyLimit >= 999
+  const used        = entitlements.writing.currentUsage
+  const limit       = entitlements.writing.monthlyLimit
+  const usagePct    = (!isUnlimited && limit > 0) ? Math.min(100, (used / limit) * 100) : Math.min(30, (used / 60) * 100)
+
+  const currentPlan = PLANS.find(p => p.slug === currentSlug)
+  const currentIdx  = PLAN_ORDER.indexOf(currentSlug)
 
   return (
-    <div className="max-w-3xl mx-auto py-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Gói của bạn</h1>
-        <p className="text-sm text-slate-500 mt-1">Quản lý gói và theo dõi lượt sử dụng</p>
-      </div>
+    <div style={{ maxWidth: 740, margin: '0 auto', padding: '20px 24px 64px', fontFamily: FONT, color: TEXT }}>
 
-      {/* Current plan + usage */}
-      <div className="bg-white rounded-2xl border-2 border-emerald-600 p-6 space-y-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-1">Gói hiện tại</div>
-            <div className="text-2xl font-bold text-slate-900">{plan?.name ?? 'Free'}</div>
-            {plan?.description && <div className="text-sm text-slate-500 mt-1">{plan.description}</div>}
-          </div>
-          {expiresAt && (
-            <div className="text-right">
-              <div className="text-xs text-slate-400">Hết hạn</div>
-              <div className="text-sm font-medium text-slate-700">
-                {new Date(expiresAt).toLocaleDateString('vi-VN')}
-              </div>
-            </div>
-          )}
+      {/* ── Header ─────────────────────────────── */}
+      <p style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: G, marginBottom: 6 }}>
+        ✦ Quản lý tài khoản
+      </p>
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: TEXT, letterSpacing: '-.02em', lineHeight: 1.1, marginBottom: 4 }}>
+        Gói của tôi
+      </h1>
+      <p style={{ fontSize: 14, fontWeight: 600, color: MUTED, marginBottom: 24 }}>
+        {planName}{expiryFull ? ` · Tự động gia hạn ${expiryFull}` : ''}
+      </p>
+
+      {/* ── Current plan card ──────────────────── */}
+      <div style={{ background: '#fff', border: `1.5px solid ${G}`, borderRadius: 16, padding: 20, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <span style={{ fontSize: 18, fontWeight: 900, color: TEXT }}>{planName}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: G, background: GSFT, border: `1.5px solid ${G}`, borderRadius: 50, padding: '3px 12px' }}>
+            ✓ Đang hoạt động
+          </span>
         </div>
-
-        <div>
-          <div className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3">
-            Lượt sử dụng — {billingPeriod}
-          </div>
-          <div className="space-y-4">
-            <UsageBar
-              label="Writing AI Grading"
-              used={entitlements.writing.currentUsage}
-              limit={entitlements.writing.monthlyLimit}
-              bonus={entitlements.writing.bonusRemaining}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Plan comparison */}
-      <div>
-        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Tất cả gói</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {PLAN_ORDER.map(slug => {
-            const meta = PLAN_META[slug]
-            if (!meta) return null
-            const isCurrent = slug === currentSlug
-            const isHighlight = meta.highlight
-
-            return (
-              <div
-                key={slug}
-                className={`rounded-2xl p-5 flex flex-col gap-3 border-2 relative transition-all ${
-                  isCurrent
-                    ? 'border-emerald-600 bg-emerald-50'
-                    : isHighlight
-                    ? 'border-slate-800 bg-slate-900'
-                    : 'border-slate-200 bg-white'
-                }`}
-              >
-                {/* Badge */}
-                {meta.badge && !isCurrent && (
-                  <span className={`text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-full w-fit ${
-                    isHighlight ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-700'
-                  }`}>
-                    {meta.badge}
-                  </span>
-                )}
-                {isCurrent && (
-                  <span className="text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-full w-fit bg-emerald-600 text-white">
-                    ✓ Gói hiện tại
-                  </span>
-                )}
-
-                {/* Price */}
-                <div>
-                  <p className={`text-xs font-semibold uppercase tracking-widest mb-0.5 ${
-                    isCurrent ? 'text-emerald-600' : isHighlight ? 'text-slate-400' : 'text-slate-400'
-                  }`}>
-                    {slug === 'free' ? 'Free' : slug === 'starter' ? 'Starter' : slug === 'pro' ? 'Pro' : 'Pro Yearly'}
-                  </p>
-                  <p className={`text-2xl font-black tracking-tight ${
-                    isCurrent ? 'text-slate-900' : isHighlight ? 'text-white' : 'text-slate-900'
-                  }`}>
-                    {meta.priceLabel}
-                  </p>
-                  {meta.priceDay && (
-                    <p className={`text-xs mt-0.5 font-medium ${
-                      isCurrent ? 'text-emerald-600' : isHighlight ? 'text-emerald-400' : 'text-emerald-600'
-                    }`}>
-                      {meta.priceDay}
-                    </p>
-                  )}
-                </div>
-
-                <p className={`text-xs leading-relaxed ${
-                  isCurrent ? 'text-slate-600' : isHighlight ? 'text-slate-400' : 'text-slate-500'
-                }`}>
-                  {meta.desc}
-                </p>
-
-                {/* Features */}
-                <ul className="space-y-1.5 flex-1">
-                  {meta.features.map(f => (
-                    <li key={f} className={`text-xs flex items-start gap-1.5 ${
-                      isCurrent ? 'text-slate-700' : isHighlight ? 'text-slate-300' : 'text-slate-700'
-                    }`}>
-                      <span className="text-emerald-500 font-bold mt-0.5">✓</span>
-                      {f}
-                    </li>
-                  ))}
-                  {(meta.locked ?? []).map(f => (
-                    <li key={f} className="text-xs flex items-start gap-1.5 text-slate-300 line-through decoration-slate-200">
-                      <span className="font-bold mt-0.5">✗</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA */}
-                {!isCurrent && (
-                  <Link
-                    href="mailto:tranmanhdungc1dtd@gmail.com?subject=Nâng cấp Climb IELTS"
-                    className={`mt-1 block text-center text-xs font-bold py-2.5 rounded-xl transition-all ${
-                      isHighlight
-                        ? 'bg-emerald-500 hover:bg-emerald-400 text-white'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    }`}
-                  >
-                    {currentSlug === 'free' || PLAN_ORDER.indexOf(slug) > PLAN_ORDER.indexOf(currentSlug)
-                      ? 'Liên hệ để nâng cấp →'
-                      : 'Chuyển về gói này'}
-                  </Link>
-                )}
-              </div>
-            )
-          })}
-        </div>
-        <p className="text-xs text-center text-slate-400 mt-4">
-          Để nâng cấp gói, liên hệ qua email hoặc Zalo — chúng tôi xử lý trong vòng 1 giờ.
+        <p style={{ fontSize: 12, fontWeight: 600, color: HINT, marginBottom: 16 }}>
+          {currentPlan ? `${currentPlan.price}${currentPlan.priceSub}` : ''}
+          {expiryFull ? ` · Hết hạn ${expiryFull}` : ''}
         </p>
-      </div>
-    </div>
-  )
-}
 
-function UsageBar({ label, used, limit, bonus }: { label: string; used: number; limit: number; bonus: number }) {
-  const isUnlimited = limit >= 999
-  const pct = (!isUnlimited && limit > 0) ? Math.min(100, (used / limit) * 100) : 0
-  const isNearLimit = !isUnlimited && pct >= 80
-  const isAtLimit = !isUnlimited && used >= limit
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-slate-700">{label}</span>
-        <span className="text-sm text-slate-500">
+        {/* Usage bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: MUTED }}>Bài đã dùng tháng này</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: TEXT, fontVariantNumeric: 'tabular-nums' }}>
+            {isUnlimited ? `${used} bài` : `${used} / ${limit} bài`}
+          </span>
+        </div>
+        <div style={{ height: 8, background: GSFT, borderRadius: 50, overflow: 'hidden', marginBottom: 6 }}>
+          <div style={{ height: '100%', width: `${usagePct}%`, background: G, borderRadius: 50 }} />
+        </div>
+        <p style={{ fontSize: 11, fontWeight: 600, color: HINT, marginBottom: 16 }}>
           {isUnlimited
-            ? <span className="text-emerald-600 font-medium">Không giới hạn</span>
-            : <>{used} / {limit}{bonus > 0 && <span className="text-emerald-600 ml-1">+{bonus} bonus</span>}</>
-          }
-        </span>
+            ? 'Không giới hạn số lượng bài chấm'
+            : `Còn ${Math.max(0, limit - used)} bài trong tháng này`}
+        </p>
+
+        {/* Feature list */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: `1px solid ${DIV}`, paddingTop: 14 }}>
+          {(CURRENT_FEATURES[currentSlug] ?? CURRENT_FEATURES.free).map(f => (
+            <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: MUTED }}>
+              <CheckDot />
+              {f}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all ${
-            isUnlimited ? 'bg-emerald-500' : isAtLimit ? 'bg-red-400' : isNearLimit ? 'bg-amber-400' : 'bg-emerald-500'
-          }`}
-          style={{ width: isUnlimited ? '100%' : `${pct}%` }}
-        />
+
+      {/* ── 3 stat mini-cards ──────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 12 }}>
+        <div style={CARD}>
+          <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: HINT, marginBottom: 8 }}>Tháng này</p>
+          <p style={{ fontSize: 30, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: G, marginBottom: 4 }}>{used}</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: HINT }}>bài đã chấm</p>
+        </div>
+        <div style={CARD}>
+          <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: HINT, marginBottom: 8 }}>Hết hạn</p>
+          <p style={{ fontSize: 22, fontWeight: 900, lineHeight: 1, color: TEXT, marginBottom: 4 }}>{expiryShort ?? '—'}</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: HINT }}>{expiryYear ? `năm ${expiryYear}` : 'Không thời hạn'}</p>
+        </div>
+        <div style={CARD}>
+          <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.12em', textTransform: 'uppercase', color: HINT, marginBottom: 8 }}>Giới hạn</p>
+          <p style={{ fontSize: isUnlimited ? 18 : 30, fontWeight: 900, lineHeight: 1, color: G, marginBottom: 4 }}>
+            {isUnlimited ? '∞' : limit}
+          </p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: HINT }}>{isUnlimited ? 'không giới hạn' : 'bài / tháng'}</p>
+        </div>
       </div>
-      {isAtLimit && bonus === 0 && (
-        <div className="text-xs text-red-500 mt-1">Đã dùng hết lượt tháng này</div>
-      )}
+
+      {/* ── Plan comparison 2×2 ────────────────── */}
+      <p style={{ fontSize: 13, fontWeight: 900, color: TEXT, marginBottom: 12, marginTop: 8 }}>Các gói dịch vụ</p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 4 }}>
+        {PLANS.map(p => {
+          const isCurrent = p.slug === currentSlug
+          const isYearly  = p.slug === 'pro_yearly'
+          const isHigher  = PLAN_ORDER.indexOf(p.slug) > currentIdx
+          const border    = isCurrent ? G : isYearly ? AMBRD : GBRD
+
+          return (
+            <div key={p.slug} style={{ background: '#fff', border: `1.5px solid ${border}`, borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column' }}>
+
+              {/* Badge row */}
+              {isCurrent ? (
+                <div style={{ fontSize: 10, fontWeight: 800, borderRadius: 50, padding: '3px 10px', width: 'fit-content', marginBottom: 10, background: GSFT, color: G }}>✓ Gói hiện tại</div>
+              ) : p.badge ? (
+                <div style={{ fontSize: 10, fontWeight: 800, borderRadius: 50, padding: '3px 10px', width: 'fit-content', marginBottom: 10, background: p.badge.amber ? AMSFT : GSFT, color: p.badge.amber ? AMBER : G }}>
+                  {p.badge.label}
+                </div>
+              ) : (
+                <div style={{ marginBottom: 10, height: 22 }} />
+              )}
+
+              {/* Tier */}
+              <p style={{ fontSize: 9, fontWeight: 900, letterSpacing: '.14em', textTransform: 'uppercase', color: isCurrent ? G : isYearly ? AMBER : HINT, marginBottom: 6 }}>
+                {p.tier}
+              </p>
+
+              {/* Price */}
+              <p style={{ fontSize: 24, fontWeight: 900, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: isYearly ? AMBER : TEXT, marginBottom: 2 }}>
+                {p.price}
+              </p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: isYearly ? AMBER : HINT, marginBottom: p.priceNote ? 2 : 0 }}>
+                {p.priceSub}
+              </p>
+              {p.priceNote && (
+                <p style={{ fontSize: 11, fontWeight: 700, color: isYearly ? AMBER : G, marginBottom: 0 }}>{p.priceNote}</p>
+              )}
+
+              {/* Quota */}
+              <p style={{ fontSize: 12, fontWeight: 700, color: MUTED, marginTop: 8, marginBottom: 14 }}>{p.quota}</p>
+
+              {/* Features */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7, borderTop: `1px solid ${DIV}`, paddingTop: 12, flex: 1, marginBottom: 16 }}>
+                {p.features.map(f => (
+                  <div key={f} style={{ fontSize: 12, fontWeight: 600, color: MUTED, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                    <span style={{ color: isYearly ? AMBER : G, fontSize: 11, fontWeight: 900, marginTop: 1, flexShrink: 0 }}>✓</span>
+                    {f}
+                  </div>
+                ))}
+                {(p.locked ?? []).map(f => (
+                  <div key={f} style={{ fontSize: 12, fontWeight: 600, color: HINT, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                    <span style={{ color: HINT, fontSize: 12, marginTop: 1, flexShrink: 0 }}>–</span>
+                    {f}
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              {isCurrent ? (
+                <button style={{ width: '100%', padding: 10, borderRadius: 50, border: `1.5px solid ${G}`, background: 'transparent', color: G, fontFamily: FONT, fontSize: 12, fontWeight: 800, cursor: 'default' }}>
+                  Gói hiện tại
+                </button>
+              ) : (
+                <Link
+                  href={`mailto:tranmanhdungc1dtd@gmail.com?subject=${isHigher ? 'Nâng cấp' : 'Hạ cấp'} Climb IELTS - ${p.tier}`}
+                  style={{ display: 'block', textAlign: 'center', padding: 10, borderRadius: 50, textDecoration: 'none', fontFamily: FONT, fontSize: 12, fontWeight: 800, background: isHigher ? (isYearly ? AMBER : G) : GSFT, color: isHigher ? '#fff' : G }}
+                >
+                  {isHigher
+                    ? (isYearly ? 'Chuyển sang Yearly →' : 'Nâng cấp →')
+                    : 'Hạ cấp'}
+                </Link>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── Footer note ────────────────────────── */}
+      <p style={{ fontSize: 12, textAlign: 'center', color: HINT, marginTop: 16, marginBottom: 20 }}>
+        Để nâng cấp gói, liên hệ qua email hoặc Zalo — chúng tôi xử lý trong vòng 1 giờ.
+      </p>
+
+      {/* ── Cancel link ────────────────────────── */}
+      <div style={{ textAlign: 'center' }}>
+        <a
+          href="mailto:tranmanhdungc1dtd@gmail.com?subject=Huỷ gia hạn tự động Climb IELTS"
+          style={{ fontSize: 12, fontWeight: 700, color: HINT, textDecoration: 'none', borderBottom: `1px solid ${DIV}`, paddingBottom: 1 }}
+        >
+          Huỷ gia hạn tự động
+        </a>
+      </div>
     </div>
   )
 }
