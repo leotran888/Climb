@@ -190,8 +190,8 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className={s.fcCat}>18 IELTS Topics</div>
-              <div className={s.fcTitle}>Kho từ vựng học thuật 18 chủ đề Writing</div>
-              <div className={s.fcDesc}>Từ vựng được biên soạn theo từng chủ đề IELTS: Environment, Technology, Education... Học có hệ thống, lưu flashcard, không bỏ sót từ quan trọng nào.</div>
+              <div className={s.fcTitle}>Vocab · Writing Phrases · Common Mistakes — 1.350+ mục IELTS</div>
+              <div className={s.fcDesc}>Vocabulary · Collocations · Phrasal Verbs · Writing Phrases · Common Mistakes — 5 bộ tài liệu, 18 chủ đề IELTS, được biên soạn riêng cho học viên Việt.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
