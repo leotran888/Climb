@@ -61,7 +61,7 @@ export default async function VocabularyPage({
   }
 
   return (
-    <div style={{ paddingBottom: 48 }}>
+    <div style={{ paddingTop: 20, paddingBottom: 48 }}>
     <style>{`
       .vc-stat { transition: transform .15s, box-shadow .15s; }
       .vc-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,163,68,.12); }
