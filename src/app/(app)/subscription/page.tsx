@@ -245,7 +245,7 @@ export default async function SubscriptionPage() {
       {/* ── Plan comparison 2×2 ────────────────── */}
       <p style={{ fontSize: 13, fontWeight: 900, color: TEXT, marginBottom: 12, marginTop: 8 }}>Các gói dịch vụ</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 4 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 4 }}>
         {PLANS.map(p => {
           const isCurrent = p.slug === currentSlug
           const isYearly  = p.slug === 'pro_yearly'
