@@ -220,8 +220,8 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className={s.fcCat}>Progress Tracking</div>
-              <div className={s.fcTitle}>Nhìn thấy band score leo từng bài một</div>
-              <div className={s.fcDesc}>Biểu đồ band score theo thời gian, xem mình đang cải thiện tiêu chí nào nhanh nhất — không phải tự đánh giá cảm tính.</div>
+              <div className={s.fcTitle}>Theo dõi toàn diện — tiến độ band score và lỗi thường gặp</div>
+              <div className={s.fcDesc}>Biểu đồ band score theo thời gian, cùng danh sách lỗi thường gặp được ghi lại qua từng bài — để bạn biết chính xác cần cải thiện gì tiếp theo.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
