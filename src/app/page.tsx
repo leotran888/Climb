@@ -281,7 +281,7 @@ export default function LandingPage() {
       <div id="about" className={s.aboutWrap}>
         <div>
           <div className={s.aboutTag}>✦ Sứ mệnh của Climb</div>
-          <h2 className={s.h2}>IELTS Writing không nên<br/>chỉ dành cho người có tiền học thầy</h2>
+          <h2 className={s.h2}>IELTS Writing không nên<br/>chỉ dành cho người có tiền</h2>
           <p style={{marginTop:'14px'}}>Climb ra đời với một mục tiêu: giúp bất kỳ học viên Việt nào cũng có thể luyện Writing nghiêm túc — không phụ thuộc vào gia sư, không phụ thuộc vào trung tâm.</p>
           <p>Không chỉ chấm bài — Climb là cả một hệ thống: bài mẫu cải thiện đúng band mục tiêu, kho 1.350+ từ vựng · writing phrases · common mistakes, và kiến thức Writing từ A đến Z. Mọi thứ bạn cần để tự học nghiêm túc, trong tầm tay.</p>
           <div className={s.aboutStats}>
