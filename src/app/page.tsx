@@ -394,7 +394,7 @@ export default function LandingPage() {
         <div className={s.footerTop}>
           <div className={s.footerBrand}>
             <div className={s.footerLogo}>Climb <em>IELTS</em></div>
-            <p>Nền tảng luyện IELTS Writing với AI — được xây riêng cho học viên Việt Nam. Hiểu đúng lỗi người Việt, viết lại bài đạt Band mục tiêu.</p>
+            <p>Nền tảng luyện IELTS Writing với AI — đủ mọi thứ để tự học nghiêm túc mà không cần gia sư: chấm bài, bài mẫu, từ vựng và kiến thức Writing, tất cả trong một chỗ.</p>
           </div>
           <div className={s.footerLinks}>
             <div className={s.footerCol}>
