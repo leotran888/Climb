@@ -119,13 +119,13 @@ export default function LandingPage() {
             <div className={s.fcTop}>
               <div className={s.fcIconSm}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="9" r="5" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
-                  <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Vietnamese-Native AI</div>
-              <div className={s.fcTitle}>Hiểu đúng lỗi của người Việt</div>
-              <div className={s.fcDesc}>Climb được huấn luyện trên bài viết của học viên Việt — nhận ra đúng lỗi, giải thích đúng bản chất, không phải copy-paste nhận xét chung chung. Feedback đúng bệnh, sửa được ngay, không mắc lại lần sau.</div>
+              <div className={s.fcCat}>18 IELTS Topics</div>
+              <div className={s.fcTitle}>Vocab · Writing Phrases · Common Mistakes — 1.350+ mục IELTS</div>
+              <div className={s.fcDesc}>Vocabulary · Collocations · Phrasal Verbs · Writing Phrases · Common Mistakes — 5 bộ tài liệu, 18 chủ đề IELTS, được biên soạn riêng cho học viên Việt.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -140,7 +140,7 @@ export default function LandingPage() {
                 <ellipse cx="228" cy="120" rx="15" ry="18" fill="rgba(5,18,8,0.88)"/>
                 <circle cx="235" cy="115" r="5" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>VIETNAMESE-NATIVE AI</div>
+              <div className={s.fcLabel}>WRITING PHRASES · 18 TOPICS</div>
             </div>
           </div>
 
@@ -180,18 +180,18 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Card 4: Vocab 18 Topics — dusty mauve */}
+          {/* Card 4: Vietnamese AI — dusty mauve */}
           <div className={s.fc} style={{background:'linear-gradient(180deg,#c06070 0%,#8e4050 100%)'}}>
             <div className={s.fcTop}>
               <div className={s.fcIconSm}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinecap="round"/>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8"/>
+                  <circle cx="12" cy="9" r="5" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
+                  <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>18 IELTS Topics</div>
-              <div className={s.fcTitle}>Vocab · Writing Phrases · Common Mistakes — 1.350+ mục IELTS</div>
-              <div className={s.fcDesc}>Vocabulary · Collocations · Phrasal Verbs · Writing Phrases · Common Mistakes — 5 bộ tài liệu, 18 chủ đề IELTS, được biên soạn riêng cho học viên Việt.</div>
+              <div className={s.fcCat}>Vietnamese-Native AI</div>
+              <div className={s.fcTitle}>Hiểu đúng lỗi của người Việt</div>
+              <div className={s.fcDesc}>Climb được huấn luyện trên bài viết của học viên Việt — nhận ra đúng lỗi, giải thích đúng bản chất, không phải copy-paste nhận xét chung chung. Feedback đúng bệnh, sửa được ngay, không mắc lại lần sau.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -206,7 +206,7 @@ export default function LandingPage() {
                 <ellipse cx="227" cy="118" rx="15" ry="18" fill="rgba(20,5,10,0.88)"/>
                 <circle cx="234" cy="113" r="5" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>WRITING PHRASES · 18 TOPICS</div>
+              <div className={s.fcLabel}>VIETNAMESE-NATIVE AI</div>
             </div>
           </div>
 
