@@ -144,18 +144,18 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Card 3: 4 Criteria — terracotta */}
+          {/* Card 3: Vietnamese AI — terracotta */}
           <div className={s.fc} style={{background:'linear-gradient(180deg,#cc7248 0%,#9a4c28 100%)'}}>
             <div className={s.fcTop}>
               <div className={s.fcIconSm}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 11l3 3L22 4" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <circle cx="12" cy="9" r="5" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
+                  <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Examiner-accurate</div>
-              <div className={s.fcTitle}>Chấm đủ 4 tiêu chí như examiner IELTS thật</div>
-              <div className={s.fcDesc}>TR · CC · LR · GRA — biết mình đang yếu tiêu chí nào, không phải nhận về một điểm tổng không biết cải thiện từ đâu.</div>
+              <div className={s.fcCat}>Vietnamese-Native AI</div>
+              <div className={s.fcTitle}>Hiểu đúng lỗi của người Việt</div>
+              <div className={s.fcDesc}>Climb được huấn luyện trên bài viết của học viên Việt — nhận ra đúng lỗi, giải thích đúng bản chất, không phải copy-paste nhận xét chung chung. Feedback đúng bệnh, sửa được ngay, không mắc lại lần sau.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -176,22 +176,22 @@ export default function LandingPage() {
                 <ellipse cx="230" cy="121" rx="15" ry="18" fill="rgba(20,8,4,0.88)"/>
                 <circle cx="237" cy="116" r="5" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>BAND 4.0–9.0</div>
+              <div className={s.fcLabel}>VIETNAMESE-NATIVE AI</div>
             </div>
           </div>
 
-          {/* Card 4: Vietnamese AI — dusty mauve */}
+          {/* Card 4: 4 Criteria — dusty mauve */}
           <div className={s.fc} style={{background:'linear-gradient(180deg,#c06070 0%,#8e4050 100%)'}}>
             <div className={s.fcTop}>
               <div className={s.fcIconSm}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="9" r="5" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
-                  <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M9 11l3 3L22 4" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Vietnamese-Native AI</div>
-              <div className={s.fcTitle}>Hiểu đúng lỗi của người Việt</div>
-              <div className={s.fcDesc}>Climb được huấn luyện trên bài viết của học viên Việt — nhận ra đúng lỗi, giải thích đúng bản chất, không phải copy-paste nhận xét chung chung. Feedback đúng bệnh, sửa được ngay, không mắc lại lần sau.</div>
+              <div className={s.fcCat}>Examiner-accurate</div>
+              <div className={s.fcTitle}>Chấm đủ 4 tiêu chí như examiner IELTS thật</div>
+              <div className={s.fcDesc}>TR · CC · LR · GRA — biết mình đang yếu tiêu chí nào, không phải nhận về một điểm tổng không biết cải thiện từ đâu.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -206,7 +206,7 @@ export default function LandingPage() {
                 <ellipse cx="227" cy="118" rx="15" ry="18" fill="rgba(20,5,10,0.88)"/>
                 <circle cx="234" cy="113" r="5" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>VIETNAMESE-NATIVE AI</div>
+              <div className={s.fcLabel}>BAND 4.0–9.0</div>
             </div>
           </div>
 
