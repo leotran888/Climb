@@ -251,7 +251,7 @@ export default function LandingPage() {
               </div>
               <div className={s.fcCat}>Writing Mastery</div>
               <div className={s.fcTitle}>Nền tảng kiến thức Writing từ A đến Z</div>
-              <div className={s.fcDesc}>Từ cách lập luận Task 2 đến phân tích biểu đồ Task 1 — kho kiến thức Writing được biên soạn riêng cho học viên IELTS Việt.</div>
+              <div className={s.fcDesc}>Từ phân tích biểu đồ Task 1 đến cách lập luận Task 2 — kho kiến thức Writing được biên soạn riêng cho học viên IELTS Việt.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
