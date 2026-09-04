@@ -32,7 +32,7 @@ export default function LandingPage() {
             <span className={s.warm}>Leo thang</span><br/>
             IELTS Writing
           </h1>
-          <p className={s.heroSub}>Biết mình sai không khó. Biết phải viết thế nào mới đúng — mới là phần khó. Climb giải quyết phần đó.</p>
+          <p className={s.heroSub}>Biết mình sai không khó. Biết phải viết thế nào cho đúng — mới là phần khó. Climb giải quyết phần đó.</p>
           <Link href="/register" className={s.heroBtn}>
             thử miễn phí ngay hôm nay
             <span className={s.arrow}>→</span>
