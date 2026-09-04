@@ -96,8 +96,8 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className={s.fcCat}>Writing AI</div>
-              <div className={s.fcTitle}>AI viết lại bài đạt đúng band mục tiêu</div>
-              <div className={s.fcDesc}>Không chỉ chỉ lỗi — Climb tự viết lại toàn bộ essay ở Band 7.0 / 7.5 / 8.0 để bạn học từ bài chuẩn, không phải đoán mình nên sửa thế nào.</div>
+              <div className={s.fcTitle}>Viết lại bài theo band mục tiêu</div>
+              <div className={s.fcDesc}>Không chỉ đưa ra nhận xét — Climb tự viết lại toàn bộ essay ở Band 7.0 / 7.5 / 8.0 để bạn học từ bài chuẩn, không phải đoán mình nên sửa thế nào.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
