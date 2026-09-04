@@ -320,9 +320,9 @@ export default function LandingPage() {
 
       {/* ═══ PRICING ═══ */}
       <section className={s.pricing} id="pricing">
-        <div className={s.sectionTag}>✦ Học phí</div>
-        <h2 className={s.h2}>Đầu tư vào band score<br/>không phải vào thầy cô</h2>
-        <p className={s.sectionSub}>Học phí thầy 1-1: 300–500k/giờ. Climb Starter: 99.000đ/tháng · Pro không giới hạn: 229.000đ/tháng.</p>
+        <div className={s.sectionTag}>✦ Luyện Writing thông minh</div>
+        <h2 className={s.h2}>Đầu tư vào band,<br/>không phải học phí.</h2>
+        <p className={s.sectionSub}>Band score cao đến từ việc luyện đúng cách — và có đủ công cụ để làm điều đó mỗi ngày.</p>
 
         <div className={s.pg}>
           {/* Free */}
