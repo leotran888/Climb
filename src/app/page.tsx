@@ -84,20 +84,19 @@ export default function LandingPage() {
 
         <div className={s.cards}>
 
-          {/* Card 1: Upgraded Essay — periwinkle blue */}
+          {/* Card 1: Writing Knowledge — periwinkle blue */}
           <div className={s.fc} style={{background:'linear-gradient(180deg,#7890d8 0%,#4a64b4 100%)'}}>
             <div className={s.fcTop}>
               <div className={s.fcIconSm}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <rect x="5" y="3" width="14" height="18" rx="2" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
-                  <line x1="8" y1="8" x2="16" y2="8" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="8" y1="11.5" x2="14" y2="11.5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="8" y1="15" x2="15" y2="15" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinejoin="round"/>
+                  <path d="M2 17l10 5 10-5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 12l10 5 10-5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Writing AI</div>
-              <div className={s.fcTitle}>Viết lại bài theo đúng band mục tiêu</div>
-              <div className={s.fcDesc}>Không chỉ đưa ra nhận xét — Climb tự viết lại toàn bộ essay ở Band 7.0 / 7.5 / 8.0 để bạn học từ bài chuẩn, không phải đoán mình nên sửa thế nào.</div>
+              <div className={s.fcCat}>Writing Mastery</div>
+              <div className={s.fcTitle}>Nền tảng kiến thức Writing từ A đến Z</div>
+              <div className={s.fcDesc}>Từ phân tích biểu đồ Task 1 đến cách lập luận Task 2 — kho kiến thức Writing được biên soạn riêng cho học viên IELTS Việt.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -111,7 +110,7 @@ export default function LandingPage() {
                 <ellipse cx="235" cy="122" rx="16" ry="19" fill="rgba(5,8,22,0.88)"/>
                 <circle cx="242" cy="116" r="5.5" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>UPGRADED ESSAY · ĐỘC QUYỀN</div>
+              <div className={s.fcLabel}>WRITING MASTERY · SẮP RA MẮT</div>
             </div>
           </div>
 
@@ -239,19 +238,20 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Card 6: Writing Knowledge — teal */}
+          {/* Card 6: Upgraded Essay — teal */}
           <div className={s.fc} style={{background:'linear-gradient(180deg,#3a9e8e 0%,#1e6e60 100%)'}}>
             <div className={s.fcTop}>
               <div className={s.fcIconSm}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8" strokeLinejoin="round"/>
-                  <path d="M2 17l10 5 10-5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M2 12l10 5 10-5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="5" y="3" width="14" height="18" rx="2" stroke="rgba(255,255,255,0.85)" strokeWidth="1.8"/>
+                  <line x1="8" y1="8" x2="16" y2="8" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="8" y1="11.5" x2="14" y2="11.5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="8" y1="15" x2="15" y2="15" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div className={s.fcCat}>Writing Mastery</div>
-              <div className={s.fcTitle}>Nền tảng kiến thức Writing từ A đến Z</div>
-              <div className={s.fcDesc}>Từ phân tích biểu đồ Task 1 đến cách lập luận Task 2 — kho kiến thức Writing được biên soạn riêng cho học viên IELTS Việt.</div>
+              <div className={s.fcCat}>Writing AI</div>
+              <div className={s.fcTitle}>Viết lại bài theo đúng band mục tiêu</div>
+              <div className={s.fcDesc}>Không chỉ đưa ra nhận xét — Climb tự viết lại toàn bộ essay ở Band 7.0 / 7.5 / 8.0 để bạn học từ bài chuẩn, không phải đoán mình nên sửa thế nào.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
@@ -270,7 +270,7 @@ export default function LandingPage() {
                 <ellipse cx="232" cy="120" rx="17" ry="20" fill="rgba(4,18,18,0.88)"/>
                 <circle cx="240" cy="114" r="6" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>WRITING MASTERY · SẮP RA MẮT</div>
+              <div className={s.fcLabel}>UPGRADED ESSAY · ĐỘC QUYỀN</div>
             </div>
           </div>
 
