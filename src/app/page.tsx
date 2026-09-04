@@ -79,8 +79,8 @@ export default function LandingPage() {
       {/* ═══ FEATURES ═══ */}
       <section className={s.features} id="features">
         <div className={s.sectionTag}>✦ Tính năng độc quyền</div>
-        <h2 className={s.h2}>Không AI nào<br/>làm được những thứ này</h2>
-        <p className={s.sectionSub}>Climb được xây riêng cho học viên IELTS Việt — không phải grammar tool dịch sang tiếng Việt.</p>
+        <h2 className={s.h2}>Đầy đủ. Riêng biệt.<br/>Chỉ có ở Climb.</h2>
+        <p className={s.sectionSub}>Climb được xây riêng cho học viên IELTS Việt — từ chấm bài đến bài mẫu, từ vựng đến kiến thức Writing.</p>
 
         <div className={s.cards}>
 
