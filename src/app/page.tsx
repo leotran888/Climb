@@ -270,7 +270,7 @@ export default function LandingPage() {
                 <ellipse cx="232" cy="120" rx="17" ry="20" fill="rgba(4,18,18,0.88)"/>
                 <circle cx="240" cy="114" r="6" fill="white"/>
               </svg>
-              <div className={s.fcLabel}>UPGRADED ESSAY · ĐỘC QUYỀN</div>
+              <div className={s.fcLabel}>UPGRADED ESSAY</div>
             </div>
           </div>
 
