@@ -162,14 +162,6 @@ export default function LandingPage() {
                 <text x="48" y="40" fontSize="18" fill="rgba(245,192,60,.70)">✦</text>
                 <text x="322" y="52" fontSize="12" fill="rgba(245,192,60,.55)">✦</text>
                 <text x="352" y="30" fontSize="9" fill="rgba(245,192,60,.40)">✦</text>
-                <rect x="62" y="22" width="56" height="22" rx="11" fill="rgba(255,255,255,0.22)"/>
-                <text x="90" y="37" textAnchor="middle" fontSize="10" fill="white" fontFamily="Nunito,sans-serif" fontWeight="800">TR 7.0</text>
-                <rect x="130" y="14" width="56" height="22" rx="11" fill="rgba(255,255,255,0.18)"/>
-                <text x="158" y="29" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.9)" fontFamily="Nunito,sans-serif" fontWeight="800">CC 6.5</text>
-                <rect x="218" y="18" width="56" height="22" rx="11" fill="rgba(255,255,255,0.18)"/>
-                <text x="246" y="33" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.9)" fontFamily="Nunito,sans-serif" fontWeight="800">LR 7.0</text>
-                <rect x="288" y="24" width="60" height="22" rx="11" fill="rgba(255,255,255,0.22)"/>
-                <text x="318" y="39" textAnchor="middle" fontSize="10" fill="white" fontFamily="Nunito,sans-serif" fontWeight="800">GRA 7.5</text>
                 <ellipse cx="200" cy="174" rx="165" ry="90" fill="rgba(0,0,0,0.16)"/>
                 <ellipse cx="170" cy="121" rx="15" ry="18" fill="rgba(20,8,4,0.88)"/>
                 <circle cx="177" cy="116" r="5" fill="white"/>
@@ -198,8 +190,14 @@ export default function LandingPage() {
                 <text x="55" y="40" fontSize="18" fill="rgba(245,192,60,.68)">✦</text>
                 <text x="318" y="52" fontSize="13" fill="rgba(245,192,60,.52)">✦</text>
                 <text x="344" y="26" fontSize="9" fill="rgba(245,192,60,.38)">✦</text>
-                <ellipse cx="140" cy="155" rx="90" ry="70" fill="rgba(0,0,0,0.14)"/>
-                <ellipse cx="260" cy="160" rx="88" ry="66" fill="rgba(0,0,0,0.14)"/>
+                <rect x="62" y="22" width="56" height="22" rx="11" fill="rgba(255,255,255,0.22)"/>
+                <text x="90" y="37" textAnchor="middle" fontSize="10" fill="white" fontFamily="Nunito,sans-serif" fontWeight="800">TR 7.0</text>
+                <rect x="130" y="14" width="56" height="22" rx="11" fill="rgba(255,255,255,0.18)"/>
+                <text x="158" y="29" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.9)" fontFamily="Nunito,sans-serif" fontWeight="800">CC 6.5</text>
+                <rect x="218" y="18" width="56" height="22" rx="11" fill="rgba(255,255,255,0.18)"/>
+                <text x="246" y="33" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.9)" fontFamily="Nunito,sans-serif" fontWeight="800">LR 7.0</text>
+                <rect x="288" y="24" width="60" height="22" rx="11" fill="rgba(255,255,255,0.22)"/>
+                <text x="318" y="39" textAnchor="middle" fontSize="10" fill="white" fontFamily="Nunito,sans-serif" fontWeight="800">GRA 7.5</text>
                 <ellipse cx="200" cy="170" rx="115" ry="88" fill="rgba(0,0,0,0.16)"/>
                 <ellipse cx="173" cy="118" rx="15" ry="18" fill="rgba(20,5,10,0.88)"/>
                 <circle cx="180" cy="113" r="5" fill="white"/>
