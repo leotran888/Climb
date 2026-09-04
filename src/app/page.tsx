@@ -125,8 +125,8 @@ export default function LandingPage() {
                 </svg>
               </div>
               <div className={s.fcCat}>Vietnamese-Native AI</div>
-              <div className={s.fcTitle}>Hiểu đúng lỗi của người học tiếng Việt</div>
-              <div className={s.fcDesc}>AI hiểu nguyên nhân gốc rễ từ tiếng mẹ đẻ — không phải liệt kê lỗi ngữ pháp chung chung. Feedback đúng bệnh, sửa được ngay, không mắc lại lần sau.</div>
+              <div className={s.fcTitle}>Hiểu đúng lỗi của người Việt</div>
+              <div className={s.fcDesc}>Climb được huấn luyện trên bài viết của học viên Việt — nhận ra đúng lỗi, giải thích đúng bản chất, không phải copy-paste nhận xét chung chung.</div>
             </div>
             <div className={s.fcIllus}>
               <svg viewBox="0 0 400 155" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
